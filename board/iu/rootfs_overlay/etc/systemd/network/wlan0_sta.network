@@ -1,0 +1,5 @@
+[Match]
+Name=wlan0_sta
+
+[Network]
+DHCP=ipv4

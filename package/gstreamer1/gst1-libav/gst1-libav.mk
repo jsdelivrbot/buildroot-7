@@ -74,6 +74,12 @@ else
 GST1_LIBAV_CONF_EXTRA_OPTS += --disable-altivec
 endif
 
+ifeq ($(BR2_PACKAGE_ORC),y)
+GST1_LIBAV_CONF_OPTS += --enable-orc
+endif
+
+GST1_LIBAV_CONF_EXTRA_OPTS += --disable-swscale --disable-encoders --disable-decoders --enable-decoder=aac --enable-decoder=mp3 --enable-decoder=wmav1 --enable-decoder=wmav2 --enable-decoder=wmavoice --disable-muxers --disable-demuxers --enable-demuxer=aac --enable-demuxer=mp3 --enable-demuxer=xwma --disable-parsers --enable-parser=aac --enable-parser=mpegaudio --disable-filters
+
 GST1_LIBAV_CONF_OPTS = \
 	--with-libav-extra-configure="$(GST1_LIBAV_CONF_EXTRA_OPTS)"
 

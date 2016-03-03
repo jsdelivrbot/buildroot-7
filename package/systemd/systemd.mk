@@ -36,7 +36,56 @@ SYSTEMD_CONF_OPTS += \
 	--disable-gnuefi \
 	--disable-ldconfig \
 	--disable-tests \
-	--without-python
+	--without-python \
+	--disable-nls \
+	--disable-utmp \
+	--disable-xkbcommon \
+	--disable-ima \
+	--disable-apparmor \
+	--disable-lz4 \
+	--disable-audit \
+	--disable-elfutils \
+	--disable-qrencode \
+	--disable-gnutls \
+	--disable-libcurl \
+	--disable-libidn \
+	--disable-libiptc \
+	--disable-binfmt \
+	--disable-vconsole \
+	--disable-quotacheck \
+	--disable-firstboot \
+	--disable-backlight \
+	--disable-machined \
+	--disable-importd \
+	--disable-logind \
+	--disable-localed \
+	--disable-polkit \
+	--disable-myhostname \
+	--disable-hwdb \
+	--disable-hibernate \
+	--with-sysvinit-path="" \
+	--with-sysvrcnd-path=""
+
+# why disable those?
+#  --disable-dbus \
+#  --disable-kmod \
+
+# additional candidates
+#  --disable-zlib
+#  --disable-randomseed
+#  --disable-sysusers
+#  --disable-tmpfiles
+#  --disable-coredump
+#  --disable-bootchart
+
+# handled by Config.in below
+#	--disable-acl \
+#	--disable-microhttpd \
+#	--disable-kdbus \
+#	--disable-seccomp \
+#	--disable-gcrypt \
+#	--disable-xz \
+#	--disable-smack \
 
 SYSTEMD_CFLAGS = $(TARGET_CFLAGS) -fno-lto
 
@@ -203,10 +252,19 @@ define SYSTEMD_INSTALL_MACHINEID_HOOK
 	touch $(TARGET_DIR)/etc/machine-id
 endef
 
+define SYSTEMD_MINIMIZE_UNITS
+	rm -f $(TARGET_DIR)/lib/systemd/system/dev-mqueue.mount
+	rm -f $(TARGET_DIR)/lib/systemd/system/dev-hugepages.mount
+	rm -f $(TARGET_DIR)/lib/systemd/system/remote-fs.target
+	rm -f $(TARGET_DIR)/lib/systemd/system/swap.target
+	rm -f $(TARGET_DIR)/lib/systemd/system-generators/systemd-system-update-generator
+endef
+
 SYSTEMD_POST_INSTALL_TARGET_HOOKS += \
 	SYSTEMD_INSTALL_INIT_HOOK \
 	SYSTEMD_INSTALL_MACHINEID_HOOK \
-	SYSTEMD_INSTALL_RESOLVCONF_HOOK
+	SYSTEMD_INSTALL_RESOLVCONF_HOOK \
+	SYSTEMD_MINIMIZE_UNITS
 
 define SYSTEMD_USERS
 	systemd-journal -1 systemd-journal -1 * /var/log/journal - - Journal
