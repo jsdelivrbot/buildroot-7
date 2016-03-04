@@ -160,14 +160,15 @@ else
 SYSTEMD_CONF_OPTS += --disable-libcurl
 endif
 
-ifeq ($(BR2_PACKAGE_LIBGCRYPT),y)
-SYSTEMD_DEPENDENCIES += libgcrypt
-SYSTEMD_CONF_OPTS += \
-	--enable-gcrypt	\
-	--with-libgcrypt-prefix=$(STAGING_DIR)/usr
-else
+# gcrypt currently broken
+#ifeq ($(BR2_PACKAGE_LIBGCRYPT),y)
+#SYSTEMD_DEPENDENCIES += libgcrypt
+#SYSTEMD_CONF_OPTS += \
+#	--enable-gcrypt	\
+#	--with-libgcrypt-prefix=$(STAGING_DIR)/usr
+#else
 SYSTEMD_CONF_OPTS += --disable-gcrypt
-endif
+#endif
 
 ifeq ($(BR2_PACKAGE_SYSTEMD_JOURNAL_GATEWAY),y)
 SYSTEMD_DEPENDENCIES += libmicrohttpd
