@@ -3,7 +3,7 @@ comment "Binutils Options"
 choice
 	prompt "Binutils Version"
 	depends on !BR2_arc
-	default BR2_BINUTILS_VERSION_2_24_X
+	default BR2_BINUTILS_VERSION_2_25_X
 	help
 	  Select the version of binutils you wish to use.
 
@@ -28,6 +28,9 @@ choice
 	config BR2_BINUTILS_VERSION_2_25_X
 		bool "binutils 2.25.1"
 
+	config BR2_BINUTILS_VERSION_2_26_X
+		bool "binutils 2.26"
+
 endchoice
 
 config BR2_BINUTILS_VERSION
@@ -36,6 +39,7 @@ config BR2_BINUTILS_VERSION
 	default "2.23.2"	if BR2_BINUTILS_VERSION_2_23_X
 	default "2.24"		if BR2_BINUTILS_VERSION_2_24_X
 	default "2.25.1"	if BR2_BINUTILS_VERSION_2_25_X
+	default "2.26"		if BR2_BINUTILS_VERSION_2_26_X
 
 config BR2_BINUTILS_ENABLE_LTO
 	bool
