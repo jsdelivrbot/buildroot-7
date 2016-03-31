@@ -15,6 +15,34 @@ cd ${1}
 #touch usr/libexec/dbus-daemon-launch-helper
 #${RM} -r usr/libexec
 
+${RM} lib/systemd/systemd-ac-power
+${RM} lib/systemd/systemd-bus-proxyd
+${RM} lib/systemd/systemd-cgroups-agent
+${RM} lib/systemd/systemd-hostnamed
+${RM} lib/systemd/systemd-initctl
+${RM} lib/systemd/systemd-sleep
+${RM} lib/systemd/systemd-socket-proxyd
+${RM} lib/systemd/systemd-timedated
+${RM} lib/systemd/systemd-timesyncd
+${RM} lib/systemd/systemd-update-done
+${RM} usr/bin/systemd-analyze
+${RM} usr/bin/systemd-cgls
+${RM} usr/bin/systemd-cgtop
+${RM} usr/bin/systemd-detect-virt
+${RM} usr/bin/systemd-nspawn
+${RM} usr/bin/systemd-resolve
+#${RM} usr/bin/systemd-run
+${RM} usr/bin/systemd-stdio-bridge
+${RM} usr/bin/systemd-sysusers
+${RM} usr/bin/systemd-tty-ask-password-agent
+${RM} usr/lib/udev/cdrom_id
+${RM} usr/lib/udev/v4l_id
+
+${RM} usr/lib/libevent-*
+${RM} usr/lib/libevent_extra*
+${RM} usr/lib/libevent_openssl*
+${RM} usr/lib/libevent.*
+
 #${RM} usr/bin/gapplication
 #${RM} usr/bin/gdbus
 #${RM} usr/bin/gdbus-codegen
