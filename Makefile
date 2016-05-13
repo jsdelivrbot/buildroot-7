@@ -41,7 +41,7 @@ else # umask
 all:
 
 # Set and export the version string
-export BR2_VERSION := 2016.05-git
+export BR2_VERSION := 2016.05-rc1
 
 # Save running make version since it's clobbered by the make package
 RUNNING_MAKE_VERSION := $(MAKE_VERSION)
@@ -583,7 +583,10 @@ define PURGE_LOCALES
 	do \
 		for langdir in $$dir/*; \
 		do \
-			grep -qx $${langdir##*/} $(LOCALE_WHITELIST) || rm -rf $$langdir; \
+			if [ -e "$${langdir}" ]; \
+			then \
+				grep -qx "$${langdir##*/}" $(LOCALE_WHITELIST) || rm -rf $$langdir; \
+			fi \
 		done; \
 	done
 	if [ -d $(TARGET_DIR)/usr/share/X11/locale ]; \
