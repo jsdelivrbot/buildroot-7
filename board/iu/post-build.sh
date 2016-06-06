@@ -84,7 +84,7 @@ ${RM} usr/bin/ngettext
 ${RM} usr/sbin/chat
 #${RM} usr/sbin/hciattach
 
-#${RM} -r usr/lib/pppd
+${RM} -r usr/lib/pppd
 ${RM} usr/sbin/pppdump
 ${RM} usr/sbin/pppoe-discovery
 #${RM} usr/sbin/pppstats
