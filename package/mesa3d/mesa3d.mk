@@ -22,6 +22,14 @@ MESA3D_DEPENDENCIES = \
 	expat \
 	libdrm
 
+# The Sourcery MIPS toolchain has a special (non-upstream) feature to
+# have "compact exception handling", which unfortunately breaks with
+# mesa3d, so we disable it here by passing -mno-compact-eh.
+ifeq ($(BR2_TOOLCHAIN_EXTERNAL_CODESOURCERY_MIPS),y)
+MESA3D_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -mno-compact-eh"
+MESA3D_CONF_ENV += CXXFLAGS="$(TARGET_CXXFLAGS) -mno-compact-eh"
+endif
+
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
 MESA3D_DEPENDENCIES += openssl
 MESA3D_CONF_OPTS += --with-sha1=libcrypto
@@ -108,6 +116,8 @@ endif
 # libGL is only provided for a full xorg stack
 ifeq ($(BR2_PACKAGE_XORG7),y)
 MESA3D_PROVIDES += libgl
+else
+MESA3D_POST_INSTALL_STAGING_HOOKS += MESA3D_REMOVE_OPENGL_PC
 endif
 MESA3D_CONF_OPTS += \
 	--enable-shared-glapi \
@@ -136,6 +146,8 @@ MESA3D_CONF_OPTS += --disable-va
 ifeq ($(BR2_PACKAGE_MESA3D_OPENGL_EGL),y)
 MESA3D_PROVIDES += libegl
 ifeq ($(BR2_PACKAGE_MESA3D_DRI_DRIVER),y)
+MESA3D_EGL_PLATFORMS = drm
+else ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VC4),y)
 MESA3D_EGL_PLATFORMS = drm
 else ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VIRGL),y)
 MESA3D_EGL_PLATFORMS = drm

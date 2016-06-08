@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-SYSTEMD_VERSION = 229
+SYSTEMD_VERSION = 230
 SYSTEMD_SITE = $(call github,systemd,systemd,v$(SYSTEMD_VERSION))
 SYSTEMD_LICENSE = LGPLv2.1+, GPLv2+ (udev), Public Domain (few source files, see README)
 SYSTEMD_LICENSE_FILES = LICENSE.GPL2 LICENSE.LGPL2.1 README
@@ -28,14 +28,7 @@ endif
 SYSTEMD_CONF_OPTS += \
 	--with-rootprefix= \
 	--enable-static=no \
-	--disable-manpages \
-	--disable-selinux \
-	--disable-pam \
-	--disable-libcryptsetup \
-	--disable-efi \
-	--disable-gnuefi \
-	--disable-ldconfig \
-	--disable-tests \
+	--with-default-dnssec=no \
 	--without-python \
 	--disable-nls \
 	--disable-utmp \

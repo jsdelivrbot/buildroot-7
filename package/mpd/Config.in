@@ -5,7 +5,6 @@ menuconfig BR2_PACKAGE_MPD
 	depends on BR2_TOOLCHAIN_HAS_THREADS # libglib2
 	depends on BR2_USE_MMU # libglib2
 	depends on BR2_TOOLCHAIN_GCC_AT_LEAST_4_6
-	depends on BR2_PACKAGE_BOOST_ARCH_SUPPORTS
 	depends on BR2_TOOLCHAIN_HAS_ATOMIC
 	select BR2_PACKAGE_BOOST
 	select BR2_PACKAGE_LIBGLIB2
@@ -77,8 +76,8 @@ config BR2_PACKAGE_MPD_FAAD2
 
 config BR2_PACKAGE_MPD_FFMPEG
 	bool "ffmpeg"
+	depends on BR2_PACKAGE_FFMPEG_ARCH_SUPPORTS
 	select BR2_PACKAGE_FFMPEG
-	depends on !BR2_nios2 # ffmpeg
 	help
 	  Enable ffmpeg input support.
 	  Select this if you want to play back files supported by
@@ -312,7 +311,6 @@ endif
 
 comment "mpd needs a toolchain w/ C++, threads, wchar, gcc >= 4.6"
 	depends on BR2_USE_MMU
-	depends on BR2_PACKAGE_BOOST_ARCH_SUPPORTS
 	depends on BR2_TOOLCHAIN_HAS_ATOMIC
 	depends on !BR2_INSTALL_LIBSTDCPP || !BR2_USE_WCHAR || \
 		!BR2_TOOLCHAIN_HAS_THREADS || !BR2_TOOLCHAIN_GCC_AT_LEAST_4_6
