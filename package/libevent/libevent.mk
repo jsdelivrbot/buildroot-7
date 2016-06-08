@@ -4,12 +4,12 @@
 #
 ################################################################################
 
-LIBEVENT_VERSION = 2.0.22-stable
-LIBEVENT_SITE = https://github.com/libevent/libevent/releases/download/release-$(LIBEVENT_VERSION)
+LIBEVENT_VERSION = master
+LIBEVENT_SITE = https://github.com/libevent/libevent.git
+LIBEVENT_SITE_METHOD = git
 LIBEVENT_INSTALL_STAGING = YES
 LIBEVENT_LICENSE = BSD-3c, OpenBSD
 LIBEVENT_LICENSE_FILES = LICENSE
-# For 0001-Disable-building-test-programs.patch
 LIBEVENT_AUTORECONF = YES
 
 define LIBEVENT_REMOVE_PYSCRIPT
@@ -34,7 +34,7 @@ else
 LIBEVENT_CONF_OPTS += --disable-openssl
 endif
 
-LIBEVENT_CONF_OPTS += --disable-debug-mode --disable-malloc-replacement
+LIBEVENT_CONF_OPTS += --disable-debug-mode --disable-malloc-replacement --disable-samples --disable-largefile
 
 $(eval $(autotools-package))
 $(eval $(host-autotools-package))
