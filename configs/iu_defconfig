@@ -1,6 +1,7 @@
 BR2_arm=y
 BR2_cortex_a7=y
 BR2_ARM_FPU_NEON_VFPV4=y
+BR2_ARM_INSTRUCTIONS_THUMB2=y
 BR2_DL_DIR="$(HOME)/Downloads/br2_download/"
 BR2_HOST_DIR="/opt/buildroot-host/iu"
 BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_4_4=y
