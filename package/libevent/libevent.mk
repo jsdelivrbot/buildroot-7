@@ -34,7 +34,7 @@ else
 LIBEVENT_CONF_OPTS += --disable-openssl
 endif
 
-LIBEVENT_CONF_OPTS += --disable-debug-mode --disable-malloc-replacement --disable-samples --disable-largefile
+LIBEVENT_CONF_OPTS += --disable-malloc-replacement --disable-samples
 
 $(eval $(autotools-package))
 $(eval $(host-autotools-package))
