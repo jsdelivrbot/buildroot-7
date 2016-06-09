@@ -1,0 +1,39 @@
+From 21c57f7021d1779aa4d69edd4322886eb6600c84 Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Thu, 7 May 2015 09:14:11 +0200
+Subject: [PATCH] ARM: DT: tqmls102x: add mac address property to eTSECn
+
+this property is needed to be filled by bootloader firmware.
+
+Signed-off-by: Markus Niebel <Markus.Niebel@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index ca54281..747a916 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -72,6 +72,7 @@
+ &enet0 {
+ 	phy-handle = <&rgmii_phy0d>;
+ 	phy-connection-type = "rgmii-id";
++	mac-address = "00:00:00:00:00:00";
+ 	status = "okay";
+ };
+ 
+@@ -79,12 +80,14 @@
+ 	tbi-handle = <&tbi1>;
+ 	phy-handle = <&sgmii_phy13>;
+ 	phy-connection-type = "sgmii";
++	mac-address = "00:00:00:00:00:00";
+ 	status = "okay";
+ };
+ 
+ &enet2 {
+ 	phy-handle = <&rgmii_phy05>;
+ 	phy-connection-type = "rgmii-id";
++	mac-address = "00:00:00:00:00:00";
+ 	status = "okay";
+ };
+ 

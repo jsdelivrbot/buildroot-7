@@ -1,0 +1,48 @@
+From f447271b5f3c4df25072df7406b99b59ef808499 Mon Sep 17 00:00:00 2001
+From: Jia-Ju Bai <baijiaju1990@163.com>
+Date: Wed, 2 Mar 2016 12:59:43 +0100
+Subject: [PATCH] ehci-hcd: Disable memory-write-invalidate when the driver is
+ removed
+
+The driver calls pci_set_mwi to enable memory-write-invalidate when it
+is initialized, but does not call pci_clear_mwi when it is removed. Many
+other drivers calls pci_clear_mwi when pci_set_mwi is called, such as
+r8169, 8139cp and e1000.
+
+This patch adds a function "ehci_pci_remove" to remove the pci driver.
+This function calls pci_clear_mwi and usb_hcd_pci_remove, which can
+fix the problem.
+
+Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/host/ehci-pci.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/host/ehci-pci.c b/drivers/usb/host/ehci-pci.c
+index 2a5d2fd..3b3649d 100644
+--- a/drivers/usb/host/ehci-pci.c
++++ b/drivers/usb/host/ehci-pci.c
+@@ -377,6 +377,12 @@ static int ehci_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	return usb_hcd_pci_probe(pdev, id);
+ }
+ 
++static void ehci_pci_remove(struct pci_dev *pdev)
++{
++	pci_clear_mwi(pdev);
++	usb_hcd_pci_remove(pdev);	
++}
++
+ /* PCI driver selection metadata; PCI hotplugging uses this */
+ static const struct pci_device_id pci_ids [] = { {
+ 	/* handle any USB 2.0 EHCI controller */
+@@ -396,7 +402,7 @@ static struct pci_driver ehci_pci_driver = {
+ 	.id_table =	pci_ids,
+ 
+ 	.probe =	ehci_pci_probe,
+-	.remove =	usb_hcd_pci_remove,
++	.remove =	ehci_pci_remove,
+ 	.shutdown = 	usb_hcd_pci_shutdown,
+ 
+ #ifdef CONFIG_PM

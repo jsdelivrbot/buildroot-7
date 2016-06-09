@@ -1,0 +1,38 @@
+From b8491f5a5111a89ce25c542bda5947773d0014ab Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 27 Apr 2016 14:06:12 +0200
+Subject: [PATCH] dt: mbls102xa: adapt phy timing to rev0200
+
+MBLS102xA.0200 has 2.5ns for RX, 2ns for TX assigned each
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index 72e68bf..e86e5fc 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -245,8 +245,8 @@
+ 		compatible = "ethernet-phy-id2000.a230",
+ 			"ethernet-phy-ieee802.3-c22";
+ 		reg = <0x0c>;
+-		ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
+-		ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
++		ti,rx-internal-delay = <DP83867_RGMIIDCTL_2_50_NS>;
++		ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
+ 		ti,led-cfg1 = <0x6b90>;
+ 		ti,led-cfg2 = <0x0000>;
+ 		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+@@ -262,8 +262,8 @@
+ 		compatible = "ethernet-phy-id2000.a230",
+ 			"ethernet-phy-ieee802.3-c22";
+ 		reg = <0x04>;
+-		ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
+-		ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
++		ti,rx-internal-delay = <DP83867_RGMIIDCTL_2_50_NS>;
++		ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
+ 		ti,led-cfg1 = <0x6b90>;
+ 		ti,led-cfg2 = <0x0000>;
+ 		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;

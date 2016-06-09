@@ -1,0 +1,39 @@
+From e2c55f8bf4a7ab793ab5eda09d7cf89d00628b3a Mon Sep 17 00:00:00 2001
+From: Sriram Dash <sriram.dash@freescale.com>
+Date: Wed, 2 Mar 2016 12:57:08 +0100
+Subject: [PATCH] drivers/usb/host: fsl: Set DMA_MASK of usb platform device
+
+Set DMA_MASK of usb platform device properly.
+
+Signed-off-by: Sriram Dash <sriram.dash@freescale.com>
+Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/host/fsl-mph-dr-of.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
+index 0c38265..1044b0f 100644
+--- a/drivers/usb/host/fsl-mph-dr-of.c
++++ b/drivers/usb/host/fsl-mph-dr-of.c
+@@ -17,6 +17,7 @@
+ #include <linux/of_platform.h>
+ #include <linux/clk.h>
+ #include <linux/module.h>
++#include <linux/dma-mapping.h>
+ 
+ struct fsl_usb2_dev_data {
+ 	char *dr_mode;		/* controller mode */
+@@ -96,7 +97,11 @@ static struct platform_device *fsl_usb2_device_register(
+ 	pdev->dev.parent = &ofdev->dev;
+ 
+ 	pdev->dev.coherent_dma_mask = ofdev->dev.coherent_dma_mask;
+-	*pdev->dev.dma_mask = *ofdev->dev.dma_mask;
++
++	if (!pdev->dev.dma_mask)
++		pdev->dev.dma_mask = &ofdev->dev.coherent_dma_mask;
++	else
++		dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
+ 
+ 	retval = platform_device_add_data(pdev, pdata, sizeof(*pdata));
+ 	if (retval)

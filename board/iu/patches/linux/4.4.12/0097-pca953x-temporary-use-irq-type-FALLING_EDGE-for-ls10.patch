@@ -1,0 +1,23 @@
+From c2c79476157c90d033c24cc2e9e1b69f1468de64 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 2 Mar 2016 16:17:17 +0100
+Subject: [PATCH] pca953x: temporary use irq type FALLING_EDGE for ls1021a gic
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/gpio/gpio-pca953x.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpio/gpio-pca953x.c b/drivers/gpio/gpio-pca953x.c
+index be3e3b9..a03f206 100644
+--- a/drivers/gpio/gpio-pca953x.c
++++ b/drivers/gpio/gpio-pca953x.c
+@@ -598,7 +598,7 @@ static int pca953x_irq_setup(struct pca953x_chip *chip,
+ 					client->irq,
+ 					   NULL,
+ 					   pca953x_irq_handler,
+-					   IRQF_TRIGGER_LOW | IRQF_ONESHOT |
++					   IRQF_TRIGGER_FALLING | IRQF_ONESHOT |
+ 						   IRQF_SHARED,
+ 					   dev_name(&client->dev), chip);
+ 		if (ret) {

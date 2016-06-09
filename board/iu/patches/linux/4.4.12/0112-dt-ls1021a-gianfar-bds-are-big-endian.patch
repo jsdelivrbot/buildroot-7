@@ -1,0 +1,44 @@
+From 40bbfa44820afcc2d033377db9e550a7aa3f6d3e Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 27 Apr 2016 14:10:10 +0200
+Subject: [PATCH] dt: ls1021a: gianfar bds are big endian
+
+After setup of little-endian buffer descriptors in
+U-Boot was dropped by clearing the bits
+SCFG_ETSECDMAMCR.ETSEC_BD and .ETSEC_FR_DATA,
+it is no longer necessary to mark the ethernet
+nodes accordingly.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 0995dc8..9cbadde 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -642,7 +642,6 @@
+ 			fsl,magic-packet;
+ 			ranges;
+ 			dma-coherent;
+-			fsl,dma-endian-le;
+ 
+ 			queue-group@2d10000 {
+ 				#address-cells = <2>;
+@@ -672,7 +671,6 @@
+ 			model = "eTSEC";
+ 			ranges;
+ 			dma-coherent;
+-			fsl,dma-endian-le;
+ 
+ 			queue-group@2d50000  {
+ 				#address-cells = <2>;
+@@ -702,7 +700,6 @@
+ 			model = "eTSEC";
+ 			ranges;
+ 			dma-coherent;
+-			fsl,dma-endian-le;
+ 
+ 			queue-group@2d90000  {
+ 				#address-cells = <2>;

@@ -1,0 +1,29 @@
+From be180c2d9c7b0d495f22769681a2ac5ff06900e9 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 27 Apr 2016 17:40:12 +0200
+Subject: [PATCH] dt: mbls102xa: enable dspi nodes and spidev
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index e86e5fc..0dba233 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -309,3 +309,14 @@
+ &sata {
+ 	status = "okay";
+ };
++
++&dspi0 {
++	bus-num = <0>;
++	status = "okay";
++
++	spidev0: spidev@0 {
++		compatible = "rohm,dh2228fv";
++		reg = <0>;
++		spi-max-frequency = <100000>;
++	};
++};

@@ -1,0 +1,426 @@
+From 8149c5a410ab8d716c8ddb89189eddcb36c15516 Mon Sep 17 00:00:00 2001
+From: Stefan Agner <stefan@agner.ch>
+Date: Wed, 18 Nov 2015 18:42:45 -0800
+Subject: [PATCH] [2/7] drm/fsl-dcu: remove regmap return value checks
+
+It is not common to do regmap return value checks, especially not
+for memory mapped device. We can rule out most error returns since
+the conditions are static and we know they are ok (e.g. offset
+aligned to register stride). Also without proper error handling
+they are not really valuable for the user. Hence remove most of
+them.
+
+The check in the interrupt handler is worth keeping since a
+volatile register won't be readable in case register caching is
+still enabled.
+
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+---
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c  | 124 +++++++++-------------------
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c   |  54 ++++--------
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c | 109 +++++++++---------------
+ 3 files changed, 99 insertions(+), 188 deletions(-)
+
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+index 82a3d31..adf9212 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+@@ -42,34 +42,24 @@ static void fsl_dcu_drm_disable_crtc(struct drm_crtc *crtc)
+ {
+ 	struct drm_device *dev = crtc->dev;
+ 	struct fsl_dcu_drm_device *fsl_dev = dev->dev_private;
+-	int ret;
+ 
+-	ret = regmap_update_bits(fsl_dev->regmap, DCU_DCU_MODE,
+-				 DCU_MODE_DCU_MODE_MASK,
+-				 DCU_MODE_DCU_MODE(DCU_MODE_OFF));
+-	if (ret)
+-		dev_err(fsl_dev->dev, "Disable CRTC failed\n");
+-	ret = regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
+-			   DCU_UPDATE_MODE_READREG);
+-	if (ret)
+-		dev_err(fsl_dev->dev, "Enable CRTC failed\n");
++	regmap_update_bits(fsl_dev->regmap, DCU_DCU_MODE,
++			   DCU_MODE_DCU_MODE_MASK,
++			   DCU_MODE_DCU_MODE(DCU_MODE_OFF));
++	regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
++		     DCU_UPDATE_MODE_READREG);
+ }
+ 
+ static void fsl_dcu_drm_crtc_enable(struct drm_crtc *crtc)
+ {
+ 	struct drm_device *dev = crtc->dev;
+ 	struct fsl_dcu_drm_device *fsl_dev = dev->dev_private;
+-	int ret;
+ 
+-	ret = regmap_update_bits(fsl_dev->regmap, DCU_DCU_MODE,
+-				 DCU_MODE_DCU_MODE_MASK,
+-				 DCU_MODE_DCU_MODE(DCU_MODE_NORMAL));
+-	if (ret)
+-		dev_err(fsl_dev->dev, "Enable CRTC failed\n");
+-	ret = regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
+-			   DCU_UPDATE_MODE_READREG);
+-	if (ret)
+-		dev_err(fsl_dev->dev, "Enable CRTC failed\n");
++	regmap_update_bits(fsl_dev->regmap, DCU_DCU_MODE,
++			   DCU_MODE_DCU_MODE_MASK,
++			   DCU_MODE_DCU_MODE(DCU_MODE_NORMAL));
++	regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
++		     DCU_UPDATE_MODE_READREG);
+ }
+ 
+ static bool fsl_dcu_drm_crtc_mode_fixup(struct drm_crtc *crtc,
+@@ -86,7 +76,6 @@ static void fsl_dcu_drm_crtc_mode_set_nofb(struct drm_crtc *crtc)
+ 	struct drm_display_mode *mode = &crtc->state->mode;
+ 	unsigned int hbp, hfp, hsw, vbp, vfp, vsw, div, index;
+ 	unsigned long dcuclk;
+-	int ret;
+ 
+ 	index = drm_crtc_index(crtc);
+ 	dcuclk = clk_get_rate(fsl_dev->clk);
+@@ -100,51 +89,31 @@ static void fsl_dcu_drm_crtc_mode_set_nofb(struct drm_crtc *crtc)
+ 	vfp = mode->vsync_start - mode->vdisplay;
+ 	vsw = mode->vsync_end - mode->vsync_start;
+ 
+-	ret = regmap_write(fsl_dev->regmap, DCU_HSYN_PARA,
+-			   DCU_HSYN_PARA_BP(hbp) |
+-			   DCU_HSYN_PARA_PW(hsw) |
+-			   DCU_HSYN_PARA_FP(hfp));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_VSYN_PARA,
+-			   DCU_VSYN_PARA_BP(vbp) |
+-			   DCU_VSYN_PARA_PW(vsw) |
+-			   DCU_VSYN_PARA_FP(vfp));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_DISP_SIZE,
+-			   DCU_DISP_SIZE_DELTA_Y(mode->vdisplay) |
+-			   DCU_DISP_SIZE_DELTA_X(mode->hdisplay));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_DIV_RATIO, div);
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_SYN_POL,
+-			   DCU_SYN_POL_INV_VS_LOW | DCU_SYN_POL_INV_HS_LOW);
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_BGND, DCU_BGND_R(0) |
+-			   DCU_BGND_G(0) | DCU_BGND_B(0));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_DCU_MODE,
+-			   DCU_MODE_BLEND_ITER(1) | DCU_MODE_RASTER_EN);
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_THRESHOLD,
+-			   DCU_THRESHOLD_LS_BF_VS(BF_VS_VAL) |
+-			   DCU_THRESHOLD_OUT_BUF_HIGH(BUF_MAX_VAL) |
+-			   DCU_THRESHOLD_OUT_BUF_LOW(BUF_MIN_VAL));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
+-			   DCU_UPDATE_MODE_READREG);
+-	if (ret)
+-		goto set_failed;
++	regmap_write(fsl_dev->regmap, DCU_HSYN_PARA,
++		     DCU_HSYN_PARA_BP(hbp) |
++		     DCU_HSYN_PARA_PW(hsw) |
++		     DCU_HSYN_PARA_FP(hfp));
++	regmap_write(fsl_dev->regmap, DCU_VSYN_PARA,
++		     DCU_VSYN_PARA_BP(vbp) |
++		     DCU_VSYN_PARA_PW(vsw) |
++		     DCU_VSYN_PARA_FP(vfp));
++	regmap_write(fsl_dev->regmap, DCU_DISP_SIZE,
++		     DCU_DISP_SIZE_DELTA_Y(mode->vdisplay) |
++		     DCU_DISP_SIZE_DELTA_X(mode->hdisplay));
++	regmap_write(fsl_dev->regmap, DCU_DIV_RATIO, div);
++	regmap_write(fsl_dev->regmap, DCU_SYN_POL,
++		     DCU_SYN_POL_INV_VS_LOW | DCU_SYN_POL_INV_HS_LOW);
++	regmap_write(fsl_dev->regmap, DCU_BGND, DCU_BGND_R(0) |
++		     DCU_BGND_G(0) | DCU_BGND_B(0));
++	regmap_write(fsl_dev->regmap, DCU_DCU_MODE,
++		     DCU_MODE_BLEND_ITER(1) | DCU_MODE_RASTER_EN);
++	regmap_write(fsl_dev->regmap, DCU_THRESHOLD,
++		     DCU_THRESHOLD_LS_BF_VS(BF_VS_VAL) |
++		     DCU_THRESHOLD_OUT_BUF_HIGH(BUF_MAX_VAL) |
++		     DCU_THRESHOLD_OUT_BUF_LOW(BUF_MIN_VAL));
++	regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
++		     DCU_UPDATE_MODE_READREG);
+ 	return;
+-set_failed:
+-	dev_err(dev->dev, "set DCU register failed\n");
+ }
+ 
+ static const struct drm_crtc_helper_funcs fsl_dcu_drm_crtc_helper_funcs = {
+@@ -186,25 +155,14 @@ int fsl_dcu_drm_crtc_create(struct fsl_dcu_drm_device *fsl_dev)
+ 	else
+ 		reg_num = VF610_LAYER_REG_NUM;
+ 	for (i = 0; i <= fsl_dev->soc->total_layer; i++) {
+-		for (j = 0; j < reg_num; j++) {
+-			ret = regmap_write(fsl_dev->regmap,
+-					   DCU_CTRLDESCLN(i, j), 0);
+-			if (ret)
+-				goto init_failed;
+-		}
++		for (j = 0; j < reg_num; j++)
++			regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(i, j), 0);
+ 	}
+-	ret = regmap_update_bits(fsl_dev->regmap, DCU_DCU_MODE,
+-				 DCU_MODE_DCU_MODE_MASK,
+-				 DCU_MODE_DCU_MODE(DCU_MODE_OFF));
+-	if (ret)
+-		goto init_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
+-			   DCU_UPDATE_MODE_READREG);
+-	if (ret)
+-		goto init_failed;
++	regmap_update_bits(fsl_dev->regmap, DCU_DCU_MODE,
++			   DCU_MODE_DCU_MODE_MASK,
++			   DCU_MODE_DCU_MODE(DCU_MODE_OFF));
++	regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
++		     DCU_UPDATE_MODE_READREG);
+ 
+ 	return 0;
+-init_failed:
+-	dev_err(fsl_dev->dev, "init DCU register failed\n");
+-	return ret;
+ }
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
+index d6e27af..d37ff0e 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
+@@ -55,20 +55,12 @@ static int fsl_dcu_drm_irq_init(struct drm_device *dev)
+ 	if (ret < 0)
+ 		dev_err(dev->dev, "failed to install IRQ handler\n");
+ 
+-	ret = regmap_write(fsl_dev->regmap, DCU_INT_STATUS, 0);
+-	if (ret)
+-		dev_err(dev->dev, "set DCU_INT_STATUS failed\n");
+-	ret = regmap_read(fsl_dev->regmap, DCU_INT_MASK, &value);
+-	if (ret)
+-		dev_err(dev->dev, "read DCU_INT_MASK failed\n");
++	regmap_write(fsl_dev->regmap, DCU_INT_STATUS, 0);
++	regmap_read(fsl_dev->regmap, DCU_INT_MASK, &value);
+ 	value &= DCU_INT_MASK_VBLANK;
+-	ret = regmap_write(fsl_dev->regmap, DCU_INT_MASK, value);
+-	if (ret)
+-		dev_err(dev->dev, "set DCU_INT_MASK failed\n");
+-	ret = regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
+-			   DCU_UPDATE_MODE_READREG);
+-	if (ret)
+-		dev_err(dev->dev, "set DCU_UPDATE_MODE failed\n");
++	regmap_write(fsl_dev->regmap, DCU_INT_MASK, value);
++	regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
++		     DCU_UPDATE_MODE_READREG);
+ 
+ 	return ret;
+ }
+@@ -134,18 +126,17 @@ static irqreturn_t fsl_dcu_drm_irq(int irq, void *arg)
+ 	int ret;
+ 
+ 	ret = regmap_read(fsl_dev->regmap, DCU_INT_STATUS, &int_status);
+-	if (ret)
+-		dev_err(dev->dev, "set DCU_INT_STATUS failed\n");
++	if (ret) {
++		dev_err(dev->dev, "read DCU_INT_STATUS failed\n");
++		return IRQ_NONE;
++	}
++
+ 	if (int_status & DCU_INT_STATUS_VBLANK)
+ 		drm_handle_vblank(dev, 0);
+ 
+-	ret = regmap_write(fsl_dev->regmap, DCU_INT_STATUS, int_status);
+-	if (ret)
+-		dev_err(dev->dev, "set DCU_INT_STATUS failed\n");
+-	ret = regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
+-			   DCU_UPDATE_MODE_READREG);
+-	if (ret)
+-		dev_err(dev->dev, "set DCU_UPDATE_MODE failed\n");
++	regmap_write(fsl_dev->regmap, DCU_INT_STATUS, int_status);
++	regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
++		     DCU_UPDATE_MODE_READREG);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -154,15 +145,11 @@ static int fsl_dcu_drm_enable_vblank(struct drm_device *dev, unsigned int pipe)
+ {
+ 	struct fsl_dcu_drm_device *fsl_dev = dev->dev_private;
+ 	unsigned int value;
+-	int ret;
+ 
+-	ret = regmap_read(fsl_dev->regmap, DCU_INT_MASK, &value);
+-	if (ret)
+-		dev_err(dev->dev, "read DCU_INT_MASK failed\n");
++	regmap_read(fsl_dev->regmap, DCU_INT_MASK, &value);
+ 	value &= ~DCU_INT_MASK_VBLANK;
+-	ret = regmap_write(fsl_dev->regmap, DCU_INT_MASK, value);
+-	if (ret)
+-		dev_err(dev->dev, "set DCU_INT_MASK failed\n");
++	regmap_write(fsl_dev->regmap, DCU_INT_MASK, value);
++
+ 	return 0;
+ }
+ 
+@@ -171,15 +158,10 @@ static void fsl_dcu_drm_disable_vblank(struct drm_device *dev,
+ {
+ 	struct fsl_dcu_drm_device *fsl_dev = dev->dev_private;
+ 	unsigned int value;
+-	int ret;
+ 
+-	ret = regmap_read(fsl_dev->regmap, DCU_INT_MASK, &value);
+-	if (ret)
+-		dev_err(dev->dev, "read DCU_INT_MASK failed\n");
++	regmap_read(fsl_dev->regmap, DCU_INT_MASK, &value);
+ 	value |= DCU_INT_MASK_VBLANK;
+-	ret = regmap_write(fsl_dev->regmap, DCU_INT_MASK, value);
+-	if (ret)
+-		dev_err(dev->dev, "set DCU_INT_MASK failed\n");
++	regmap_write(fsl_dev->regmap, DCU_INT_MASK, value);
+ }
+ 
+ static const struct file_operations fsl_dcu_drm_fops = {
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c
+index 5984ebe..d864d44 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c
+@@ -62,19 +62,15 @@ static void fsl_dcu_drm_plane_atomic_disable(struct drm_plane *plane,
+ {
+ 	struct fsl_dcu_drm_device *fsl_dev = plane->dev->dev_private;
+ 	unsigned int value;
+-	int index, ret;
++	int index;
+ 
+ 	index = fsl_dcu_drm_plane_index(plane);
+ 	if (index < 0)
+ 		return;
+ 
+-	ret = regmap_read(fsl_dev->regmap, DCU_CTRLDESCLN(index, 4), &value);
+-	if (ret)
+-		dev_err(fsl_dev->dev, "read DCU_INT_MASK failed\n");
++	regmap_read(fsl_dev->regmap, DCU_CTRLDESCLN(index, 4), &value);
+ 	value &= ~DCU_LAYER_EN;
+-	ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 4), value);
+-	if (ret)
+-		dev_err(fsl_dev->dev, "set DCU register failed\n");
++	regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 4), value);
+ }
+ 
+ static void fsl_dcu_drm_plane_atomic_update(struct drm_plane *plane,
+@@ -86,7 +82,7 @@ static void fsl_dcu_drm_plane_atomic_update(struct drm_plane *plane,
+ 	struct drm_framebuffer *fb = plane->state->fb;
+ 	struct drm_gem_cma_object *gem;
+ 	unsigned int alpha, bpp;
+-	int index, ret;
++	int index;
+ 
+ 	if (!fb)
+ 		return;
+@@ -126,70 +122,45 @@ static void fsl_dcu_drm_plane_atomic_update(struct drm_plane *plane,
+ 		return;
+ 	}
+ 
+-	ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 1),
+-			   DCU_LAYER_HEIGHT(state->crtc_h) |
+-			   DCU_LAYER_WIDTH(state->crtc_w));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 2),
+-			   DCU_LAYER_POSY(state->crtc_y) |
+-			   DCU_LAYER_POSX(state->crtc_x));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap,
+-			   DCU_CTRLDESCLN(index, 3), gem->paddr);
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 4),
+-			   DCU_LAYER_EN |
+-			   DCU_LAYER_TRANS(alpha) |
+-			   DCU_LAYER_BPP(bpp) |
+-			   DCU_LAYER_AB(0));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 5),
+-			   DCU_LAYER_CKMAX_R(0xFF) |
+-			   DCU_LAYER_CKMAX_G(0xFF) |
+-			   DCU_LAYER_CKMAX_B(0xFF));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 6),
+-			   DCU_LAYER_CKMIN_R(0) |
+-			   DCU_LAYER_CKMIN_G(0) |
+-			   DCU_LAYER_CKMIN_B(0));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 7), 0);
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 8),
+-			   DCU_LAYER_FG_FCOLOR(0));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 9),
+-			   DCU_LAYER_BG_BCOLOR(0));
+-	if (ret)
+-		goto set_failed;
++	regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 1),
++		     DCU_LAYER_HEIGHT(state->crtc_h) |
++		     DCU_LAYER_WIDTH(state->crtc_w));
++	regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 2),
++		     DCU_LAYER_POSY(state->crtc_y) |
++		     DCU_LAYER_POSX(state->crtc_x));
++	regmap_write(fsl_dev->regmap,
++		     DCU_CTRLDESCLN(index, 3), gem->paddr);
++	regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 4),
++		     DCU_LAYER_EN |
++		     DCU_LAYER_TRANS(alpha) |
++		     DCU_LAYER_BPP(bpp) |
++		     DCU_LAYER_AB(0));
++	regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 5),
++		     DCU_LAYER_CKMAX_R(0xFF) |
++		     DCU_LAYER_CKMAX_G(0xFF) |
++		     DCU_LAYER_CKMAX_B(0xFF));
++	regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 6),
++		     DCU_LAYER_CKMIN_R(0) |
++		     DCU_LAYER_CKMIN_G(0) |
++		     DCU_LAYER_CKMIN_B(0));
++	regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 7), 0);
++	regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 8),
++		     DCU_LAYER_FG_FCOLOR(0));
++	regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 9),
++		     DCU_LAYER_BG_BCOLOR(0));
++
+ 	if (!strcmp(fsl_dev->soc->name, "ls1021a")) {
+-		ret = regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 10),
+-				   DCU_LAYER_POST_SKIP(0) |
+-				   DCU_LAYER_PRE_SKIP(0));
+-		if (ret)
+-			goto set_failed;
++		regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(index, 10),
++			     DCU_LAYER_POST_SKIP(0) |
++			     DCU_LAYER_PRE_SKIP(0));
+ 	}
+-	ret = regmap_update_bits(fsl_dev->regmap, DCU_DCU_MODE,
+-				 DCU_MODE_DCU_MODE_MASK,
+-				 DCU_MODE_DCU_MODE(DCU_MODE_NORMAL));
+-	if (ret)
+-		goto set_failed;
+-	ret = regmap_write(fsl_dev->regmap,
+-			   DCU_UPDATE_MODE, DCU_UPDATE_MODE_READREG);
+-	if (ret)
+-		goto set_failed;
+-	return;
++	regmap_update_bits(fsl_dev->regmap, DCU_DCU_MODE,
++			   DCU_MODE_DCU_MODE_MASK,
++			   DCU_MODE_DCU_MODE(DCU_MODE_NORMAL));
++	regmap_write(fsl_dev->regmap,
++		     DCU_UPDATE_MODE, DCU_UPDATE_MODE_READREG);
+ 
+-set_failed:
+-	dev_err(fsl_dev->dev, "set DCU register failed\n");
++	return;
+ }
+ 
+ static void

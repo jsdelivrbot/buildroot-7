@@ -1,0 +1,47 @@
+From b231a656ccefa2288b992abb7a6175ce9633fa00 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 20 Jan 2016 13:17:11 +0100
+Subject: [PATCH] dt: tqmls102xa: add mmc on esdhc
+
+And also SD on starterkit.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 5 +++++
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi         | 7 +++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index 3e85682..19e8296 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -90,6 +90,11 @@
+ 	};
+ };
+ 
++&esdhc {
++	/* SD card over 4 data lines (overwrites module)*/
++	bus-width = <4>;
++};
++
+ &uart0 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index 13e0311..b23d199 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -36,6 +36,13 @@
+ 	};
+ };
+ 
++&esdhc {
++	compatible = "fsl,esdhc", "fsl,ls1021a-esdhc";
++	/* e-MMC over 8 data lines */
++	bus-width = <8>;
++	status = "okay";
++};
++
+ &i2c0 {
+ 	status = "okay";
+ 

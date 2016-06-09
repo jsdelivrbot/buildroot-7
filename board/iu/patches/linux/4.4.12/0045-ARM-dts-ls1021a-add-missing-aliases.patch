@@ -1,0 +1,30 @@
+From 1f2e93c5b2cdd57ebce9c52c28cc5214eb96f524 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 1 Oct 2015 00:55:05 +0200
+Subject: [PATCH] ARM: dts: ls1021a: add missing aliases
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 153ddd9..c9355de 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -63,7 +63,15 @@
+ 		serial3 = &lpuart3;
+ 		serial4 = &lpuart4;
+ 		serial5 = &lpuart5;
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		ethernet2 = &enet2;
+ 		sysclk = &sysclk;
++		gpio0 = &gpio1;
++		gpio1 = &gpio2;
++		gpio2 = &gpio3;
++		gpio3 = &gpio4;
++		crypto = &crypto;
+ 	};
+ 
+ 	cpus {

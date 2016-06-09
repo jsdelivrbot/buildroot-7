@@ -1,0 +1,60 @@
+From 473882f3272b70d2dd51f6dd2859a85ef831e4e8 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 28 Apr 2016 11:24:33 +0200
+Subject: [PATCH] arm:dts:mbls102xa: Add sii9022a dts node
+
+The SiI9022A is an ultra low-power HDMI transmitter. It supports
+resolutions from standard definition 480i/p and 576i/p all the way
+to high-definition 720p, 1080i, and 1080p, the highest resolution
+supported by HDTVs today. It also supports all PC resolutions up
+to UXGA for netbooks
+
+Signed-off-by: Meng Yi <meng.yi at nxp.com>
+[port to mbls102xa]
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 24 +++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index c6cdfb3..c4b4ccf 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -74,6 +74,12 @@
+ &dcu {
+ 	fsl,panel = <&etm0700>;
+ 	status = "okay";
++
++	port@0 {
++		dcu_out_hdmi: endpoint {
++			remote-endpoint = <&sii9022a_out>;
++		};
++	};
+ };
+ 
+ &esdhc {
+@@ -146,6 +152,24 @@
+ 		status = "okay";
+ 	};
+ 
++	sii9022a: hdmi@3b {
++		compatible = "sil,sii9022a";
++		reg = <0x3b>;
++		interrupts = <GIC_SPI 167 IRQ_TYPE_EDGE_RISING>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++				sii9022a_out: endpoint {
++					remote-endpoint = <&dcu_out_hdmi>;
++				};
++			};
++		};
++	};
++
+ 	stmpe811@41 {
+ 		compatible = "st,stmpe811";
+ 		reg = <0x41>;

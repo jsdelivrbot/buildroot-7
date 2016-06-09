@@ -1,0 +1,76 @@
+From f7e5bbf88af66bf6f689c1df467f709d75d53eae Mon Sep 17 00:00:00 2001
+From: Stefan Agner <stefan@agner.ch>
+Date: Mon, 8 Feb 2016 13:57:41 -0800
+Subject: [PATCH] drm/fsl-dcu: use mode flags for hsync/vsync polarity
+
+The current default configuration is as follows:
+- Invert VSYNC signal (active LOW)
+- Invert HSYNC signal (active LOW)
+
+The mode flags allow to specify the required polarity per
+mode. Furthermore, none of the current driver settings is
+actually a standard polarity.
+
+This patch applies the current driver default polarities as
+explicit flags to the display which has been introduced with
+the driver (NEC WQVGA "nec,nl4827hc19-05b"). The driver now
+also parses the flags field and applies the configuration
+accordingly, by using the following values as standard
+polarities: (e.g. when no flags are specified):
+- VSYNC signal not inverted (active HIGH)
+- HSYNC signal not inverted (active HIGH)
+
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+---
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c | 11 ++++++++---
+ drivers/gpu/drm/panel/panel-simple.c       |  1 +
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+index 23061c3..8301fbc 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+@@ -74,7 +74,7 @@ static void fsl_dcu_drm_crtc_mode_set_nofb(struct drm_crtc *crtc)
+ 	struct drm_device *dev = crtc->dev;
+ 	struct fsl_dcu_drm_device *fsl_dev = dev->dev_private;
+ 	struct drm_display_mode *mode = &crtc->state->mode;
+-	unsigned int hbp, hfp, hsw, vbp, vfp, vsw, div, index;
++	unsigned int hbp, hfp, hsw, vbp, vfp, vsw, div, index, pol = 0;
+ 	unsigned long dcuclk;
+ 
+ 	index = drm_crtc_index(crtc);
+@@ -89,6 +89,12 @@ static void fsl_dcu_drm_crtc_mode_set_nofb(struct drm_crtc *crtc)
+ 	vfp = mode->vsync_start - mode->vdisplay;
+ 	vsw = mode->vsync_end - mode->vsync_start;
+ 
++	if (mode->flags & DRM_MODE_FLAG_NHSYNC)
++		pol |= DCU_SYN_POL_INV_HS_LOW;
++
++	if (mode->flags & DRM_MODE_FLAG_NVSYNC)
++		pol |= DCU_SYN_POL_INV_VS_LOW;
++
+ 	regmap_write(fsl_dev->regmap, DCU_HSYN_PARA,
+ 		     DCU_HSYN_PARA_BP(hbp) |
+ 		     DCU_HSYN_PARA_PW(hsw) |
+@@ -101,8 +107,7 @@ static void fsl_dcu_drm_crtc_mode_set_nofb(struct drm_crtc *crtc)
+ 		     DCU_DISP_SIZE_DELTA_Y(mode->vdisplay) |
+ 		     DCU_DISP_SIZE_DELTA_X(mode->hdisplay));
+ 	regmap_write(fsl_dev->regmap, DCU_DIV_RATIO, div);
+-	regmap_write(fsl_dev->regmap, DCU_SYN_POL,
+-		     DCU_SYN_POL_INV_VS_LOW | DCU_SYN_POL_INV_HS_LOW);
++	regmap_write(fsl_dev->regmap, DCU_SYN_POL, pol);
+ 	regmap_write(fsl_dev->regmap, DCU_BGND, DCU_BGND_R(0) |
+ 		     DCU_BGND_G(0) | DCU_BGND_B(0));
+ 	regmap_write(fsl_dev->regmap, DCU_DCU_MODE,
+diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+index f97b73e..01df578 100644
+--- a/drivers/gpu/drm/panel/panel-simple.c
++++ b/drivers/gpu/drm/panel/panel-simple.c
+@@ -960,6 +960,7 @@ static const struct drm_display_mode nec_nl4827hc19_05b_mode = {
+ 	.vsync_end = 272 + 2 + 4,
+ 	.vtotal = 272 + 2 + 4 + 2,
+ 	.vrefresh = 74,
++	.flags = DRM_MODE_FLAG_NVSYNC | DRM_MODE_FLAG_NHSYNC,
+ };
+ 
+ static const struct panel_desc nec_nl4827hc19_05b = {

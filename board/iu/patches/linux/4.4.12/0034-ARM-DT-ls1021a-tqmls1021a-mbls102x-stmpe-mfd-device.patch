@@ -1,0 +1,64 @@
+From d41b545fe316f3fd7b1ae657e0e6ea353221951d Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Thu, 19 Mar 2015 18:40:27 +0100
+Subject: [PATCH] ARM: DT: ls1021a-tqmls1021a-mbls102x: stmpe mfd device
+
+Add mfd stmpe 811 @41 to i2c0
+
+The device uses IRQ3: ID 201 - 32 -> 167
+
+- configure gpio 0 ... 3
+- configure touch
+
+Signed-off-by: Markus Niebel <Markus.Niebel@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 36 +++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index 6beb9b5..d3fa676 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -79,6 +79,42 @@
+ 		status = "okay";
+ 	};
+ 
++	stmpe811@41 {
++		compatible = "st,stmpe811";
++		reg = <0x41>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++/*
++		interrupts = <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-controller;
++*/
++		status = "okay";
++
++		stmpe_gpio {
++			compatible = "stmpe,gpio";
++			gpio-controller;
++			#gpio-cells = <2>;
++			gpio,norequest-mask = <0xF0>;
++		};
++
++		stmpe_touchscreen {
++			compatible = "stmpe,ts";
++/*
++ * TODO:
++ * this has to be configured per panel
++ */
++			ts,sample-time = <4>;
++			ts,mod-12b = <1>;
++			ts,ref-sel = <0>;
++			ts,adc-freq = <1>;
++			ts,ave-ctrl = <1>;
++			ts,touch-det-delay = <3>;
++			ts,settling = <4>;
++			ts,fraction-z = <7>;
++			ts,i-drive = <1>;
++		};
++	};
++
+ 	pca9530: pca9530@60 {
+ 		compatible = "nxp,pca9530";
+ 		reg = <0x60>;

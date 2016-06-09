@@ -1,0 +1,63 @@
+From 51eed84f47dd11685c99ee53f80973bac6477125 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 1 Oct 2015 01:04:52 +0200
+Subject: [PATCH] ARM: dts: ls1021a: add gpio controller nodes
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index c9355de..c14597a 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -447,6 +447,48 @@
+ 			status = "disabled";
+ 		};
+ 
++
++		gpio1: gpio@2300000 {
++			compatible = "fsl,ls1021a-gpio";
++			reg = <0x0 0x2300000 0x0 0x10000>;
++			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++			sleep = <&rcpm 0x00000040 0x0>;
++		};
++
++		gpio2: gpio@2310000 {
++			compatible = "fsl,ls1021a-gpio";
++			reg = <0x0 0x2310000 0x0 0x10000>;
++			interrupts = <GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++		};
++
++		gpio3: gpio@2320000 {
++			compatible = "fsl,ls1021a-gpio";
++			reg = <0x0 0x2320000 0x0 0x10000>;
++			interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++		};
++
++		gpio4: gpio@2330000 {
++			compatible = "fsl,ls1021a-gpio";
++			reg = <0x0 0x2330000 0x0 0x10000>;
++			interrupts = <GIC_SPI 166 IRQ_TYPE_LEVEL_HIGH>;
++			gpio-controller;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++		};
++
+ 		pwm3: ftm@2a00000 {
+ 			compatible = "fsl,vf610-ftm-pwm";
+ 			#pwm-cells = <3>;

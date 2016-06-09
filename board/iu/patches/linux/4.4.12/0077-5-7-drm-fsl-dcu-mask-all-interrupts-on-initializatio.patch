@@ -1,0 +1,40 @@
+From f5b65dba7f612762d8f8195862f82a1948ce4b0b Mon Sep 17 00:00:00 2001
+From: Stefan Agner <stefan@agner.ch>
+Date: Wed, 18 Nov 2015 18:42:48 -0800
+Subject: [PATCH] [5/7] drm/fsl-dcu: mask all interrupts on initialization
+
+The state of the interrupt mask register on initialization is
+unknown, e.g. U-Boot could already used the DCU. So depending on
+the boot loader, the outcome of the interrupt mask register could
+be different. A defined state is much more preferable. Also, there
+is no value in keeping interrupts enabled which we don't need.
+Therefor, mask all interrupts on initialization.
+
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+---
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
+index d37ff0e..e01c813 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
+@@ -48,7 +48,6 @@ static const struct regmap_config fsl_dcu_regmap_config = {
+ static int fsl_dcu_drm_irq_init(struct drm_device *dev)
+ {
+ 	struct fsl_dcu_drm_device *fsl_dev = dev->dev_private;
+-	unsigned int value;
+ 	int ret;
+ 
+ 	ret = drm_irq_install(dev, fsl_dev->irq);
+@@ -56,9 +55,7 @@ static int fsl_dcu_drm_irq_init(struct drm_device *dev)
+ 		dev_err(dev->dev, "failed to install IRQ handler\n");
+ 
+ 	regmap_write(fsl_dev->regmap, DCU_INT_STATUS, 0);
+-	regmap_read(fsl_dev->regmap, DCU_INT_MASK, &value);
+-	value &= DCU_INT_MASK_VBLANK;
+-	regmap_write(fsl_dev->regmap, DCU_INT_MASK, value);
++	regmap_write(fsl_dev->regmap, DCU_INT_MASK, ~0);
+ 	regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,
+ 		     DCU_UPDATE_MODE_READREG);
+ 

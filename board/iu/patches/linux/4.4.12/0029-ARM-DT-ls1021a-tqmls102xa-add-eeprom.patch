@@ -1,0 +1,30 @@
+From 7db1f56fde6132e654c8d623d7d1948f708a5f0f Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Thu, 19 Mar 2015 15:53:54 +0100
+Subject: [PATCH] ARM: DT: ls1021a-tqmls102xa: add eeprom
+
+add the on board eeprom to i2c1
+
+Signed-off-by: Markus Niebel <Markus.Niebel@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index a1301e6..bd31a10 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -31,6 +31,13 @@
+ 
+ &i2c0 {
+ 	status = "okay";
++	eeprom0: 24c64@50 {
++		compatible = "atmel,24c64";
++		reg = <0x50>;
++		pagesize = <32>;
++		status = "okay";
++	};
++
+ 	rtc: pcf85063@51 {
+ 		compatible = "nxp,pcf85063";
+ 		reg = <0x51>;

@@ -1,0 +1,29 @@
+From 7372b0e7a1eabba630ec690936cd1507184b4af0 Mon Sep 17 00:00:00 2001
+From: Meng Yi <meng.yi@nxp.com>
+Date: Wed, 2 Mar 2016 16:52:48 +0100
+Subject: [PATCH] drm: fsl-dcu: Fix no fb check bug
+
+For state->fb or state->crtc may be NULL in fsl_dcu_drm_plane_atomic_check
+function, if so, return 0.
+
+Signed-off-by: Meng Yi <meng.yi@nxp.com>
+Signed-off-by: Jianwei Wang <jianwei.wang.chn@gmail.com>
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+---
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c
+index 51daaea..5984ebe 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c
+@@ -41,6 +41,9 @@ static int fsl_dcu_drm_plane_atomic_check(struct drm_plane *plane,
+ {
+ 	struct drm_framebuffer *fb = state->fb;
+ 
++	if (!state->fb || !state->crtc)
++		return 0;
++
+ 	switch (fb->pixel_format) {
+ 	case DRM_FORMAT_RGB565:
+ 	case DRM_FORMAT_RGB888:

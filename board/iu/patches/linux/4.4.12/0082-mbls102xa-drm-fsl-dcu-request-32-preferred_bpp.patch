@@ -1,0 +1,23 @@
+From 66ff11b6ceeec75aaef7c7ca857b8d14db928069 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 3 Mar 2016 14:02:27 +0100
+Subject: [PATCH] mbls102xa: drm-fsl-dcu: request 32 preferred_bpp
+
+This patch is required to align color mapping of board CPLD and DCU output.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_fbdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_fbdev.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_fbdev.c
+index 8b8b819..ebe1932 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_fbdev.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_fbdev.c
+@@ -19,5 +19,5 @@ void fsl_dcu_fbdev_init(struct drm_device *dev)
+ {
+ 	struct fsl_dcu_drm_device *fsl_dev = dev_get_drvdata(dev->dev);
+ 
+-	fsl_dev->fbdev = drm_fbdev_cma_init(dev, 24, 1, 1);
++	fsl_dev->fbdev = drm_fbdev_cma_init(dev, 32, 1, 1);
+ }

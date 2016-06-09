@@ -1,0 +1,49 @@
+From c5b5b9f19d5b8e98b83888e7a1485478f6051b67 Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Fri, 20 Mar 2015 10:04:31 +0100
+Subject: [PATCH] ARM: DT: ls1021a-tqmls1021a: add devices without driver to
+ i2c1
+
+- mc34vr500 (PMIC) @08
+- pmc (cortex m0) @4c with IRQ2: 197 - 32 -> 165
+- supervisor (adm1069) @4f
+
+Signed-off-by: Markus Niebel <Markus.Niebel@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index 9e3720c..e41d886 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -46,6 +46,11 @@
+ 
+ &i2c0 {
+ 	status = "okay";
++	pmic0: mc34vr500@08 {
++		reg = <0x08>;
++		status = "disabled";
++	};
++
+ 	sensor0: sa56004@4c {
+ 		compatible = "nxp,sa56004";
+ 		reg = <0x4c>;
+@@ -53,6 +58,17 @@
+ 		status = "okay";
+ 	};
+ 
++	pmc0: pmc@11 {
++		reg = <0x11>;
++		interrupts = <GIC_SPI 165 IRQ_TYPE_LEVEL_HIGH>;
++		status = "disabled";
++	};
++
++	supervisor0: adm1069@4f {
++		reg = <0x4f>;
++		status = "disabled";
++	};
++
+ 	eeprom0: 24c64@50 {
+ 		compatible = "atmel,24c64";
+ 		reg = <0x50>;

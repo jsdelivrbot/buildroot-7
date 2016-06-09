@@ -1,0 +1,92 @@
+From 9fdb96d3fbf985f5074683506267066022bb915b Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 23 Mar 2016 10:31:58 +0100
+Subject: [PATCH] Revert drm/fsl-dcu: use mode flags for hsync/vsync pixelclk
+ polarity
+
+Commit id 213ee722e71994d21ec57b514a1a054cdf4ecd1a was reposted by
+Stefan Agner with a new patch set: https://lkml.org/lkml/2016/2/8/869
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c | 16 +++-------------
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h  |  4 ++--
+ drivers/gpu/drm/panel/panel-simple.c       |  2 --
+ 3 files changed, 5 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+index 3c92889..23061c3 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+@@ -18,8 +18,6 @@
+ #include <drm/drm_crtc.h>
+ #include <drm/drm_crtc_helper.h>
+ 
+-#include <video/display_timing.h>
+-
+ #include "fsl_dcu_drm_crtc.h"
+ #include "fsl_dcu_drm_drv.h"
+ #include "fsl_dcu_drm_plane.h"
+@@ -76,7 +74,7 @@ static void fsl_dcu_drm_crtc_mode_set_nofb(struct drm_crtc *crtc)
+ 	struct drm_device *dev = crtc->dev;
+ 	struct fsl_dcu_drm_device *fsl_dev = dev->dev_private;
+ 	struct drm_display_mode *mode = &crtc->state->mode;
+-	unsigned int hbp, hfp, hsw, vbp, vfp, vsw, div, index, pol = 0;
++	unsigned int hbp, hfp, hsw, vbp, vfp, vsw, div, index;
+ 	unsigned long dcuclk;
+ 
+ 	index = drm_crtc_index(crtc);
+@@ -91,15 +89,6 @@ static void fsl_dcu_drm_crtc_mode_set_nofb(struct drm_crtc *crtc)
+ 	vfp = mode->vsync_start - mode->vdisplay;
+ 	vsw = mode->vsync_end - mode->vsync_start;
+ 
+-	if (!(mode->flags & DISPLAY_FLAGS_PIXDATA_POSEDGE))
+-		pol |= DCU_SYN_POL_INV_PXCK_FALL;
+-
+-	if (mode->flags & DRM_MODE_FLAG_NHSYNC)
+-		pol |= DCU_SYN_POL_INV_HS_LOW;
+-
+-	if (mode->flags & DRM_MODE_FLAG_NHSYNC)
+-		pol |= DCU_SYN_POL_INV_VS_LOW;
+-
+ 	regmap_write(fsl_dev->regmap, DCU_HSYN_PARA,
+ 		     DCU_HSYN_PARA_BP(hbp) |
+ 		     DCU_HSYN_PARA_PW(hsw) |
+@@ -112,7 +101,8 @@ static void fsl_dcu_drm_crtc_mode_set_nofb(struct drm_crtc *crtc)
+ 		     DCU_DISP_SIZE_DELTA_Y(mode->vdisplay) |
+ 		     DCU_DISP_SIZE_DELTA_X(mode->hdisplay));
+ 	regmap_write(fsl_dev->regmap, DCU_DIV_RATIO, div);
+-	regmap_write(fsl_dev->regmap, DCU_SYN_POL, pol);
++	regmap_write(fsl_dev->regmap, DCU_SYN_POL,
++		     DCU_SYN_POL_INV_VS_LOW | DCU_SYN_POL_INV_HS_LOW);
+ 	regmap_write(fsl_dev->regmap, DCU_BGND, DCU_BGND_R(0) |
+ 		     DCU_BGND_G(0) | DCU_BGND_B(0));
+ 	regmap_write(fsl_dev->regmap, DCU_DCU_MODE,
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h
+index 41eb971..8559e31 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h
+@@ -50,8 +50,8 @@
+ #define DCU_VSYN_PARA_FP(x)		(x)
+ 
+ #define DCU_SYN_POL			0x0024
+-#define DCU_SYN_POL_INV_PXCK_FALL	BIT(6)
+-#define DCU_SYN_POL_NEG_REMAIN		BIT(5)
++#define DCU_SYN_POL_INV_PXCK_FALL	(0 << 6)
++#define DCU_SYN_POL_NEG_REMAIN		(0 << 5)
+ #define DCU_SYN_POL_INV_VS_LOW		BIT(1)
+ #define DCU_SYN_POL_INV_HS_LOW		BIT(0)
+ 
+diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+index fa68b56..f97b73e 100644
+--- a/drivers/gpu/drm/panel/panel-simple.c
++++ b/drivers/gpu/drm/panel/panel-simple.c
+@@ -960,8 +960,6 @@ static const struct drm_display_mode nec_nl4827hc19_05b_mode = {
+ 	.vsync_end = 272 + 2 + 4,
+ 	.vtotal = 272 + 2 + 4 + 2,
+ 	.vrefresh = 74,
+-	.flags = DRM_MODE_FLAG_NVSYNC | DRM_MODE_FLAG_NHSYNC |
+-		 DISPLAY_FLAGS_PIXDATA_POSEDGE,
+ };
+ 
+ static const struct panel_desc nec_nl4827hc19_05b = {

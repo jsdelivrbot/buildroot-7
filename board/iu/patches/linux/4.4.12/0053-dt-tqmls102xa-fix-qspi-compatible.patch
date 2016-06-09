@@ -1,0 +1,22 @@
+From 690a4fc5457b971d9030f4bb952fed8e221a507c Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 21 Jan 2016 13:44:56 +0100
+Subject: [PATCH] dt: tqmls102xa: fix qspi compatible
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index 7f53525..1eec421 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -92,6 +92,7 @@
+ };
+ 
+ &qspi {
++	compatible = "fsl,ls1021a-qspi";
+ 	fsl,qspi-has-second-chip;
+ 	status = "okay";
+ 

@@ -1,0 +1,34 @@
+From d441fbb825b364a2a2e782bc3fb043b204034bd2 Mon Sep 17 00:00:00 2001
+From: Stefan Agner <stefan@agner.ch>
+Date: Thu, 3 Mar 2016 10:15:10 +0100
+Subject: [PATCH] drm/fsl-dcu: fix register initialization
+
+The layer enumeration start with 0 (0-15 for LS1021a and 0-63 for
+Vybrid) whereas the register enumeration start from 1 (1-10 for
+LS1021a and 1-9 for Vybrid). The loop started off from 0 for both
+iterations and initialized the number of layers inclusive, which
+is one layer too many.
+
+All extensively written registers seem to be unassigned, it seems
+that the write to those registers did not do any harm in practice.
+
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+---
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+index db69725..3c92889 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+@@ -169,8 +169,8 @@ int fsl_dcu_drm_crtc_create(struct fsl_dcu_drm_device *fsl_dev)
+ 		reg_num = LS1021A_LAYER_REG_NUM;
+ 	else
+ 		reg_num = VF610_LAYER_REG_NUM;
+-	for (i = 0; i <= fsl_dev->soc->total_layer; i++) {
+-		for (j = 0; j < reg_num; j++)
++	for (i = 0; i < fsl_dev->soc->total_layer; i++) {
++		for (j = 1; j <= reg_num; j++)
+ 			regmap_write(fsl_dev->regmap, DCU_CTRLDESCLN(i, j), 0);
+ 	}
+ 	regmap_update_bits(fsl_dev->regmap, DCU_DCU_MODE,

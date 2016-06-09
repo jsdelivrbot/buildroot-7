@@ -1,0 +1,65 @@
+From e5963bb5d45373aebdaa47975a9895ebbfd7a3fc Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 17 Feb 2016 16:16:28 +0100
+Subject: [PATCH] phy: dp83867: led-cfg property names
+
+Unify property names with vendor prefix.
+Also set led cfg even when not RGMII.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ Documentation/devicetree/bindings/net/ti,dp83867.txt |  4 ++--
+ drivers/net/phy/dp83867.c                            | 10 +++++-----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/net/ti,dp83867.txt b/Documentation/devicetree/bindings/net/ti,dp83867.txt
+index 96f2854..b308fb22 100644
+--- a/Documentation/devicetree/bindings/net/ti,dp83867.txt
++++ b/Documentation/devicetree/bindings/net/ti,dp83867.txt
+@@ -8,8 +8,8 @@ Required properties:
+ 		for applicable values
+ 	- ti,fifo-depth - Transmitt FIFO depth- see dt-bindings/net/ti-dp83867.h
+ 		for applicable values
+-	- led-cfg1 - Value of LED configuration register 1
+-	- led-cfg2 - Value of LED configuration register 2
++	- ti,led-cfg1 - Value of LED configuration register 1
++	- ti,led-cfg2 - Value of LED configuration register 2
+ 
+ Default child nodes are standard Ethernet PHY device
+ nodes as described in Documentation/devicetree/bindings/net/phy.txt
+diff --git a/drivers/net/phy/dp83867.c b/drivers/net/phy/dp83867.c
+index 7efa0c1..e564cfb 100644
+--- a/drivers/net/phy/dp83867.c
++++ b/drivers/net/phy/dp83867.c
+@@ -127,12 +127,12 @@ static int dp83867_of_init(struct phy_device *phydev)
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = of_property_read_u32(of_node, "led-cfg1",
++	ret = of_property_read_u32(of_node, "ti,led-cfg1",
+ 				&dp83867->led_cfg1);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = of_property_read_u32(of_node, "led-cfg2",
++	ret = of_property_read_u32(of_node, "ti,led-cfg2",
+ 				&dp83867->led_cfg2);
+ 	if (ret)
+ 		return ret;
+@@ -194,13 +194,13 @@ static int dp83867_config_init(struct phy_device *phydev)
+ 		delay = (dp83867->rx_id_delay |
+ 			(dp83867->tx_id_delay << DP83867_RGMII_TX_CLK_DELAY_SHIFT));
+ 
+-		phy_write(phydev, DP83867_LEDCR1, dp83867->led_cfg1);
+-		phy_write(phydev, DP83867_LEDCR2, dp83867->led_cfg2);
+-
+ 		phy_write_mmd_indirect(phydev, DP83867_RGMIIDCTL,
+ 				       DP83867_DEVADDR, phydev->addr, delay);
+ 	}
+ 
++	phy_write(phydev, DP83867_LEDCR1, dp83867->led_cfg1);
++	phy_write(phydev, DP83867_LEDCR2, dp83867->led_cfg2);
++
+ 	return 0;
+ }
+ 

@@ -1,0 +1,111 @@
+From 284067a49bd61fc9a097fb8911dee4bdf2fb0056 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 3 Mar 2016 11:07:21 +0100
+Subject: [PATCH] drm/fsl-dcu: enable pixclk in scfg register
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi            |  1 +
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c | 55 +++++++++++++++++++++++++++++++
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h |  3 ++
+ 3 files changed, 59 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 578efae..4b47ec4 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -618,6 +618,7 @@
+ 			interrupts = <GIC_SPI 172 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&platform_clk 0>;
+ 			clock-names = "dcu";
++			scfg-controller = <&scfg>;
+ 			big-endian;
+ 			status = "disabled";
+ 		};
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
+index e01c813..cccc037 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
+@@ -28,6 +28,58 @@
+ #include "fsl_dcu_drm_crtc.h"
+ #include "fsl_dcu_drm_drv.h"
+ 
++/* --- Enable Pixel clock in SCFG_PIXCLKCR */
++static const struct regmap_config fsl_scfg_regmap_config = {
++	.reg_bits = 32,
++	.reg_stride = 4,
++	.val_bits = 32,
++
++	.max_register = 0x28,
++	.cache_type = REGCACHE_FLAT,
++};
++
++static int scfg_config(struct device_node *np)
++{
++	struct device_node *scfg_np;
++	struct regmap *scfg_regmap;
++	struct platform_device *pdev;
++	struct resource *res;
++	void __iomem *base;
++
++	scfg_np = of_parse_phandle(np, "scfg-controller", 0);
++	if (!scfg_np)
++		return 0;
++
++	pdev = of_find_device_by_node(scfg_np);
++	if (!pdev)
++		return -EINVAL;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -ENODEV;
++
++	base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(base)) {
++		dev_err(&pdev->dev, "could not ioremap resource\n");
++		return PTR_ERR(base);
++	}
++
++	scfg_regmap = devm_regmap_init_mmio_clk(&pdev->dev,
++			NULL, base, &fsl_scfg_regmap_config);
++	if (IS_ERR(scfg_regmap)) {
++		dev_err(&pdev->dev, "regmap init failed\n");
++		return PTR_ERR(scfg_regmap);
++	}
++
++	regmap_write(scfg_regmap, SCFG_PIXCLKCR, SCFG_PIXCLKCR_PXCEN);
++	dev_info(&pdev->dev, "pixclk enabled\n");
++
++	devm_iounmap(&pdev->dev, base);
++
++	return 0;
++}
++/* --- */
++
+ static bool fsl_dcu_drm_is_volatile_reg(struct device *dev, unsigned int reg)
+ {
+ 	if (reg == DCU_INT_STATUS || reg == DCU_UPDATE_MODE)
+@@ -343,6 +395,9 @@ static int fsl_dcu_drm_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	fsl_dev->soc = id->data;
+ 
++	if (scfg_config(dev->of_node))
++		dev_err(dev, "error enabling pixclk\n");
++
+ 	drm = drm_dev_alloc(driver, dev);
+ 	if (!drm)
+ 		return -ENOMEM;
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h
+index 2a724f3..41eb971 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.h
+@@ -16,6 +16,9 @@
+ #include "fsl_dcu_drm_output.h"
+ #include "fsl_dcu_drm_plane.h"
+ 
++#define SCFG_PIXCLKCR			0x28
++#define SCFG_PIXCLKCR_PXCEN		BIT(31)
++
+ #define DCU_DCU_MODE			0x0010
+ #define DCU_MODE_BLEND_ITER(x)		((x) << 20)
+ #define DCU_MODE_RASTER_EN		BIT(14)

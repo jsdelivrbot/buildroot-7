@@ -1,0 +1,56 @@
+From 1250872a777b9e41b19f30f3240ec4792188abcf Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 17 Feb 2016 15:31:13 +0100
+Subject: [PATCH] gianfar: enable little-endian descriptor mode
+
+RxBDs and TxBDs are interpreted with little-endian byte ordering.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/net/ethernet/freescale/gianfar.c | 5 +++++
+ drivers/net/ethernet/freescale/gianfar.h | 2 ++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index 3e233d9..0c360b9 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -911,6 +911,9 @@ static int gfar_of_init(struct platform_device *ofdev, struct net_device **pdev)
+ 	if (of_get_property(np, "fsl,wake-on-filer", NULL))
+ 		priv->device_flags |= FSL_GIANFAR_DEV_HAS_WAKE_ON_FILER;
+ 
++	if (of_get_property(np, "fsl,dma-endian-le", NULL))
++		priv->device_flags |= FSL_GIANFAR_BDS_LITTLE_ENDIAN;
++
+ 	priv->phy_node = of_parse_phandle(np, "phy-handle", 0);
+ 
+ 	/* In the case of a fixed PHY, the DT node associated
+@@ -2061,6 +2064,8 @@ void gfar_start(struct gfar_private *priv)
+ 	/* Make sure we aren't stopped */
+ 	tempval = gfar_read(&regs->dmactrl);
+ 	tempval &= ~(DMACTRL_GRS | DMACTRL_GTS);
++	if (priv->device_flags & FSL_GIANFAR_BDS_LITTLE_ENDIAN)
++		tempval |= DMACTRL_LE;
+ 	gfar_write(&regs->dmactrl, tempval);
+ 
+ 	for (i = 0; i < priv->num_grps; i++) {
+diff --git a/drivers/net/ethernet/freescale/gianfar.h b/drivers/net/ethernet/freescale/gianfar.h
+index cb77667..8e74ab8 100644
+--- a/drivers/net/ethernet/freescale/gianfar.h
++++ b/drivers/net/ethernet/freescale/gianfar.h
+@@ -238,6 +238,7 @@ extern const char gfar_driver_version[];
+ #define DMACTRL_INIT_SETTINGS   0x000000c3
+ #define DMACTRL_GRS             0x00000010
+ #define DMACTRL_GTS             0x00000008
++#define DMACTRL_LE		0x00008000
+ 
+ #define TSTAT_CLEAR_THALT_ALL	0xFF000000
+ #define TSTAT_CLEAR_THALT	0x80000000
+@@ -924,6 +925,7 @@ struct gfar {
+ #define FSL_GIANFAR_DEV_HAS_TIMER		0x00000800
+ #define FSL_GIANFAR_DEV_HAS_WAKE_ON_FILER	0x00001000
+ #define FSL_GIANFAR_DEV_HAS_RX_FILER		0x00002000
++#define FSL_GIANFAR_BDS_LITTLE_ENDIAN		0x00004000
+ 
+ #if (MAXGROUPS == 2)
+ #define DEFAULT_MAPPING 	0xAA

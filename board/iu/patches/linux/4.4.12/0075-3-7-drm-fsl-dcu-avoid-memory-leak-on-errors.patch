@@ -1,0 +1,47 @@
+From 2840bec9c1b134110c10160e0bce59481e797bee Mon Sep 17 00:00:00 2001
+From: Stefan Agner <stefan@agner.ch>
+Date: Wed, 18 Nov 2015 18:42:46 -0800
+Subject: [PATCH] [3/7] drm/fsl-dcu: avoid memory leak on errors
+
+Improve error handling during CRTC initialization. Especially avoid
+memory leaks in the primary plane initialization error path.
+
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+---
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c  | 7 ++++++-
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c | 1 +
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+index adf9212..b2f56e4 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_crtc.c
+@@ -143,10 +143,15 @@ int fsl_dcu_drm_crtc_create(struct fsl_dcu_drm_device *fsl_dev)
+ 	int ret;
+ 
+ 	primary = fsl_dcu_drm_primary_create_plane(fsl_dev->drm);
++	if (!primary)
++		return -ENOMEM;
++
+ 	ret = drm_crtc_init_with_planes(fsl_dev->drm, crtc, primary, NULL,
+ 					&fsl_dcu_drm_crtc_funcs);
+-	if (ret < 0)
++	if (ret) {
++		primary->funcs->destroy(primary);
+ 		return ret;
++	}
+ 
+ 	drm_crtc_helper_add(crtc, &fsl_dcu_drm_crtc_helper_funcs);
+ 
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c
+index d864d44..7a177fe 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_plane.c
+@@ -187,6 +187,7 @@ static const struct drm_plane_helper_funcs fsl_dcu_drm_plane_helper_funcs = {
+ static void fsl_dcu_drm_plane_destroy(struct drm_plane *plane)
+ {
+ 	drm_plane_cleanup(plane);
++	kfree(plane);
+ }
+ 
+ static const struct drm_plane_funcs fsl_dcu_drm_plane_funcs = {

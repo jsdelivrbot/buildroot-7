@@ -1,0 +1,41 @@
+From d507562b1710cc9d591f318b848596c2febf7d7f Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Mon, 30 Mar 2015 15:06:57 +0200
+Subject: [PATCH] ARM: DT: ls1021a-tqmls1021a: fix qspi flash
+
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index dd81b8e..3672f27 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -135,16 +135,24 @@
+ };
+ 
+ &qspi {
+-	num-cs = <2>;
++	fsl,qspi-has-second-chip;
+ 	status = "okay";
+ 
+-	qflash0: n25q128a13@0 {
+-		compatible = "micron,n25q128a13";
++	qflash0: mt25ql512@0 {
++		compatible = "micron,n25q512ax3";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		spi-max-frequency = <20000000>;
+ 		reg = <0>;
+ 	};
++
++	qflash1: mt25ql512@1 {
++		compatible = "micron,n25q512ax3";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		spi-max-frequency = <20000000>;
++		reg = <1>;
++	};
+ };
+ 
+ &sai1 {

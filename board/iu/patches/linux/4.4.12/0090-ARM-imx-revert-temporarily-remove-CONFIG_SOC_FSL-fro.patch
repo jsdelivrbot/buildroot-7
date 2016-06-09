@@ -1,0 +1,35 @@
+From f6dede5a5ee8aeb5659c9a0e3205751adf0c8e24 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 2 Mar 2016 08:56:14 +0100
+Subject: [PATCH] ARM: imx: revert 'temporarily remove CONFIG_SOC_FSL from
+ LS1021A'
+
+Original commit: cfd074ad860016d3aafd28a06b03d575d17aac0a
+
+Re-enable that symbol in awareness of the breakage in allmodconfig,
+because we need it for EHCI_FSL.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/mach-imx/Kconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 8ceda28..430ad2b 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -565,10 +565,14 @@ config SOC_IMX7D
+ 	help
+ 		This enables support for Freescale i.MX7 Dual processor.
+ 
++config FSL_SOC
++	bool
++
+ config SOC_LS1021A
+ 	bool "Freescale LS1021A support"
+ 	select ARM_GIC
+ 	select HAVE_ARM_ARCH_TIMER
++	select FSL_SOC
+ 	select PCI_DOMAINS if PCI
+ 	select ZONE_DMA if ARM_LPAE
+ 	help

@@ -1,0 +1,32 @@
+From a361f0eb3325073c42c0eb5f840d0f1eed5eafd1 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Mon, 25 Jan 2016 12:25:27 +0100
+Subject: [PATCH] dt: mbls102xa: add phy delay
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index 3b15c90..ff25b86 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -216,6 +216,8 @@
+ 		reg = <0x05>;
+ 		ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
+ 		ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
++		rx-skew-ps = <1750>;
++		tx-skew-ps = <1750>;
+ 		led-cfg1 = <0x6b90>;
+ 		led-cfg2 = <0x0000>;
+ 	};
+@@ -225,6 +227,8 @@
+ 		reg = <0x0d>;
+ 		ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
+ 		ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
++		rx-skew-ps = <1750>;
++		tx-skew-ps = <1750>;
+ 		led-cfg1 = <0x6b90>;
+ 		led-cfg2 = <0x0000>;
+ 	};

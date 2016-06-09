@@ -1,0 +1,28 @@
+From 45ed829fbc7adddfd3efea4c79328973924f5225 Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Thu, 19 Mar 2015 15:44:16 +0100
+Subject: [PATCH] ARM: DT: ls1021a-tqmls102xa: add rtc
+
+add the on board rtc to i2c1
+
+Signed-off-by: Markus Niebel <Markus.Niebel@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index 5793eb8..a1301e6 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -31,6 +31,11 @@
+ 
+ &i2c0 {
+ 	status = "okay";
++	rtc: pcf85063@51 {
++		compatible = "nxp,pcf85063";
++		reg = <0x51>;
++		status = "okay";
++	};
+ };
+ 
+ &i2c1 {

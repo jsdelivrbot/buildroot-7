@@ -1,0 +1,42 @@
+From 960bf8fcd53e6b8907b110f38bb32adaa80b83f6 Mon Sep 17 00:00:00 2001
+From: Stefan Agner <stefan@agner.ch>
+Date: Mon, 8 Feb 2016 13:57:42 -0800
+Subject: [PATCH] drm: introduce bus_flags in drm_display_info
+
+Introduce bus_flags to specify display bus properties like signal
+polarities. This is useful for parallel display buses, e.g. to
+specify the pixel clock or data enable polarity.
+
+Suggested-by: Thierry Reding <thierry.reding@gmail.com>
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+---
+ include/drm/drm_crtc.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/include/drm/drm_crtc.h b/include/drm/drm_crtc.h
+index 3f0c690..6972612 100644
+--- a/include/drm/drm_crtc.h
++++ b/include/drm/drm_crtc.h
+@@ -122,6 +122,14 @@ enum subpixel_order {
+ #define DRM_COLOR_FORMAT_RGB444		(1<<0)
+ #define DRM_COLOR_FORMAT_YCRCB444	(1<<1)
+ #define DRM_COLOR_FORMAT_YCRCB422	(1<<2)
++
++#define DRM_BUS_FLAG_DE_LOW		(1<<0)
++#define DRM_BUS_FLAG_DE_HIGH		(1<<1)
++/* drive data on pos. edge */
++#define DRM_BUS_FLAG_PIXDATA_POSEDGE	(1<<2)
++/* drive data on neg. edge */
++#define DRM_BUS_FLAG_PIXDATA_NEGEDGE	(1<<3)
++
+ /*
+  * Describes a given display (e.g. CRT or flat panel) and its limitations.
+  */
+@@ -143,6 +151,7 @@ struct drm_display_info {
+ 
+ 	const u32 *bus_formats;
+ 	unsigned int num_bus_formats;
++	u32 bus_flags;
+ 
+ 	/* Mask of supported hdmi deep color modes */
+ 	u8 edid_hdmi_dc_modes;

@@ -1,0 +1,44 @@
+From 88eb884b841d5f06e25f4e1e352d2b120e40b0f5 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Mon, 23 Nov 2015 10:24:36 +0100
+Subject: [PATCH] dt: mbls102xa: parallel display support
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index 19e8296..3b15c90 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -51,7 +51,7 @@
+ 	status = "okay";
+ 
+ 	display: display@0 {
+-		bits-per-pixel = <24>;
++		bits-per-pixel = <32>;
+ 
+ 		display-timings {
+ 			native-mode = <&et0700>;
+@@ -127,6 +127,7 @@
+ 
+ &i2c0 {
+ 	status = "okay";
++
+ 	pca9554_0: pca954@20 {
+ 		compatible = "nxp,pca9554";
+ 		reg = <0x20>;
+@@ -189,6 +190,12 @@
+ 
+ 	pca9530: pca9530@60 {
+ 		compatible = "nxp,pca9530";
++		gpio-controller;
++		#gpio-cells = <2>;
++		nxp,pwm = <0x80 0x80>;
++		nxp,psc = <0 0>;
++		nxp,typecodes = <0x5>;
++		nxp,statecodes = <0xb>;
+ 		reg = <0x60>;
+ 		status = "okay";
+ 	};

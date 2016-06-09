@@ -1,0 +1,40 @@
+From b98ad6d22b0a14cfa4c7ae494a1bf53995346a5a Mon Sep 17 00:00:00 2001
+From: Ben Dooks <ben.dooks@codethink.co.uk>
+Date: Wed, 2 Mar 2016 14:17:28 +0100
+Subject: [PATCH] gpio: pca953x: add onsemi,pca9654 id
+
+Add onsemi,pca9654 which is also compatible with the nxp,pca9524 as it
+is an 8bit expander with an interrupt output.
+
+Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ Documentation/devicetree/bindings/gpio/gpio-pca953x.txt | 1 +
+ drivers/gpio/gpio-pca953x.c                             | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/gpio/gpio-pca953x.txt b/Documentation/devicetree/bindings/gpio/gpio-pca953x.txt
+index 13df993..6b4a98f 100644
+--- a/Documentation/devicetree/bindings/gpio/gpio-pca953x.txt
++++ b/Documentation/devicetree/bindings/gpio/gpio-pca953x.txt
+@@ -25,6 +25,7 @@ Required properties:
+ 	ti,tca6416
+ 	ti,tca6424
+ 	ti,tca9539
++	onsemi,pca9654
+ 	exar,xra1202
+ 
+ Example:
+diff --git a/drivers/gpio/gpio-pca953x.c b/drivers/gpio/gpio-pca953x.c
+index ddbbbe5..cad6dc9 100644
+--- a/drivers/gpio/gpio-pca953x.c
++++ b/drivers/gpio/gpio-pca953x.c
+@@ -781,6 +781,8 @@ static const struct of_device_id pca953x_dt_ids[] = {
+ 	{ .compatible = "ti,tca6416", },
+ 	{ .compatible = "ti,tca6424", },
+ 
++	{ .compatible = "onsemi,pca9654" },
++
+ 	{ .compatible = "exar,xra1202", },
+ 	{ }
+ };

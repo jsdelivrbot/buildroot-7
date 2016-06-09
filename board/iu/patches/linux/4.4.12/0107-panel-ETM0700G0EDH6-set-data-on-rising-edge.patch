@@ -1,0 +1,22 @@
+From a548334d15b320616dcba41dfa79517de1b50cfc Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 24 Mar 2016 17:35:07 +0100
+Subject: [PATCH] panel: ETM0700G0EDH6 set data on rising edge
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/gpu/drm/panel/panel-simple.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+index 9a9106d..d205eb3 100644
+--- a/drivers/gpu/drm/panel/panel-simple.c
++++ b/drivers/gpu/drm/panel/panel-simple.c
+@@ -660,6 +660,7 @@ static const struct panel_desc edt_etm0700g0dh6 = {
+ 		.width = 152,
+ 		.height = 91,
+ 	},
++	.bus_flags = DRM_BUS_FLAG_PIXDATA_POSEDGE,
+ };
+ 
+ static const struct drm_display_mode foxlink_fl500wvr00_a0t_mode = {

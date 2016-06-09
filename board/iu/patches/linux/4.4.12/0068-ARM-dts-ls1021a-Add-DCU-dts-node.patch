@@ -1,0 +1,49 @@
+From 8da830f725001fb3de3518da37407dab6c08cd26 Mon Sep 17 00:00:00 2001
+From: Meng Yi <b56799@freescale.com>
+Date: Wed, 24 Feb 2016 12:58:07 +0100
+Subject: [PATCH] ARM: dts: ls1021a: Add DCU dts node.
+
+Signed-off-by: Alison Wang <b18965@freescale.com>
+Signed-off-by: Xiubo Li <lixiubo@cmss.chinamobile.com>
+Signed-off-by: Jianwei Wang <jianwei.wang.chn@gmail.com>
+Signed-off-by: Meng Yi <b56799@freescale.com>
+Signed-off-by: Shawn Guo <shawnguo@kernel.org>
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 2 +-
+ arch/arm/boot/dts/ls1021a.dtsi                    | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index a80e444..9f8a010 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -71,7 +71,7 @@
+ 	xceiver-supply = <&reg_3p3v>;
+ };
+ 
+-&dcu0 {
++&dcu {
+ 	fsl,panel = <&etm0700>;
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 5b0216b..355fb13 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -601,11 +601,11 @@
+ 				 <&platform_clk 1>;
+ 		};
+ 
+-		dcu0: dcu@2ce0000 {
+-			compatible = "fsl,vf610-dcu";
+-			reg = <0x0 0x2ce000 0x0 0x10000>;
++		dcu: dcu@2ce0000 {
++			compatible = "fsl,ls1021a-dcu";
++			reg = <0x0 0x2ce0000 0x0 0x10000>;
+ 			interrupts = <GIC_SPI 172 IRQ_TYPE_LEVEL_HIGH>;
+-			clocks = <&platform_clk 1>;
++			clocks = <&platform_clk 0>;
+ 			clock-names = "dcu";
+ 			big-endian;
+ 			status = "disabled";

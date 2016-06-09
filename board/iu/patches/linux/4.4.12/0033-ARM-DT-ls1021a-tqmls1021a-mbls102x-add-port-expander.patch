@@ -1,0 +1,32 @@
+From e7ec33a7e5f13126a8504300bd221850f774c6b0 Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Thu, 19 Mar 2015 18:10:24 +0100
+Subject: [PATCH] ARM: DT: ls1021a-tqmls1021a-mbls102x: add port expander 2
+
+Add expander pca9554 @21 to i2c0
+
+The expander uses IRQ5: ID 201 - 32 -> 169
+
+Signed-off-by: Markus Niebel <Markus.Niebel@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index f11a732..6beb9b5 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -72,6 +72,13 @@
+ 		status = "okay";
+ 	};
+ 
++	pca9554_1: pca954@21 {
++		compatible = "nxp,pca9554";
++		reg = <0x21>;
++/*		interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>; */
++		status = "okay";
++	};
++
+ 	pca9530: pca9530@60 {
+ 		compatible = "nxp,pca9530";
+ 		reg = <0x60>;

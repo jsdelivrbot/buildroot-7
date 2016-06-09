@@ -1,0 +1,249 @@
+From 8a0b92a44f12d92051879314a5b828df0ca3f4ff Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Fri, 8 May 2015 09:05:15 +0200
+Subject: [PATCH] arm: dt: add tqmls1021a
+
+add devicetree for TQMLS1021a SOM and MBLS102x mainboard
+---
+ arch/arm/boot/dts/Makefile                        |   1 +
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 116 ++++++++++++++++++++++
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi         |  95 ++++++++++++++++++
+ 3 files changed, 212 insertions(+)
+ create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+ create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index 30bbc37..7cf46e1 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -353,6 +353,7 @@ dtb-$(CONFIG_SOC_IMX7D) += \
+ 	imx7d-sdb.dtb
+ dtb-$(CONFIG_SOC_LS1021A) += \
+ 	ls1021a-qds.dtb \
++	ls1021a-tqmls1021a-mbls102x.dtb \
+ 	ls1021a-twr.dtb
+ dtb-$(CONFIG_SOC_VF610) += \
+ 	vf500-colibri-eval-v3.dtb \
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+new file mode 100644
+index 0000000..a6c1658
+--- /dev/null
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -0,0 +1,116 @@
++/*
++ * Copyright 2013-2014 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/dts-v1/;
++#include "ls1021a-tqmls1021a.dtsi"
++
++/ {
++	model = "TQMLS1021A SOM on MBLS102x";
++
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		reg_3p3v: regulator@0 {
++			compatible = "regulator-fixed";
++			reg = <0>;
++			regulator-name = "3P3V";
++			regulator-min-microvolt = <3300000>;
++			regulator-max-microvolt = <3300000>;
++			regulator-always-on;
++		};
++	};
++};
++
++&dcu0 {
++	display = <&display>;
++	status = "okay";
++
++	display: display@0 {
++		bits-per-pixel = <24>;
++
++		display-timings {
++			native-mode = <&timing0>;
++			timing0: nl4827hc19 {
++				clock-frequency = <10870000>;
++				hactive = <480>;
++				vactive = <272>;
++				hback-porch = <2>;
++				hfront-porch = <2>;
++				vback-porch = <2>;
++				vfront-porch = <2>;
++				hsync-len = <41>;
++				vsync-len = <4>;
++				hsync-active = <1>;
++				vsync-active = <1>;
++			};
++		};
++	};
++};
++
++&duart0 {
++	status = "okay";
++};
++
++&duart1 {
++	status = "okay";
++};
++
++&i2c0 {
++	status = "okay";
++};
++
++&i2c1 {
++	status = "okay";
++};
++
++&i2c2 {
++	status = "okay";
++};
++
++&lpuart0 {
++	status = "okay";
++};
++
++&uqe {
++	tdma: ucc@2000 {
++		compatible = "fsl,ucc-tdm";
++		rx-clock-name = "clk8";
++		tx-clock-name = "clk9";
++		fsl,rx-sync-clock = "rsync_pin";
++		fsl,tx-sync-clock = "tsync_pin";
++		fsl,tx-timeslot = <0xfffffffe>;
++		fsl,rx-timeslot = <0xfffffffe>;
++		fsl,tdm-framer-type = "e1";
++		fsl,tdm-mode = "normal";
++		fsl,tdm-id = <0>;
++		fsl,siram-entry-id = <0>;
++	};
++
++	serial: ucc@2200 {
++		device_type = "serial";
++		compatible = "ucc_uart";
++		port-number = <1>;
++		rx-clock-name = "brg2";
++		tx-clock-name = "brg2";
++	};
++};
++
++&pwm6 {
++	status = "okay";
++};
++
++&pwm7 {
++	status = "okay";
++};
++
++&sai1 {
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+new file mode 100644
+index 0000000..5793eb8
+--- /dev/null
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -0,0 +1,95 @@
++/*
++ * Copyright 2013-2014 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include "ls1021a.dtsi"
++
++/ {
++	model = "TQMLS1021A SOM";
++
++	clocks {
++		sys_mclk: clock {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <24576000>;
++		};
++	};
++};
++
++&duart0 {
++	status = "okay";
++};
++
++&duart1 {
++	status = "okay";
++};
++
++&i2c0 {
++	status = "okay";
++};
++
++&i2c1 {
++	status = "okay";
++};
++
++&i2c2 {
++	status = "okay";
++};
++
++&lpuart0 {
++	status = "okay";
++};
++
++&uqe {
++	tdma: ucc@2000 {
++		compatible = "fsl,ucc-tdm";
++		rx-clock-name = "clk8";
++		tx-clock-name = "clk9";
++		fsl,rx-sync-clock = "rsync_pin";
++		fsl,tx-sync-clock = "tsync_pin";
++		fsl,tx-timeslot = <0xfffffffe>;
++		fsl,rx-timeslot = <0xfffffffe>;
++		fsl,tdm-framer-type = "e1";
++		fsl,tdm-mode = "normal";
++		fsl,tdm-id = <0>;
++		fsl,siram-entry-id = <0>;
++	};
++
++	serial: ucc@2200 {
++		device_type = "serial";
++		compatible = "ucc_uart";
++		port-number = <1>;
++		rx-clock-name = "brg2";
++		tx-clock-name = "brg2";
++	};
++};
++
++&pwm6 {
++	status = "okay";
++};
++
++&pwm7 {
++	status = "okay";
++};
++
++&qspi {
++	num-cs = <2>;
++	status = "okay";
++
++	qflash0: n25q128a13@0 {
++		compatible = "micron,n25q128a13";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		spi-max-frequency = <20000000>;
++		reg = <0>;
++	};
++};
++
++&sai1 {
++	status = "okay";
++};

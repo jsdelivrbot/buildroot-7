@@ -1,0 +1,68 @@
+From 6fd6a412390db9d07e544e3cc42dc551651bf8ef Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 20 Jan 2016 23:37:38 +0100
+Subject: [PATCH] arm/dts: ls1021a: Add nodes for flexcan devices present on 
+ LS1021A-Rev2 SoC
+
+This patch adds the device nodes for flexcan controller(s) present
+on LS1021A-Rev2 SoC.
+
+Signed-off-by: Bhupesh Sharma <bhupesh.sharma@freescale.com>
+Signed-off-by: Sakar Arora <Sakar.Arora@freescale.com>
+Change-Id: Ia301d4db49d337e37def2e6667b6e4e1586fd8fc
+Reviewed-on: http://git.am.freescale.net:8181/38096
+Tested-by: Review Code-CDREVIEW <CDREVIEW@freescale.com>
+Reviewed-by: Zhengxiong Jin <Jason.Jin@freescale.com>
+[ only ls1021a.dtsi ]
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 9430a99..509b2be 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -524,6 +524,42 @@
+ 			};
+ 		};
+ 
++		can0: can@2a70000 {
++			compatible = "fsl,ls1021ar2-flexcan";
++			reg = <0x0 0x2a70000 0x0 0x1000>;
++			interrupts = <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&platform_clk 1>, <&platform_clk 1>;
++			clock-names = "ipg", "per";
++			little-endian;
++		};
++
++		can1: can@2a80000 {
++			compatible = "fsl,ls1021ar2-flexcan";
++			reg = <0x0 0x2a80000 0x0 0x1000>;
++			interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&platform_clk 1>, <&platform_clk 1>;
++			clock-names = "ipg", "per";
++			little-endian;
++		};
++
++		can2: can@2a90000 {
++			compatible = "fsl,ls1021ar2-flexcan";
++			reg = <0x0 0x2a90000 0x0 0x1000>;
++			interrupts = <GIC_SPI 128 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&platform_clk 1>, <&platform_clk 1>;
++			clock-names = "ipg", "per";
++			little-endian;
++		};
++
++		can3: can@2aa0000 {
++			compatible = "fsl,ls1021ar2-flexcan";
++			reg = <0x0 0x2aa0000 0x0 0x1000>;
++			interrupts = <GIC_SPI 129 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&platform_clk 1>, <&platform_clk 1>;
++			clock-names = "ipg", "per";
++			little-endian;
++		};
++
+ 		usb@8600000 {
+ 			compatible = "fsl-usb2-dr-v2.5", "fsl-usb2-dr";
+ 			reg = <0x0 0x8600000 0x0 0x1000>;

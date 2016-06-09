@@ -1,0 +1,26 @@
+From d4da09789263d38441cbc03e424d0e7038ec0025 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 20 Jan 2016 15:54:00 +0100
+Subject: [PATCH] dt: tqmls102xa: sgmii support
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index b23d199..7f53525 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -84,8 +84,9 @@
+ };
+ 
+ &mdio0 {
+-	tbi1: tbi-phy@1f {
+-		reg = <0x1f>;
++	tbi1: tbi-phy@8 {
++		compatible = "fsl,gianfar-tbi";
++		reg = <0x8>;
+ 		device_type = "tbi-phy";
+ 	};
+ };

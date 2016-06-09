@@ -1,0 +1,34 @@
+From ac1418172c1d53650fb9bdfe686481f40947a2b4 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Mon, 28 Sep 2015 17:10:30 +0200
+Subject: [PATCH] ARM: dts: ls1021a: add qspi node
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 9430a99..8ad9361 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -131,6 +131,19 @@
+ 			big-endian;
+ 		};
+ 
++		qspi: quadspi@1550000 {
++			compatible = "fsl,vf610-qspi";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x1550000 0x0 0x10000>;
++			interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH>;
++			clock-names = "qspi_en", "qspi";
++			clocks = <&platform_clk 1>, <&platform_clk 1>;
++			big-endian;
++			amba-base = <0x40000000>;
++			status = "disabled";
++		};
++
+ 		esdhc: esdhc@1560000 {
+ 			compatible = "fsl,esdhc";
+ 			reg = <0x0 0x1560000 0x0 0x10000>;

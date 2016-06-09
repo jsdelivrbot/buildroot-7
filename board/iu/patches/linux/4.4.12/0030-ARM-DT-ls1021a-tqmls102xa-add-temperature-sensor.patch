@@ -1,0 +1,55 @@
+From 6cea38e54b5487ca02664d46ce63c98f5ded7993 Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Thu, 19 Mar 2015 16:24:18 +0100
+Subject: [PATCH] ARM: DT: ls1021a-tqmls102xa: add temperature sensor
+
+add the on board sa56004 sensor
+
+since the irq will be handled by pmc and not by main
+cpu, no irq prop is needed
+
+Signed-off-by: Markus Niebel <Markus.Niebel@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index bd31a10..9e3720c 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -19,6 +19,21 @@
+ 			clock-frequency = <24576000>;
+ 		};
+ 	};
++
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		reg_3p3v_som: regulator@0 {
++			compatible = "regulator-fixed";
++			reg = <0>;
++			regulator-name = "3P3V_SOM";
++			regulator-min-microvolt = <3300000>;
++			regulator-max-microvolt = <3300000>;
++			regulator-always-on;
++		};
++	};
+ };
+ 
+ &duart0 {
+@@ -31,6 +46,13 @@
+ 
+ &i2c0 {
+ 	status = "okay";
++	sensor0: sa56004@4c {
++		compatible = "nxp,sa56004";
++		reg = <0x4c>;
++		vcc-supply = <&reg_3p3v_som>;
++		status = "okay";
++	};
++
+ 	eeprom0: 24c64@50 {
+ 		compatible = "atmel,24c64";
+ 		reg = <0x50>;

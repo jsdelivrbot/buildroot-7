@@ -1,0 +1,50 @@
+From ab5cb85dec75dd3998de06265d1a41f4812354df Mon Sep 17 00:00:00 2001
+From: Stefan Agner <stefan@agner.ch>
+Date: Wed, 18 Nov 2015 18:42:44 -0800
+Subject: [PATCH] [1/7] drm/fsl-dcu: specify volatile registers
+
+Since we are using cached registers, we need to specify volatile
+registers explicitly to avoid reading their value from the cache.
+This allows to read the correct interrupt status in fsl_dcu_drm_irq
+and clear the asserted bits only.
+
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+---
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
+index 1930234..d6e27af 100644
+--- a/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
++++ b/drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c
+@@ -28,11 +28,21 @@
+ #include "fsl_dcu_drm_crtc.h"
+ #include "fsl_dcu_drm_drv.h"
+ 
++static bool fsl_dcu_drm_is_volatile_reg(struct device *dev, unsigned int reg)
++{
++	if (reg == DCU_INT_STATUS || reg == DCU_UPDATE_MODE)
++		return true;
++
++	return false;
++}
++
+ static const struct regmap_config fsl_dcu_regmap_config = {
+ 	.reg_bits = 32,
+ 	.reg_stride = 4,
+ 	.val_bits = 32,
+ 	.cache_type = REGCACHE_RBTREE,
++
++	.volatile_reg = fsl_dcu_drm_is_volatile_reg,
+ };
+ 
+ static int fsl_dcu_drm_irq_init(struct drm_device *dev)
+@@ -129,7 +139,7 @@ static irqreturn_t fsl_dcu_drm_irq(int irq, void *arg)
+ 	if (int_status & DCU_INT_STATUS_VBLANK)
+ 		drm_handle_vblank(dev, 0);
+ 
+-	ret = regmap_write(fsl_dev->regmap, DCU_INT_STATUS, 0xffffffff);
++	ret = regmap_write(fsl_dev->regmap, DCU_INT_STATUS, int_status);
+ 	if (ret)
+ 		dev_err(dev->dev, "set DCU_INT_STATUS failed\n");
+ 	ret = regmap_write(fsl_dev->regmap, DCU_UPDATE_MODE,

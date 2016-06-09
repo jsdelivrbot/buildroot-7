@@ -1,0 +1,38 @@
+From 51fb42e3a118b09eb32ece36be4b9c9fd9a25e9b Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 7 Apr 2016 10:31:22 +0200
+Subject: [PATCH] arm/dt: ls1021a: add msi-parent for pcie nodes
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 4b47ec4..0995dc8 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -124,6 +124,7 @@
+ 			      <0x0 0x1404000 0x0 0x2000>,
+ 			      <0x0 0x1406000 0x0 0x2000>;
+ 			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_HIGH)>;
++			msi-controller;
+ 
+ 		};
+ 
+@@ -794,6 +795,7 @@
+ 					<0000 0 0 2 &gic GIC_SPI 188 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 3 &gic GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 4 &gic GIC_SPI 192 IRQ_TYPE_LEVEL_HIGH>;
++			msi-parent = <&gic>;
+ 		};
+ 
+ 		pcie@3500000 {
+@@ -816,6 +818,7 @@
+ 					<0000 0 0 2 &gic GIC_SPI 189 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 3 &gic GIC_SPI 191 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 4 &gic GIC_SPI 193 IRQ_TYPE_LEVEL_HIGH>;
++			msi-parent = <&gic>;
+ 		};
+ 	};
+ };

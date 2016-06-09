@@ -1,0 +1,25 @@
+From afc210447e3d60b2e99fffbba5e034f21015781a Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Tue, 1 Mar 2016 18:15:51 +0100
+Subject: [PATCH] ARM: dts: mbls102xa: add sata node to dts
+
+Added sata node to mbls102xa board to support
+sata function.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index 9f8a010..637e27a 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -276,3 +276,7 @@
+ &sai1 {
+ 	status = "okay";
+ };
++
++&sata {
++	status = "okay";
++};

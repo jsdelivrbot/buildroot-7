@@ -1,0 +1,30 @@
+From 5e41619c89a9c99d95c3ed9e9da30766d517cb30 Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Thu, 7 May 2015 14:44:55 +0200
+Subject: [PATCH] ARM: DT: ls102xa-mbls102x: add rgmii phy led configuration
+
+Signed-off-by: Markus Niebel <Markus.Niebel@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index ed88fa0..97f5d0f 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -168,11 +168,15 @@
+ 		reg = <0x05>;
+ 		ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
+ 		ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
++		led-cfg1 = <0x6b90>;
++		led-cfg2 = <0x0000>;
+ 	};
+ 	rgmii_phy0d: ethernet-phy@0d {
+ 		reg = <0x0d>;
+ 		ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
+ 		ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_75_NS>;
++		led-cfg1 = <0x6b90>;
++		led-cfg2 = <0x0000>;
+ 	};
+ 	sgmii_phy13: ethernet-phy@13 {
+ 		reg = <0x13>;

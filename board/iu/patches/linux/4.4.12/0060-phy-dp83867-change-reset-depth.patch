@@ -1,0 +1,30 @@
+From 8db911ee6b50001fc1a554c1c3f586d7f812bdbe Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 17 Feb 2016 16:29:06 +0100
+Subject: [PATCH] phy: dp83867: change reset depth
+
+Change Reset from SW_RESET (including registers) to
+SW_RESTART (not including registers).
+
+Otherwise this resets the source of CLK_OUT in
+IOMUX_CFG register, leading to a wrong frequency
+on that line used as reference clock input.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/net/phy/dp83867.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/phy/dp83867.c b/drivers/net/phy/dp83867.c
+index e564cfb..7e6acbb 100644
+--- a/drivers/net/phy/dp83867.c
++++ b/drivers/net/phy/dp83867.c
+@@ -208,7 +208,7 @@ static int dp83867_phy_reset(struct phy_device *phydev)
+ {
+ 	int err;
+ 
+-	err = phy_write(phydev, DP83867_CTRL, DP83867_SW_RESET);
++	err = phy_write(phydev, DP83867_CTRL, DP83867_SW_RESTART);
+ 	if (err < 0)
+ 		return err;
+ 

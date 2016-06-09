@@ -1,0 +1,37 @@
+From f3f8eadfb380f88dc80c5cf422f1a9d9068acb3e Mon Sep 17 00:00:00 2001
+From: Yangbo Lu <yangbo.lu@nxp.com>
+Date: Wed, 27 Apr 2016 17:01:46 +0200
+Subject: [PATCH] ARM: dts: ls1021a: add 1588 timer node
+
+Add the 1588 timer node for ls1021a platform to
+support gianfar ptp driver.
+
+Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 9cbadde..d493416 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -632,6 +632,18 @@
+ 			reg = <0x0 0x2d24000 0x0 0x4000>;
+ 		};
+ 
++		ptp_clock@2d10e00 {
++			compatible = "fsl,etsec-ptp";
++			reg = <0x0 0x2d10e00 0x0 0xb0>;
++			interrupts = <GIC_SPI 173 IRQ_TYPE_LEVEL_HIGH>;
++			fsl,tclk-period = <5>;
++			fsl,tmr-prsc    = <2>;
++			fsl,tmr-add     = <0xaaaaaaab>;
++			fsl,tmr-fiper1  = <999999990>;
++			fsl,tmr-fiper2  = <99990>;
++			fsl,max-adj     = <499999999>;
++		};
++
+ 		enet0: ethernet@2d10000 {
+ 			compatible = "fsl,etsec2";
+ 			device_type = "network";

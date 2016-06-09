@@ -1,0 +1,68 @@
+From ef3a69512319448ac44563e57512930ec49c55ce Mon Sep 17 00:00:00 2001
+From: Tang Yuantian <Yuantian.Tang@freescale.com>
+Date: Wed, 24 Feb 2016 13:13:56 +0100
+Subject: [PATCH] ARM: dts: ls1021a: add sata node to dts
+
+Added sata node to ls1021aqds and ls1021atwr board to support
+sata function.
+
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Shawn Guo <shawnguo@kernel.org>
+---
+ arch/arm/boot/dts/ls1021a-qds.dts |  4 ++++
+ arch/arm/boot/dts/ls1021a-twr.dts |  4 ++++
+ arch/arm/boot/dts/ls1021a.dtsi    | 11 +++++++++++
+ 3 files changed, 19 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-qds.dts b/arch/arm/boot/dts/ls1021a-qds.dts
+index 0521e68..9408753 100644
+--- a/arch/arm/boot/dts/ls1021a-qds.dts
++++ b/arch/arm/boot/dts/ls1021a-qds.dts
+@@ -320,6 +320,10 @@
+ 	status = "okay";
+ };
+ 
++&sata {
++	status = "okay";
++};
++
+ &uart0 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/ls1021a-twr.dts b/arch/arm/boot/dts/ls1021a-twr.dts
+index fbb89d1..d44f4d5 100644
+--- a/arch/arm/boot/dts/ls1021a-twr.dts
++++ b/arch/arm/boot/dts/ls1021a-twr.dts
+@@ -212,6 +212,10 @@
+ 	status = "okay";
+ };
+ 
++&sata {
++	status = "okay";
++};
++
+ &uart0 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 355fb13..9fef53b 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -166,6 +166,17 @@
+ 			status = "disabled";
+ 		};
+ 
++		sata: sata@3200000 {
++			compatible = "fsl,ls1021a-ahci";
++			reg = <0x0 0x3200000 0x0 0x10000>,
++			      <0x0 0x20220520 0x0 0x4>;
++			reg-names = "ahci", "sata-ecc";
++			interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&platform_clk 1>;
++			dma-coherent;
++			status = "disabled";
++		};
++
+ 		scfg: scfg@1570000 {
+ 			compatible = "fsl,ls1021a-scfg", "syscon";
+ 			reg = <0x0 0x1570000 0x0 0x10000>;

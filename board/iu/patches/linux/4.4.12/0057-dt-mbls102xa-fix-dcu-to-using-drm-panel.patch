@@ -1,0 +1,63 @@
+From fb5d5debc1a9d8dbc6d34bcd8b68d7a0c6d9bb0b Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 2 Mar 2016 18:16:22 +0100
+Subject: [PATCH] dt: mbls102xa: fix dcu to using drm/panel
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 41 +----------------------
+ 1 file changed, 1 insertion(+), 40 deletions(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index 89196e1..db181e6 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -72,47 +72,8 @@
+ };
+ 
+ &dcu0 {
+-	display = <&display>;
++	fsl,panel = <&etm0700>;
+ 	status = "okay";
+-
+-	display: display@0 {
+-		bits-per-pixel = <32>;
+-
+-		display-timings {
+-			native-mode = <&et0700>;
+-
+-			timing0: nl4827hc19 {
+-				clock-frequency = <10870000>;
+-				hactive = <480>;
+-				vactive = <272>;
+-				hback-porch = <2>;
+-				hfront-porch = <2>;
+-				vback-porch = <2>;
+-				vfront-porch = <2>;
+-				hsync-len = <41>;
+-				vsync-len = <4>;
+-				hsync-active = <1>;
+-				vsync-active = <1>;
+-			};
+-
+-			/* ET0700G0DH6 + ETM0700G0DH6 */
+-			et0700: 800x480p62 {
+-				clock-frequency = <33260000>;
+-				hactive = <800>;
+-				vactive = <480>;
+-				hback-porch = <216>;
+-				hfront-porch = <40>;
+-				vback-porch = <33>;
+-				vfront-porch = <10>;
+-				hsync-len = <128>;
+-				vsync-len = <2>;
+-				hsync-active = <0>;
+-				vsync-active = <0>;
+-				de-active = <1>;
+-				pixelclk-active = <0>;
+-			};
+-		};
+-	};
+ };
+ 
+ &esdhc {
