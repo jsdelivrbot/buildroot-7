@@ -57,7 +57,10 @@ SYSTEMD_CONF_OPTS += \
 	--disable-hwdb \
 	--disable-hibernate \
 	--with-sysvinit-path="" \
-	--with-sysvrcnd-path=""
+	--with-sysvrcnd-path="" \
+	--disable-efi \
+	--disable-tests \
+	--disable-manpages
 
 # why disable those?
 #  --disable-dbus \
