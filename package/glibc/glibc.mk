@@ -1,6 +1,6 @@
 ################################################################################
 #
-# glibc/eglibc
+# glibc
 #
 ################################################################################
 
@@ -15,7 +15,7 @@ GLIBC_LICENSE_FILES = $(addprefix $(GLIBC_SRC_SUBDIR)/,COPYING COPYING.LIB LICEN
 # glibc is part of the toolchain so disable the toolchain dependency
 GLIBC_ADD_TOOLCHAIN_DEPENDENCY = NO
 
-# Before (e)glibc is configured, we must have the first stage
+# Before glibc is configured, we must have the first stage
 # cross-compiler and the kernel headers
 GLIBC_DEPENDENCIES = host-gcc-initial linux-headers host-gawk
 
@@ -64,7 +64,7 @@ endif
 #  2. We have to execute the configure script with bash and not sh.
 #
 # Note that as mentionned in
-# http://patches.openembedded.org/patch/38849/, eglibc/glibc must be
+# http://patches.openembedded.org/patch/38849/, glibc must be
 # built with -O2, so we pass our own CFLAGS and CXXFLAGS below.
 define GLIBC_CONFIGURE_CMDS
 	mkdir -p $(@D)/build

@@ -385,6 +385,10 @@ config BR2_DEPRECATED_SINCE_2016_05
 	bool
 	default y
 
+config BR2_DEPRECATED_SINCE_2016_08
+	bool
+	default y
+
 endif
 
 config BR2_ENABLE_DEBUG
@@ -723,6 +727,17 @@ config BR2_COMPILER_PARANOID_UNSAFE_PATH
 	  and external toolchain backends (through the toolchain wrapper).
 
 endmenu
+
+config BR2_REPRODUCIBLE
+	bool "Make the build reproducible (experimental)"
+	help
+	  This option will remove all sources of non-reproducibility
+	  from the build process. For a given Buildroot configuration,
+	  this allows to generate exactly identical binaries from one
+	  build to the other, including on different machines.
+
+	  This is labeled as an experimental feature, as not all
+	  packages behave properly to ensure reproducibility.
 
 endmenu
 

@@ -4,10 +4,12 @@
 #
 ################################################################################
 
-AUDIT_VERSION = 2.4.4
+AUDIT_VERSION = 2.6.3
 AUDIT_SITE = http://people.redhat.com/sgrubb/audit
 AUDIT_LICENSE = GPLv2
 AUDIT_LICENSE_FILES = COPYING
+# 0002-Fix-usage-of-audit_status.feature_bitmap.patch
+AUDIT_AUTORECONF = YES
 
 AUDIT_INSTALL_STAGING = YES
 

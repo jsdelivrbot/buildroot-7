@@ -36,7 +36,6 @@ FFMPEG_CONF_OPTS = \
 	--enable-mdct \
 	--enable-rdft \
 	--disable-crystalhd \
-	--disable-vdpau \
 	--disable-dxva2 \
 	--enable-runtime-cpudetect \
 	--disable-hardcoded-tables \
@@ -247,6 +246,13 @@ else
 FFMPEG_CONF_OPTS += --disable-vaapi
 endif
 
+ifeq ($(BR2_PACKAGE_LIBVDPAU),y)
+FFMPEG_CONF_OPTS += --enable-vdpau
+FFMPEG_DEPENDENCIES += libvdpau
+else
+FFMPEG_CONF_OPTS += --disable-vdpau
+endif
+
 ifeq ($(BR2_PACKAGE_OPUS),y)
 FFMPEG_CONF_OPTS += --enable-libopus
 FFMPEG_DEPENDENCIES += opus
@@ -430,11 +436,9 @@ FFMPEG_CONF_OPTS += --enable-neon
 endif
 
 ifeq ($(BR2_MIPS_SOFT_FLOAT),y)
-FFMPEG_CONF_OPTS += \
-	--disable-mipsfpu
+FFMPEG_CONF_OPTS += --disable-mipsfpu
 else
-FFMPEG_CONF_OPTS += \
-	--enable-mipsfpu
+FFMPEG_CONF_OPTS += --enable-mipsfpu
 endif
 
 ifeq ($(BR2_mips_32r2),y)

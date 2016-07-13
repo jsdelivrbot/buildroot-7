@@ -145,6 +145,43 @@ endif
 ###############################################################################
 comment "Legacy options removed in 2016.08"
 
+config BR2_PACKAGE_SYSTEMD_COMPAT
+	bool "systemd compatibility libraries have been removed"
+	help
+	  The systemd option to enable the compatibility libraries has
+	  been removed. Theses libraries have been useless since a few
+	  version, and have been fully dropped from the source since
+	  v230.
+
+config BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_LIVEADDER
+	bool "gst1-plugins-bad liveadder plugin removed"
+	select BR2_LEGACY
+	select BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_AUDIOMIXER
+	help
+	  The functionality of the liveadder plugin of the
+	  gst1-plugins-bad package has been merged into audiomixer.
+
+config BR2_PACKAGE_LIBFSLVPUWRAP
+	bool "libfslvpuwrap has been renamed to imx-vpuwrap"
+	select BR2_LEGACY
+	select BR2_PACKAGE_IMX_VPUWRAP
+	help
+	  The libfslvpuwrap has been renamed to match the renamed package.
+
+config BR2_PACKAGE_LIBFSLPARSER
+	bool "libfslparser has been renamed to imx-parser"
+	select BR2_LEGACY
+	select BR2_PACKAGE_IMX_PARSER
+	help
+	  The libfslparser has been renamed to match the renamed package.
+
+config BR2_PACKAGE_LIBFSLCODEC
+	bool "libfslcodec has been renamed to imx-codec"
+	select BR2_LEGACY
+	select BR2_PACKAGE_IMX_CODEC
+	help
+	  The libfslcodec has been renamed to match the renamed package.
+
 config BR2_PACKAGE_UBOOT_TOOLS_MKIMAGE_FIT_SIGNATURE_SUPPORT
 	bool "FIT support in uboot-tools has been refactored"
 	select BR2_LEGACY

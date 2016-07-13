@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-E2FSPROGS_VERSION = 1.43
+E2FSPROGS_VERSION = 1.43.1
 E2FSPROGS_SOURCE = e2fsprogs-$(E2FSPROGS_VERSION).tar.xz
 E2FSPROGS_SITE = $(BR2_KERNEL_MIRROR)/linux/kernel/people/tytso/e2fsprogs/v$(E2FSPROGS_VERSION)
 E2FSPROGS_LICENSE = GPLv2, libuuid BSD-3c, libss and libet MIT-like with advertising clause
@@ -12,6 +12,14 @@ E2FSPROGS_LICENSE_FILES = NOTICE lib/uuid/COPYING lib/ss/mit-sipb-copyright.h li
 E2FSPROGS_INSTALL_STAGING = YES
 E2FSPROGS_INSTALL_STAGING_OPTS = DESTDIR=$(STAGING_DIR) install-libs
 E2FSPROGS_DEPENDENCIES = host-pkgconf util-linux
+# we don't have a host-util-linux
+HOST_E2FSPROGS_DEPENDENCIES = host-pkgconf
+
+# For 0002-fuse2fs-might-need-librt.patch
+# host-gettext for the gettext macro file needed at autoreconf time
+E2FSPROGS_AUTORECONF = YES
+E2FSPROGS_DEPENDENCIES += host-gettext
+HOST_E2FSPROGS_DEPENDENCIES += host-gettext
 
 # e4defrag doesn't build on older systems like RHEL5.x, and we don't
 # need it on the host anyway.
@@ -61,8 +69,6 @@ E2FSPROGS_MAKE_OPTS = \
 define HOST_E2FSPROGS_INSTALL_CMDS
 	$(HOST_MAKE_ENV) $(MAKE) -C $(@D) install install-libs
 endef
-# we don't have a host-util-linux
-HOST_E2FSPROGS_DEPENDENCIES = host-pkgconf
 
 # binaries to keep or remove
 E2FSPROGS_BINTARGETS_$(BR2_PACKAGE_E2FSPROGS_BADBLOCKS) += usr/sbin/badblocks
@@ -147,15 +153,6 @@ endef
 
 ifeq ($(BR2_PACKAGE_E2FSPROGS_TUNE2FS),y)
 E2FSPROGS_POST_INSTALL_TARGET_HOOKS += E2FSPROGS_TARGET_TUNE2FS_SYMLINK
-endif
-
-# systemd really wants to have fsck in /sbin
-define E2FSPROGS_TARGET_FSCK_SYMLINK
-	ln -sf ../usr/sbin/fsck $(TARGET_DIR)/sbin/fsck
-endef
-
-ifeq ($(BR2_PACKAGE_E2FSPROGS_FSCK),y)
-E2FSPROGS_POST_INSTALL_TARGET_HOOKS += E2FSPROGS_TARGET_FSCK_SYMLINK
 endif
 
 $(eval $(autotools-package))

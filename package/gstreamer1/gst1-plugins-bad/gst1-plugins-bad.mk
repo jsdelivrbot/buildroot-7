@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-GST1_PLUGINS_BAD_VERSION = 1.8.1
+GST1_PLUGINS_BAD_VERSION = 1.8.2
 GST1_PLUGINS_BAD_SOURCE = gst-plugins-bad-$(GST1_PLUGINS_BAD_VERSION).tar.xz
 GST1_PLUGINS_BAD_SITE = http://gstreamer.freedesktop.org/src/gst-plugins-bad
 GST1_PLUGINS_BAD_INSTALL_STAGING = YES
@@ -13,17 +13,11 @@ GST1_PLUGINS_BAD_LICENSE_FILES = COPYING COPYING.LIB
 # enabled.
 GST1_PLUGINS_BAD_LICENSE = LGPLv2+ LGPLv2.1+
 
-GST1_PLUGINS_BAD_AUTORECONF = YES
-GST1_PLUGINS_BAD_AUTORECONF_OPTS = -I $(@D)/common/m4
-GST1_PLUGINS_BAD_GETTEXTIZE = YES
-
 GST1_PLUGINS_BAD_CONF_OPTS = \
 	--disable-examples \
 	--disable-valgrind \
 	--disable-directsound \
-	--disable-wsapi \
 	--disable-direct3d \
-	--disable-direct3d9 \
 	--disable-winks \
 	--disable-android_media \
 	--disable-apple_media \
@@ -39,7 +33,6 @@ GST1_PLUGINS_BAD_CONF_OPTS += \
 	--disable-voamrwbenc \
 	--disable-bs2b \
 	--disable-chromaprint \
-	--disable-dash \
 	--disable-dc1394 \
 	--disable-dts \
 	--disable-resindvd \
@@ -51,7 +44,7 @@ GST1_PLUGINS_BAD_CONF_OPTS += \
 	--disable-ladspa \
 	--disable-lv2 \
 	--disable-libde265 \
-	--disable-strp \
+	--disable-srtp \
 	--disable-linsys \
 	--disable-modplug \
 	--disable-mimic \
@@ -73,11 +66,8 @@ GST1_PLUGINS_BAD_CONF_OPTS += \
 	--disable-vdpau \
 	--disable-schro \
 	--disable-zbar \
-	--disable-rtmp \
 	--disable-spandsp \
-	--disable-gsettings \
 	--disable-sndio \
-	--disable-hls \
 	--disable-gtk3 \
 	--disable-qt
 
@@ -378,12 +368,6 @@ ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_LIBRFB),y)
 GST1_PLUGINS_BAD_CONF_OPTS += --enable-librfb
 else
 GST1_PLUGINS_BAD_CONF_OPTS += --disable-librfb
-endif
-
-ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_LIVEADDER),y)
-GST1_PLUGINS_BAD_CONF_OPTS += --enable-liveadder
-else
-GST1_PLUGINS_BAD_CONF_OPTS += --disable-liveadder
 endif
 
 ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_MIDI),y)

@@ -24,6 +24,11 @@
 # You shouldn't need to mess with anything beyond this point...
 #--------------------------------------------------------------
 
+# we want bash as shell
+SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
+	 else if [ -x /bin/bash ]; then echo /bin/bash; \
+	 else echo sh; fi; fi)
+
 # Trick for always running with a fixed umask
 UMASK = 0022
 ifneq ($(shell umask),$(UMASK))
@@ -208,6 +213,13 @@ ifeq ($(filter $(noconfig_targets),$(MAKECMDGOALS)),)
 -include $(BR2_CONFIG)
 endif
 
+# timezone and locale may affect build output
+ifeq ($(BR2_REPRODUCIBLE),y)
+export TZ=UTC
+export LANG=C
+export LC_ALL=C
+endif
+
 # To put more focus on warnings, be less verbose as default
 # Use 'make V=1' to see the full commands
 ifeq ("$(origin V)", "command line")
@@ -226,11 +238,6 @@ export VERBOSE
 else
   Q = @
 endif
-
-# we want bash as shell
-SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
-	 else if [ -x /bin/bash ]; then echo /bin/bash; \
-	 else echo sh; fi; fi)
 
 # kconfig uses CONFIG_SHELL
 CONFIG_SHELL := $(SHELL)
@@ -410,6 +417,7 @@ endif
 # Scripts in support/ or post-build scripts may need to reference
 # these locations, so export them so it is easier to use
 export BR2_CONFIG
+export BR2_REPRODUCIBLE
 export TARGET_DIR
 export STAGING_DIR
 export HOST_DIR
@@ -701,8 +709,12 @@ legal-info: dirs legal-info-clean legal-info-prepare $(foreach p,$(PACKAGES),$(p
 		cat support/legal-info/README.warnings-header \
 			$(LEGAL_WARNINGS) >>$(LEGAL_REPORT); \
 		cat $(LEGAL_WARNINGS); fi
-	@echo "Legal info produced in $(LEGAL_INFO_DIR)"
 	@rm -f $(LEGAL_WARNINGS)
+	@(cd $(LEGAL_INFO_DIR); \
+		find * -type f -exec sha256sum {} + | LC_ALL=C sort -k2 \
+			>.legal-info.sha256; \
+		mv .legal-info.sha256 legal-info.sha256)
+	@echo "Legal info produced in $(LEGAL_INFO_DIR)"
 
 show-targets:
 	@echo $(PACKAGES) $(TARGETS_ROOTFS)
