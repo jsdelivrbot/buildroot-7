@@ -22,19 +22,21 @@ ${RM} lib/systemd/systemd-hostnamed
 ${RM} lib/systemd/systemd-initctl
 ${RM} lib/systemd/systemd-sleep
 ${RM} lib/systemd/systemd-socket-proxyd
-${RM} lib/systemd/systemd-timedated
-${RM} lib/systemd/systemd-timesyncd
 ${RM} lib/systemd/systemd-update-done
-${RM} usr/bin/systemd-analyze
-${RM} usr/bin/systemd-cgls
+#${RM} usr/bin/systemd-analyze
+${RM} lib/systemd/system/sysinit.target.wants/dev-hugepages.mount
+${RM} lib/systemd/system/sysinit.target.wants/dev-mqueue.mount
+chmod -x lib/systemd/system/*.*
+
+#${RM} usr/bin/systemd-cgls
 ${RM} usr/bin/systemd-cgtop
 ${RM} usr/bin/systemd-detect-virt
 ${RM} usr/bin/systemd-nspawn
-${RM} usr/bin/systemd-resolve
+#${RM} usr/bin/systemd-resolve
 #${RM} usr/bin/systemd-run
 ${RM} usr/bin/systemd-stdio-bridge
 ${RM} usr/bin/systemd-sysusers
-${RM} usr/bin/systemd-tty-ask-password-agent
+#${RM} usr/bin/systemd-tty-ask-password-agent
 ${RM} usr/lib/udev/cdrom_id
 ${RM} usr/lib/udev/v4l_id
 
@@ -97,6 +99,7 @@ ${RM} usr/sbin/pppoe-discovery
 
 # usr/share/alsa/cards
 
+exit 0
 ${RM} -r ../opt
 ${MKDIR} -p ../opt/itn/lib
 ${MV} usr/lib/liborc* ../opt/itn/lib/

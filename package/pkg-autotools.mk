@@ -188,8 +188,10 @@ define $(2)_CONFIGURE_CMDS
 		--disable-doc \
 		--disable-docs \
 		--disable-documentation \
+		--disable-manpages \
 		--with-xmlto=no \
 		--with-fop=no \
+		--disable-tests \
 		--disable-dependency-tracking \
 		--enable-ipv6 \
 		$$(DISABLE_NLS) \
