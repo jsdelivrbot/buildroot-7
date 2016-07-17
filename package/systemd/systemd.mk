@@ -44,19 +44,7 @@ SYSTEMD_CONF_OPTS += \
 	--disable-libcurl \
 	--disable-libidn \
 	--disable-libiptc \
-	--disable-binfmt \
-	--disable-vconsole \
-	--disable-quotacheck \
-	--disable-firstboot \
 	--disable-backlight \
-	--disable-machined \
-	--disable-importd \
-	--disable-logind \
-	--disable-localed \
-	--disable-polkit \
-	--disable-myhostname \
-	--disable-hwdb \
-	--disable-hibernate \
 	--with-sysvinit-path="" \
 	--with-sysvrcnd-path="" \
 	--disable-manpages \
@@ -67,7 +55,6 @@ SYSTEMD_CONF_OPTS += \
 	--disable-efi \
 	--disable-tests \
 	--disable-coverage \
-	--disable-coredump \
 	--disable-bootchart
 
 SYSTEMD_CFLAGS = $(TARGET_CFLAGS) -fno-lto
