@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-AUDIT_VERSION = 2.6.3
+AUDIT_VERSION = 2.6.5
 AUDIT_SITE = http://people.redhat.com/sgrubb/audit
 AUDIT_LICENSE = GPLv2
 AUDIT_LICENSE_FILES = COPYING
@@ -58,4 +58,11 @@ define AUDIT_INSTALL_CLEANUP
 endef
 AUDIT_POST_INSTALL_TARGET_HOOKS += AUDIT_INSTALL_CLEANUP
 
+HOST_AUDIT_CONF_OPTS = \
+	--without-python \
+	--without-python3 \
+	--disable-zos-remote \
+	--without-libcap-ng
+
 $(eval $(autotools-package))
+$(eval $(host-autotools-package))

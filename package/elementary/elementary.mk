@@ -19,6 +19,7 @@ ELEMENTARY_CONF_OPTS = \
 	--with-eet-eet=$(HOST_DIR)/usr/bin/eet \
 	--with-eolian-gen=$(HOST_DIR)/usr/bin/eolian_gen \
 	--with-eldbus_codegen=$(HOST_DIR)/usr/bin/eldbus-codegen \
+	--with-elementary-codegen=$(HOST_DIR)/usr/bin/elementary_codegen \
 	--with-elm-prefs-cc=$(HOST_DIR)/usr/bin/elm_prefs_cc \
 	--with-doxygen=no \
 	--disable-elementary-test
@@ -32,6 +33,12 @@ HOST_ELEMENTARY_CONF_OPTS = \
 	--with-eolian-gen=$(HOST_DIR)/usr/bin/eolian_gen \
 	--with-doxygen=no \
 	--disable-elementary-test
+
+# Use Eolian C++ parser only if enabled in the efl stack.
+ifeq ($(BR2_PACKAGE_EFL_EOLIAN_CPP),y)
+ELEMENTARY_CONF_OPTS += --with-eolian-cxx=$(HOST_DIR)/usr/bin/eolian_cxx
+HOST_ELEMENTARY_CONF_OPTS += --with-eolian-cxx=$(HOST_DIR)/usr/bin/eolian_cxx
+endif
 
 $(eval $(autotools-package))
 $(eval $(host-autotools-package))
