@@ -55,7 +55,7 @@ SYSTEMD_CONF_OPTS += \
 	--disable-efi \
 	--disable-tests \
 	--disable-coverage \
-	--disable-bootchart
+	--disable-ldconfig
 
 SYSTEMD_CFLAGS = $(TARGET_CFLAGS) -fno-lto
 

@@ -14,7 +14,9 @@ cd ${1}
 #${RM} -r usr/share/dbus-*
 #touch usr/libexec/dbus-daemon-launch-helper
 #${RM} -r usr/libexec
+${RM} -r usr/src
 
+echo "599ae83dc44544f29b4e4a4a344fdfc5" > etc/machine-id
 ${RM} lib/systemd/systemd-ac-power
 ${RM} lib/systemd/systemd-bus-proxyd
 ${RM} lib/systemd/systemd-cgroups-agent
@@ -24,9 +26,23 @@ ${RM} lib/systemd/systemd-sleep
 ${RM} lib/systemd/systemd-socket-proxyd
 ${RM} lib/systemd/systemd-update-done
 #${RM} usr/bin/systemd-analyze
-${RM} lib/systemd/system/sysinit.target.wants/dev-hugepages.mount
-${RM} lib/systemd/system/sysinit.target.wants/dev-mqueue.mount
-chmod -x lib/systemd/system/*.*
+find lib/systemd/system -type f -exec chmod -x "{}" \;
+${RM} -r tmp/*
+${RM} var/tmp
+${RM} var/log
+${RM} var/cache
+${RM} var/spool
+${RM} usr/lib/tmpfiles.d/home.conf
+${RM} usr/lib/tmpfiles.d/journal-nocow.conf
+${RM} usr/lib/tmpfiles.d/systemd-remote.conf
+${RM} usr/lib/tmpfiles.d/systemd-nspawn.conf
+${RM} usr/lib/tmpfiles.d/x11.conf
+#works when run before masks, but still returns an error code
+systemctl --root=. preset-all || :
+systemctl --root=. mask systemd-update-done.service
+systemctl --root=. mask ldconfig.service
+systemctl --root=. mask dev-hugepages.mount
+systemctl --root=. mask dev-mqueue.mount
 
 #${RM} usr/bin/systemd-cgls
 ${RM} usr/bin/systemd-cgtop
@@ -98,6 +114,7 @@ ${RM} usr/sbin/pppoe-discovery
 #${RM} usr/lib32
 
 # usr/share/alsa/cards
+
 
 exit 0
 ${RM} -r ../opt

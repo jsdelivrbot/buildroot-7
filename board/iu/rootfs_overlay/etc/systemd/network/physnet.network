@@ -1,0 +1,13 @@
+[Match]
+Name=physnet
+
+#[Link]
+#MACAddress=12:34:56:78:9a:bc
+
+[Network]
+#Address=172.20.20.11/16
+#Gateway=172.20.1.10
+DHCP=ipv4
+#LinkLocalAddressing=ipv4
+#LLMNR=resolve
+VLAN=vlan.100
