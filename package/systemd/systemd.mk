@@ -29,8 +29,6 @@ SYSTEMD_CONF_OPTS += \
 	--with-rootprefix= \
 	--enable-blkid \
 	--enable-static=no \
-	--with-default-dnssec=no \
-	--without-python \
 	--disable-nls \
 	--disable-utmp \
 	--disable-xkbcommon \
@@ -53,9 +51,12 @@ SYSTEMD_CONF_OPTS += \
 	--disable-ima \
 	--disable-libcryptsetup \
 	--disable-efi \
+	--disable-gnuefi \
+	--disable-ldconfig \
 	--disable-tests \
 	--disable-coverage \
-	--disable-ldconfig
+	--with-default-dnssec=no \
+	--without-python
 
 SYSTEMD_CFLAGS = $(TARGET_CFLAGS) -fno-lto
 
@@ -346,19 +347,10 @@ define SYSTEMD_INSTALL_MACHINEID_HOOK
 	touch $(TARGET_DIR)/etc/machine-id
 endef
 
-define SYSTEMD_MINIMIZE_UNITS
-	rm -f $(TARGET_DIR)/lib/systemd/system/dev-mqueue.mount
-	rm -f $(TARGET_DIR)/lib/systemd/system/dev-hugepages.mount
-	rm -f $(TARGET_DIR)/lib/systemd/system/remote-fs.target
-	rm -f $(TARGET_DIR)/lib/systemd/system/swap.target
-	rm -f $(TARGET_DIR)/lib/systemd/system-generators/systemd-system-update-generator
-endef
-
 SYSTEMD_POST_INSTALL_TARGET_HOOKS += \
 	SYSTEMD_INSTALL_INIT_HOOK \
 	SYSTEMD_INSTALL_MACHINEID_HOOK \
-	SYSTEMD_INSTALL_RESOLVCONF_HOOK \
-	SYSTEMD_MINIMIZE_UNITS
+	SYSTEMD_INSTALL_RESOLVCONF_HOOK
 
 define SYSTEMD_USERS
 	- - input -1 * - - - Input device group
