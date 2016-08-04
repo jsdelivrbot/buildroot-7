@@ -25,6 +25,7 @@ ${RM} lib/systemd/systemd-initctl
 ${RM} lib/systemd/systemd-sleep
 ${RM} lib/systemd/systemd-socket-proxyd
 ${RM} lib/systemd/systemd-update-done
+${RM} lib/systemd/system-generators/systemd-system-update-generator
 #${RM} usr/bin/systemd-analyze
 find lib/systemd/system -type f -exec chmod -x "{}" \;
 ${RM} -r tmp/*
@@ -43,6 +44,8 @@ systemctl --root=. mask systemd-update-done.service
 systemctl --root=. mask ldconfig.service
 systemctl --root=. mask dev-hugepages.mount
 systemctl --root=. mask dev-mqueue.mount
+systemctl --root=. mask remote-fs.mount
+systemctl --root=. mask swap.mount
 
 #${RM} usr/bin/systemd-cgls
 ${RM} usr/bin/systemd-cgtop
