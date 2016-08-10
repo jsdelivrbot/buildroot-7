@@ -25,6 +25,22 @@ PPPD_DEPENDENCIES += libpcap
 PPPD_MAKE_OPTS += FILTER=y
 endif
 
+ifeq ($(BR2_PACKAGE_PPPD_MSCHAPMPPE),y)
+PPPD_MAKE_OPTS += CHAPMS=y USE_CRYPT=y
+endif
+
+ifeq ($(BR2_PACKAGE_PPPD_MULTILINKTDB),y)
+PPPD_MAKE_OPTS += HAVE_MULTILINK=y USE_TDB=y
+endif
+
+ifneq ($(BR2_TOOLCHAIN_USES_MUSL),y)
+PPPD_MAKE_OPTS += USE_LIBUTIL=y
+endif
+
+ifneq ($(BR2_TOOLCHAIN_HAS_SHADOW_PASSWORDS),y)
+PPPD_MAKE_OPTS += HAS_SHADOW=y
+endif
+
 # pppd bundles some but not all of the needed kernel headers. The embedded
 # if_pppol2tp.h is unfortunately not compatible with kernel headers > 2.6.34,
 # and has been part of the kernel headers since 2.6.23, so drop it
@@ -43,9 +59,24 @@ define PPPD_SET_RESOLV_CONF
 endef
 PPPD_POST_EXTRACT_HOOKS += PPPD_SET_RESOLV_CONF
 
+ifneq ($(BR2_PACKAGE_PPPD_PLUGINS),y)
+define PPPD_CONFIGURE_PLUGINS
+	$(SED) 's/^PLUGIN=y/#PLUGIN=y/' $(PPPD_DIR)/*/Makefile.linux
+	$(SED) '\:cd pppd/plugins;:d' $(PPPD_DIR)/linux/Makefile.top
+endef
+endif
+
 define PPPD_CONFIGURE_CMDS
-	$(SED) 's/FILTER=y/#FILTER=y/' $(PPPD_DIR)/pppd/Makefile.linux
-	$(SED) 's/ifneq ($$(wildcard \/usr\/include\/pcap-bpf.h),)/ifdef FILTER/' $(PPPD_DIR)/*/Makefile.linux
+	$(SED) 's/^FILTER=y/#FILTER=y/' $(PPPD_DIR)/pppd/Makefile.linux
+	$(SED) 's/^ifneq ($$(wildcard \/usr\/include\/pcap-bpf.h),)/ifdef FILTER/' $(PPPD_DIR)/*/Makefile.linux
+	$(SED) 's/^CHAPMS=y/#CHAPMS=y/' $(PPPD_DIR)/*/Makefile.linux
+	$(SED) 's/^USE_CRYPT=y/#USE_CRYPT=y/' $(PPPD_DIR)/*/Makefile.linux
+	$(SED) 's/^MPPE=y/#MPPE=y/' $(PPPD_DIR)/*/Makefile.linux $(PPPD_DIR)/pppd/plugins/Makefile.linux
+	$(SED) 's/^HAVE_MULTILINK=y/#HAVE_MULTILINK=y/' $(PPPD_DIR)/*/Makefile.linux
+	$(SED) 's/^USE_TDB=y/#USE_TDB=y/' $(PPPD_DIR)/*/Makefile.linux
+	$(SED) 's/^HAS_SHADOW=y/#HAS_SHADOW=y/' $(PPPD_DIR)/*/Makefile.linux
+	$(SED) 's/^USE_LIBUTIL=y/#USE_LIBUTIL=y/' $(PPPD_DIR)/*/Makefile.linux
+	$(PPPD_CONFIGURE_PLUGINS)
 	( cd $(@D); $(TARGET_MAKE_ENV) ./configure --prefix=/usr )
 endef
 
@@ -75,11 +106,8 @@ define PPPD_INSTALL_RADIUS
 endef
 endif
 
-define PPPD_INSTALL_TARGET_CMDS
-	for sbin in $(PPPD_TARGET_BINS); do \
-		$(INSTALL) -D $(PPPD_DIR)/$$sbin/$$sbin \
-			$(TARGET_DIR)/usr/sbin/$$sbin; \
-	done
+ifeq ($(BR2_PACKAGE_PPPD_PLUGINS),y)
+define PPPD_INSTALL_PLUGINS
 	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/minconn.so \
 		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/minconn.so
 	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/passprompt.so \
@@ -98,9 +126,18 @@ define PPPD_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/openl2tp.so
 	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/pppol2tp/pppol2tp.so \
 		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/pppol2tp.so
+	$(PPPD_INSTALL_RADIUS)
+endef
+endif
+
+define PPPD_INSTALL_TARGET_CMDS
+	for sbin in $(PPPD_TARGET_BINS); do \
+		$(INSTALL) -D $(PPPD_DIR)/$$sbin/$$sbin \
+			$(TARGET_DIR)/usr/sbin/$$sbin; \
+	done
 	$(INSTALL) -D -m 0755 $(PPPD_DIR)/scripts/pon $(TARGET_DIR)/usr/bin/pon
 	$(INSTALL) -D -m 0755 $(PPPD_DIR)/scripts/poff $(TARGET_DIR)/usr/bin/poff
-	$(PPPD_INSTALL_RADIUS)
+	$(PPPD_INSTALL_PLUGINS)
 endef
 
 define PPPD_INSTALL_STAGING_CMDS

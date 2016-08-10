@@ -17,8 +17,24 @@ config BR2_PACKAGE_PPPD_FILTER
 	  the pppd active-filter and pass-filter options
 	  are available.
 
+config BR2_PACKAGE_PPPD_MSCHAPMPPE
+	bool "mschap+mppe"
+	help
+	  Enable MS-CHAP and MPPE
+
+config BR2_PACKAGE_PPPD_MULTILINKTDB
+	bool "multilink+tdb"
+	help
+	  Enable multilink and TDB
+
+config BR2_PACKAGE_PPPD_PLUGINS
+	bool "plugins"
+	help
+	  Enable plugins
+
 config BR2_PACKAGE_PPPD_RADIUS
 	bool "radius"
+	depends on BR2_PACKAGE_PPPD_PLUGINS
 	help
 	  Install RADIUS support for pppd
 
