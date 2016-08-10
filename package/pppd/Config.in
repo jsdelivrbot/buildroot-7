@@ -40,6 +40,6 @@ config BR2_PACKAGE_PPPD_RADIUS
 
 endif
 
-comment "pppd needs a uClibc or glibc toolchain w/ dynamic library"
-	depends on BR2_STATIC_LIBS || BR2_TOOLCHAIN_USES_MUSL
+comment "pppd needs a toolchain w/ dynamic library"
+	depends on BR2_STATIC_LIBS
 	depends on BR2_USE_MMU
