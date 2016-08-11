@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-KMSXX_VERSION = a706f157b86e90696808025db01de99646d51a77
+KMSXX_VERSION = bd5f6471e619a6ba2987bc7f66ef78a531f94d6c
 KMSXX_SITE = $(call github,tomba,kmsxx,$(KMSXX_VERSION))
 KMSXX_LICENSE = MPLv2.0
 KMSXX_LICENSE_FILES = LICENSE
@@ -29,18 +29,24 @@ endif
 KMSXX_LIBS = kms++ kms++util
 
 define KMSXX_INSTALL_TARGET_CMDS
-	$(foreach l,$(KMSXX_LIBS),\
-		$(INSTALL) -D -m 0755 $(@D)/lib/lib$(l).so \
-			$(TARGET_DIR)/usr/lib/lib$(l).so
+	$(if $(BR2_SHARED_LIBS)$(BR2_SHARED_STATIC_LIBS),
+		$(foreach l,$(KMSXX_LIBS),\
+			$(INSTALL) -D -m 0755 $(@D)/lib/lib$(l).so \
+				$(TARGET_DIR)/usr/lib/lib$(l).so
+		)
 	)
 	$(KMSXX_INSTALL_TARGET_TESTS)
 endef
 
 define KMSXX_INSTALL_STAGING_CMDS
 	$(foreach l,$(KMSXX_LIBS),\
-		$(INSTALL) -D -m 0755 $(@D)/lib/lib$(l).so \
-			$(STAGING_DIR)/usr/lib/lib$(l).so ; \
-		mkdir -p $(STAGING_DIR)/usr/include/$(l) ; \
+		$(if $(BR2_SHARED_LIBS)$(BR2_SHARED_STATIC_LIBS),
+			$(INSTALL) -D -m 0755 $(@D)/lib/lib$(l).so \
+				$(STAGING_DIR)/usr/lib/lib$(l).so)
+		$(if $(BR2_STATIC_LIBS)$(BR2_SHARED_STATIC_LIBS),
+			$(INSTALL) -D -m 0755 $(@D)/lib/lib$(l).a \
+				$(STAGING_DIR)/usr/lib/lib$(l).a)
+		mkdir -p $(STAGING_DIR)/usr/include/$(l)
 		cp -dpfr $(@D)/$(l)/inc/$(l)/* $(STAGING_DIR)/usr/include/$(l)/
 	)
 endef
