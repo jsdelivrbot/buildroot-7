@@ -1,0 +1,30 @@
+From ee8e14a124a3beb4c43f55adcc84814354473cec Mon Sep 17 00:00:00 2001
+From: Stefan Nickl <Stefan.Nickl@gmail.com>
+Date: Wed, 10 Aug 2016 21:32:21 +0200
+Subject: [PATCH] Change include from sys/errno.h to errno.h
+
+According to POSIX, the canonical location for errno.h is on the top level.
+
+Signed-off-by: Stefan Nickl <Stefan.Nickl@gmail.com>
+
+diff --git a/pppd/sys-linux.c b/pppd/sys-linux.c
+index b4a435d..20b42ac 100644
+--- a/pppd/sys-linux.c
++++ b/pppd/sys-linux.c
+@@ -73,12 +73,12 @@
+ #include <sys/types.h>
+ #include <sys/socket.h>
+ #include <sys/time.h>
+-#include <sys/errno.h>
+ #include <sys/file.h>
+ #include <sys/stat.h>
+ #include <sys/utsname.h>
+ #include <sys/sysmacros.h>
+ 
++#include <errno.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <syslog.h>
+-- 
+2.7.4
+

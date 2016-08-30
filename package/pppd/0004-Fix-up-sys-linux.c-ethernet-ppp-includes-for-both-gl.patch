@@ -1,0 +1,39 @@
+From 73368fc41b450bafc4a17a4967551d98c0a89569 Mon Sep 17 00:00:00 2001
+From: Stefan Nickl <Stefan.Nickl@gmail.com>
+Date: Wed, 10 Aug 2016 21:22:52 +0200
+Subject: [PATCH] Fix up sys-linux.c ethernet/ppp includes for both glibc and
+ musl
+
+Signed-off-by: Stefan Nickl <Stefan.Nickl@gmail.com>
+
+diff --git a/pppd/sys-linux.c b/pppd/sys-linux.c
+index 20b42ac..7442a5d 100644
+--- a/pppd/sys-linux.c
++++ b/pppd/sys-linux.c
+@@ -102,22 +102,13 @@
+ #define MAX_ADDR_LEN 7
+ #endif
+ 
+-#if __GLIBC__ >= 2
+-#include <asm/types.h>		/* glibc 2 conflicts with linux/types.h */
+ #include <net/if.h>
+ #include <net/if_arp.h>
+ #include <net/route.h>
+-#include <netinet/if_ether.h>
+-#else
+-#include <linux/types.h>
+-#include <linux/if.h>
+-#include <linux/if_arp.h>
+-#include <linux/route.h>
+-#include <linux/if_ether.h>
+-#endif
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ 
++#include <linux/types.h>	/* need linux-style fixed-size integer typedefs */
+ #include <linux/ppp_defs.h>
+ #include <linux/if_ppp.h>
+ 
+-- 
+2.7.4
+

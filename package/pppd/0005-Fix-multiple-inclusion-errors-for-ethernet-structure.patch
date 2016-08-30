@@ -1,0 +1,159 @@
+From 73efcc2508064f6befc0171e9910411546d9fc85 Mon Sep 17 00:00:00 2001
+From: Stefan Nickl <Stefan.Nickl@gmail.com>
+Date: Wed, 10 Aug 2016 11:37:57 +0200
+Subject: [PATCH] Fix multiple inclusion errors for ethernet structure
+
+Inclusion for the low-level ethernet headers in the rp-pppoe plugin is
+quite a mess and does not work for musl libc as-is.  Since this code is
+Linux-only and uses a static config.h, the patch gets rid of the
+pointless flexibility, replacing it by a single inclusion of
+linux/if_pppox.h in pppoe.h.
+
+Signed-off-by: Stefan Nickl <Stefan.Nickl@gmail.com>
+
+diff --git a/pppd/plugins/rp-pppoe/config.h b/pppd/plugins/rp-pppoe/config.h
+index 5703087..f7ee4e2 100644
+--- a/pppd/plugins/rp-pppoe/config.h
++++ b/pppd/plugins/rp-pppoe/config.h
+@@ -59,27 +59,15 @@
+ /* Define if you have the <getopt.h> header file.  */
+ #define HAVE_GETOPT_H 1
+ 
+-/* Define if you have the <linux/if_ether.h> header file.  */
+-#define HAVE_LINUX_IF_ETHER_H 1
+-
+-/* Define if you have kernel-mode PPPoE in Linux file.  */
+-#define HAVE_LINUX_KERNEL_PPPOE 1
+-
+ /* Define if you have the <linux/if_packet.h> header file.  */
+ #define HAVE_LINUX_IF_PACKET_H 1
+ 
+-/* Define if you have the <linux/if_pppox.h> header file.  */
+-#define HAVE_LINUX_IF_PPPOX_H 1
+-
+ /* Define if you have the <net/bpf.h> header file.  */
+ #define HAVE_NET_BPF_H 1
+ 
+ /* Define if you have the <net/if_arp.h> header file.  */
+ #define HAVE_NET_IF_ARP_H 1
+ 
+-/* Define if you have the <net/ethernet.h> header file.  */
+-#define HAVE_NET_ETHERNET_H 1
+-
+ /* Define if you have the <net/if.h> header file.  */
+ #define HAVE_NET_IF_H 1
+ 
+@@ -89,24 +77,12 @@
+ /* Define if you have the <net/if_dl.h> header file.  */
+ /* #undef HAVE_NET_IF_DL_H */
+ 
+-/* Define if you have the <net/if_ether.h> header file.  */
+-/* #undef HAVE_NET_IF_ETHER_H */
+-
+ /* Define if you have the <net/if_types.h> header file.  */
+ /* #undef HAVE_NET_IF_TYPES_H */
+ 
+-/* Define if you have the <netinet/if_ether.h> header file.  */
+-#define HAVE_NETINET_IF_ETHER_H 1
+-
+ /* Define if you have the <netpacket/packet.h> header file.  */
+ #define HAVE_NETPACKET_PACKET_H 1
+ 
+-/* Define if you have the <sys/cdefs.h> header file.  */
+-#define HAVE_SYS_CDEFS_H 1
+-
+-/* Define if you have the <sys/dlpi.h> header file.  */
+-/* #undef HAVE_SYS_DLPI_H */
+-
+ /* Define if you have the <sys/ioctl.h> header file.  */
+ #define HAVE_SYS_IOCTL_H 1
+ 
+diff --git a/pppd/plugins/rp-pppoe/if.c b/pppd/plugins/rp-pppoe/if.c
+index 91e9a57..9c0fac3 100644
+--- a/pppd/plugins/rp-pppoe/if.c
++++ b/pppd/plugins/rp-pppoe/if.c
+@@ -30,10 +30,6 @@ static char const RCSID[] =
+ #include <linux/if_packet.h>
+ #endif
+ 
+-#ifdef HAVE_NET_ETHERNET_H
+-#include <net/ethernet.h>
+-#endif
+-
+ #ifdef HAVE_ASM_TYPES_H
+ #include <asm/types.h>
+ #endif
+diff --git a/pppd/plugins/rp-pppoe/plugin.c b/pppd/plugins/rp-pppoe/plugin.c
+index c89be94..6697ad9 100644
+--- a/pppd/plugins/rp-pppoe/plugin.c
++++ b/pppd/plugins/rp-pppoe/plugin.c
+@@ -46,10 +46,8 @@ static char const RCSID[] =
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <signal.h>
+-#include <net/ethernet.h>
+ #include <net/if_arp.h>
+ #include <linux/ppp_defs.h>
+-#include <linux/if_pppox.h>
+ 
+ #ifndef _ROOT_PATH
+ #define _ROOT_PATH ""
+diff --git a/pppd/plugins/rp-pppoe/pppoe-discovery.c b/pppd/plugins/rp-pppoe/pppoe-discovery.c
+index 3d3bf4e..d6e0131 100644
+--- a/pppd/plugins/rp-pppoe/pppoe-discovery.c
++++ b/pppd/plugins/rp-pppoe/pppoe-discovery.c
+@@ -27,10 +27,6 @@
+ #include <linux/if_packet.h>
+ #endif
+ 
+-#ifdef HAVE_NET_ETHERNET_H
+-#include <net/ethernet.h>
+-#endif
+-
+ #ifdef HAVE_ASM_TYPES_H
+ #include <asm/types.h>
+ #endif
+diff --git a/pppd/plugins/rp-pppoe/pppoe.h b/pppd/plugins/rp-pppoe/pppoe.h
+index 9ab2eee..36cb0ae 100644
+--- a/pppd/plugins/rp-pppoe/pppoe.h
++++ b/pppd/plugins/rp-pppoe/pppoe.h
+@@ -39,10 +39,6 @@
+ #error Unknown method for accessing raw Ethernet frames
+ #endif
+ 
+-#ifdef HAVE_SYS_CDEFS_H
+-#include <sys/cdefs.h>
+-#endif
+-
+ #ifdef HAVE_SYS_SOCKET_H
+ #include <sys/socket.h>
+ #endif
+@@ -80,24 +76,12 @@ typedef unsigned long UINT32_t;
+ #error Could not find a 32-bit integer type
+ #endif
+ 
+-#ifdef HAVE_LINUX_IF_ETHER_H
+-#include <linux/if_ether.h>
+-#endif
+-
+ #include <netinet/in.h>
+-
+-#ifdef HAVE_NETINET_IF_ETHER_H
+-#include <sys/types.h>
++#include <linux/if_pppox.h>
+ 
+ #ifdef HAVE_SYS_SOCKET_H
+ #include <sys/socket.h>
+ #endif
+-#ifndef HAVE_SYS_DLPI_H
+-#include <netinet/if_ether.h>
+-#endif
+-#endif
+-
+-
+ 
+ /* Ethernet frame types according to RFC 2516 */
+ #define ETH_PPPOE_DISCOVERY 0x8863
+-- 
+2.7.4
+

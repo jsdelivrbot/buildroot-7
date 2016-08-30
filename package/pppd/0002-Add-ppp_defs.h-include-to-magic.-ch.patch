@@ -1,0 +1,43 @@
+From f64987e2ad943ef3fcd38dbef3c6bce843479c80 Mon Sep 17 00:00:00 2001
+From: Stefan Nickl <Stefan.Nickl@gmail.com>
+Date: Tue, 9 Aug 2016 23:40:52 +0200
+Subject: [PATCH] Add ppp_defs.h include to magic.[ch]
+
+magic.[ch] make use of the __P() macro provided by ppp_defs.h, therefore
+they should include this header.
+
+This omission did not cause compilation errors with glibc because it
+also provides this legacy macro in the non-standard header sys/cdefs.h,
+deprecated by musl.
+
+Signed-off-by: Stefan Nickl <Stefan.Nickl@gmail.com>
+
+diff --git a/pppd/magic.c b/pppd/magic.c
+index 2fb23ff..9620033 100644
+--- a/pppd/magic.c
++++ b/pppd/magic.c
+@@ -47,7 +47,7 @@
+ #include <unistd.h>
+ #include <sys/types.h>
+ #include <sys/time.h>
+-
++#include "net/ppp_defs.h"
+ #include "pppd.h"
+ #include "magic.h"
+ 
+diff --git a/pppd/magic.h b/pppd/magic.h
+index c81213b..61d0428 100644
+--- a/pppd/magic.h
++++ b/pppd/magic.h
+@@ -42,6 +42,8 @@
+  * $Id: magic.h,v 1.5 2003/06/11 23:56:26 paulus Exp $
+  */
+ 
++#include "net/ppp_defs.h"
++
+ void magic_init __P((void));	/* Initialize the magic number generator */
+ u_int32_t magic __P((void));	/* Returns the next magic number */
+ 
+-- 
+2.7.4
+

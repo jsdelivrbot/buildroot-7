@@ -1,0 +1,42 @@
+From 00e54f36d3e32dfdeeebfc029f1a323e67479b96 Mon Sep 17 00:00:00 2001
+From: Stefan Nickl <Stefan.Nickl@gmail.com>
+Date: Tue, 9 Aug 2016 23:32:21 +0200
+Subject: [PATCH] Add sys/types.h include to {net,linux}/ppp_defs.h
+
+struct ppp_idle makes use of the type time_t, which is defined in sys/types.h.
+Therefore, ppp_defs.h should include this header.
+
+This issue goes unnoticed with glibc, but causes a compilation error with musl
+libc.
+
+Signed-off-by: Stefan Nickl <Stefan.Nickl@gmail.com>
+
+diff --git a/include/linux/ppp_defs.h b/include/linux/ppp_defs.h
+index 314339e..15d4bbe 100644
+--- a/include/linux/ppp_defs.h
++++ b/include/linux/ppp_defs.h
+@@ -50,6 +50,8 @@
+ #ifndef _PPP_DEFS_H_
+ #define _PPP_DEFS_H_
+ 
++#include <sys/types.h>
++
+ /*
+  * The basic PPP frame.
+  */
+diff --git a/include/net/ppp_defs.h b/include/net/ppp_defs.h
+index b06eda5..5f478f0 100644
+--- a/include/net/ppp_defs.h
++++ b/include/net/ppp_defs.h
+@@ -38,6 +38,8 @@
+ #ifndef _PPP_DEFS_H_
+ #define _PPP_DEFS_H_
+ 
++#include <sys/types.h>
++
+ /*
+  * The basic PPP frame.
+  */
+-- 
+2.7.4
+

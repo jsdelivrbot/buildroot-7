@@ -1,0 +1,32 @@
+From 5fb581a5efa26138ba5847f7de2b12b53ae837c0 Mon Sep 17 00:00:00 2001
+From: Stefan Nickl <Stefan.Nickl@gmail.com>
+Date: Wed, 10 Aug 2016 16:52:12 +0200
+Subject: [PATCH] Define error() to print to stderr
+
+The pppoe-discovery program calls error() from the CHECK_ROOM macro
+defined in pppoe.h. Since this standalone program is not linked with the
+rest of pppd, the only way this can build is by linking to glibc's
+proprietary error(3) function instead of the function of the same name
+(but with different arguments) defined in pppd/utils.c.
+
+So when linked with glibc, this probably crashes when the assertion
+fails. With musl libc, the binary cannot be built in the first place
+because it does not provide the doppelganger.
+
+Signed-off-by: Stefan Nickl <Stefan.Nickl@gmail.com>
+
+diff --git a/pppd/plugins/rp-pppoe/pppoe-discovery.c b/pppd/plugins/rp-pppoe/pppoe-discovery.c
+index d6e0131..8cfbc29 100644
+--- a/pppd/plugins/rp-pppoe/pppoe-discovery.c
++++ b/pppd/plugins/rp-pppoe/pppoe-discovery.c
+@@ -15,6 +15,7 @@
+ #include <errno.h>
+ #include <string.h>
+ 
++#define error(format, ...) fprintf(stderr, format, ##__VA_ARGS__)
+ #include "pppoe.h"
+ 
+ #ifdef HAVE_UNISTD_H
+-- 
+2.7.4
+
