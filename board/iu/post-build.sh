@@ -44,6 +44,8 @@ systemctl --root=. mask systemd-update-done.service
 systemctl --root=. mask ldconfig.service
 systemctl --root=. mask dev-hugepages.mount
 systemctl --root=. mask dev-mqueue.mount
+systemctl --root=. mask sys-kernel-config.mount
+#systemctl --root=. mask sys-kernel-debug.mount
 systemctl --root=. mask remote-fs.mount
 systemctl --root=. mask swap.mount
 
