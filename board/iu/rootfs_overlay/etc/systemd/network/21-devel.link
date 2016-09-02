@@ -1,0 +1,8 @@
+[Match]
+Path=platform-soc:ethernet@2d50000
+
+[Link]
+Description=Development physical interface
+MACAddressPolicy=none
+Name=devel0
+WakeOnLan=off

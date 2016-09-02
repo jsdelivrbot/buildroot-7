@@ -1,6 +1,0 @@
-[Match]
-Path=platform-1c50000.ethernet
-
-[Link]
-Name=physnet
-MACAddress=12:34:56:78:9a:bc

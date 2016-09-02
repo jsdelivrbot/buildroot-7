@@ -1,9 +1,6 @@
 [Match]
 Name=vlan.100
 
-#[Link]
-#MACAddress=12:34:56:78:9a:bc
-
 [Network]
 LinkLocalAddressing=ipv4
 #LinkLocalAddressing=yes

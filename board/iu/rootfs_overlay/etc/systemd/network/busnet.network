@@ -1,9 +1,0 @@
-[Match]
-Name=enp1s0
-
-[Network]
-#Address=172.20.20.11/16
-#Gateway=172.20.1.10
-DHCP=ipv4
-LinkLocalAddressing=ipv4
-LLMNR=resolve

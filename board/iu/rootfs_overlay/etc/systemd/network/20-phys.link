@@ -1,0 +1,8 @@
+[Match]
+Path=platform-soc:ethernet@2d90000
+
+[Link]
+Description=Main physical interface to vehicle network
+MACAddressPolicy=none
+Name=phys0
+WakeOnLan=off
