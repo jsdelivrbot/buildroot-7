@@ -26,6 +26,9 @@ ${RM} lib/systemd/systemd-sleep
 ${RM} lib/systemd/systemd-socket-proxyd
 ${RM} lib/systemd/systemd-update-done
 ${RM} lib/systemd/system-generators/systemd-system-update-generator
+#${RM} lib/systemd/system-generators/systemd-debug-generator
+${RM} lib/systemd/system-generators/systemd-getty-generator
+${RM} lib/systemd/system-generators/systemd-gpt-auto-generator
 #${RM} usr/bin/systemd-analyze
 find lib/systemd/system -type f -exec chmod -x "{}" \;
 ${RM} -r tmp/*
@@ -42,6 +45,14 @@ ${RM} usr/lib/tmpfiles.d/x11.conf
 systemctl --root=. preset-all || :
 systemctl --root=. mask systemd-update-done.service
 systemctl --root=. mask ldconfig.service
+systemctl --root=. mask systemd-sysusers.service
+systemctl --root=. mask systemd-timesyncd.service
+systemctl --root=. mask systemd-random-seed.service
+systemctl --root=. mask systemd-vconsole-setup.service
+systemctl --root=. mask systemd-journal-flush.service
+systemctl --root=. mask systemd-journal-catalog-update.service
+systemctl --root=. mask systemd-ask-password-console.service
+systemctl --root=. mask systemd-ask-password-wall.service
 systemctl --root=. mask dev-hugepages.mount
 systemctl --root=. mask dev-mqueue.mount
 systemctl --root=. mask sys-kernel-config.mount
@@ -57,7 +68,12 @@ ${RM} usr/bin/systemd-nspawn
 #${RM} usr/bin/systemd-run
 ${RM} usr/bin/systemd-stdio-bridge
 ${RM} usr/bin/systemd-sysusers
-#${RM} usr/bin/systemd-tty-ask-password-agent
+${RM} usr/bin/systemd-ask-password
+${RM} usr/bin/systemd-tty-ask-password-agent
+${RM} usr/lib/systemd/system/systemd-ask-password-wall.path
+${RM} usr/lib/systemd/system/multi-user.target.wants/systemd-ask-password-wall.path
+${RM} usr/lib/systemd/system/systemd-ask-password-console.path
+${RM} usr/lib/systemd/system/sysinit.target.wants/systemd-ask-password-console.path
 ${RM} usr/lib/udev/cdrom_id
 ${RM} usr/lib/udev/v4l_id
 
