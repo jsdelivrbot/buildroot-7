@@ -9,7 +9,7 @@
 BINUTILS_VERSION = $(call qstrip,$(BR2_BINUTILS_VERSION))
 ifeq ($(BINUTILS_VERSION),)
 ifeq ($(BR2_arc),y)
-BINUTILS_VERSION = arc-2016.09-eng010
+BINUTILS_VERSION = arc-2016.09-eng011
 else
 BINUTILS_VERSION = 2.25.1
 endif
@@ -75,6 +75,13 @@ HOST_BINUTILS_CONF_ENV += ac_cv_prog_MAKEINFO=missing
 # error: unable to find a register to spill in class 'CCREGS'
 ifeq ($(BR2_bfin),y)
 BINUTILS_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -O1"
+endif
+
+# Workaround a build issue with -Os for ARM Cortex-M cpus.
+# (Binutils 2.25.1 and 2.26.1)
+# https://sourceware.org/bugzilla/show_bug.cgi?id=20552
+ifeq ($(BR2_ARM_CPU_ARMV7M)$(BR2_OPTIMIZE_S),yy)
+BINUTILS_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -O2"
 endif
 
 # Install binutils after busybox to prefer full-blown utilities
