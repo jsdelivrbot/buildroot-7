@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+#set -e
 RM="rm -f"
 MV="mv"
 RMDIR="rmdir"
@@ -33,7 +33,7 @@ ${RM} lib/systemd/system-generators/systemd-gpt-auto-generator
 find lib/systemd/system -type f -exec chmod -x "{}" \;
 ${RM} -r tmp/*
 ${RM} var/tmp
-${RM} var/log
+#${RM} -f var/log
 ${RM} var/cache
 ${RM} var/spool
 ${RM} usr/lib/tmpfiles.d/home.conf
@@ -136,6 +136,8 @@ ${RM} usr/sbin/pppoe-discovery
 
 # usr/share/alsa/cards
 
+cp /home/esgs/work/iu/private/dropbear_ecdsa_host_key etc/dropbear/
+ln -s -r sbin/mount.ntfs-3g sbin/mount.ntfs
 
 exit 0
 ${RM} -r ../opt
