@@ -3,11 +3,12 @@ comment "Binutils Options"
 choice
 	prompt "Binutils Version"
 	depends on !BR2_arc
-	default BR2_BINUTILS_VERSION_2_25_X
+	default BR2_BINUTILS_VERSION_2_26_X
 	help
 	  Select the version of binutils you wish to use.
 
 	config BR2_BINUTILS_VERSION_2_24_X
+		depends on BR2_DEPRECATED_SINCE_2016_11
 		# supported, but broken on Nios-II, Blackfin and powerpc64le
 		depends on !BR2_nios2 && !BR2_powerpc64le && !BR2_bfin
 		# Unsupported for MIPS R6
