@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-PHP_VERSION = 7.0.9
+PHP_VERSION = 7.0.11
 PHP_SITE = http://www.php.net/distributions
 PHP_SOURCE = php-$(PHP_VERSION).tar.xz
 PHP_INSTALL_STAGING = YES
@@ -209,6 +209,11 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_UNIXODBC),y)
 PHP_CONF_OPTS += --with-pdo-odbc=unixODBC,$(STAGING_DIR)/usr
 PHP_DEPENDENCIES += unixodbc
 endif
+endif
+
+ifneq ($(BR2_PACKAGE_PHP_EXT_MYSQLI)$(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),)
+# Set default MySQL unix socket to what the MySQL server is using by default
+PHP_CONF_OPTS += --with-mysql-sock=$(MYSQL_SOCKET)
 endif
 
 define PHP_DISABLE_PCRE_JIT

@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-EFL_VERSION = 1.18.0
+EFL_VERSION = 1.18.1
 EFL_SOURCE = efl-$(EFL_VERSION).tar.xz
 EFL_SITE = http://download.enlightenment.org/rel/libs/efl
 EFL_LICENSE = BSD-2c, LGPLv2.1+, GPLv2+
@@ -28,7 +28,6 @@ EFL_DEPENDENCIES = host-pkgconf host-efl host-luajit dbus freetype \
 # --disable-sdl: disable sdl2 support.
 # --disable-spectre: disable spectre image loader.
 # --disable-xinput22: disable X11 XInput v2.2+ support.
-# --with-opengl=none: disable opengl support.
 # --with-doxygen: disable doxygen documentation
 EFL_CONF_OPTS = \
 	--with-edje-cc=$(HOST_DIR)/usr/bin/edje_cc \
@@ -43,8 +42,7 @@ EFL_CONF_OPTS = \
 	--disable-sdl \
 	--disable-spectre \
 	--disable-xinput22 \
-	--with-doxygen=no \
-	--with-opengl=none
+	--with-doxygen=no
 
 # Disable untested configuration warning.
 ifeq ($(BR2_PACKAGE_EFL_HAS_RECOMMENDED_CONFIG),)
@@ -154,6 +152,13 @@ else
 EFL_CONF_OPTS += --disable-wayland
 endif
 
+ifeq ($(BR2_PACKAGE_EFL_ELPUT),y)
+EFL_CONF_OPTS += --enable-elput
+EFL_DEPENDENCIES += libinput libxkbcommon
+else
+EFL_CONF_OPTS += --disable-elput
+endif
+
 ifeq ($(BR2_PACKAGE_EFL_FB),y)
 EFL_CONF_OPTS += --enable-fb
 else
@@ -180,6 +185,17 @@ EFL_DEPENDENCIES += \
 	xlib_libXtst
 else
 EFL_CONF_OPTS += --with-x11=none
+endif
+
+ifeq ($(BR2_PACKAGE_EFL_OPENGL),y)
+EFL_CONF_OPTS += --with-opengl=full
+EFL_DEPENDENCIES += libgl
+# OpenGL ES requires EGL
+else ifeq ($(BR2_PACKAGE_EFL_OPENGLES),y)
+EFL_CONF_OPTS += --with-opengl=es --enable-egl
+EFL_DEPENDENCIES += libegl libgles
+else ifeq ($(BR2_PACKAGE_EFL_OPENGL_NONE),y)
+EFL_CONF_OPTS += --with-opengl=none
 endif
 
 # Loaders that need external dependencies needs to be --enable-XXX=yes
