@@ -43,12 +43,19 @@ endif
 
 ifeq ($(BR2_NEEDS_GETTEXT_IF_LOCALE),y)
 UTIL_LINUX_DEPENDENCIES += gettext
-UTIL_LINUX_MAKE_OPTS += LIBS=-lintl
+UTIL_LINUX_LIBS += -lintl
 endif
 
 ifeq ($(BR2_PACKAGE_LIBCAP_NG),y)
 UTIL_LINUX_DEPENDENCIES += libcap-ng
 endif
+
+# Unfortunately, the util-linux does LIBS="" at the end of its
+# configure script. So we have to pass the proper LIBS value when
+# calling the configure script to make configure tests pass properly,
+# and then pass it again at build time.
+UTIL_LINUX_CONF_ENV += LIBS="$(UTIL_LINUX_LIBS)"
+UTIL_LINUX_MAKE_OPTS += LIBS="$(UTIL_LINUX_LIBS)"
 
 # Used by cramfs utils
 UTIL_LINUX_DEPENDENCIES += $(if $(BR2_PACKAGE_ZLIB),zlib)
@@ -104,13 +111,14 @@ UTIL_LINUX_CONF_OPTS += \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_WRITE),--enable-write,--disable-write) \
 	$(if $(BR2_PACKAGE_UTIL_LINUX_ZRAMCTL),--enable-zramctl,--disable-zramctl)
 
-# In the host version of util-linux, we so far only require libuuid,
-# and none of the util-linux utilities, so we disable all of them, unless
-# BR2_PACKAGE_HOST_UTIL_LINUX is set
+# In the host version of util-linux, we only require libuuid and
+# libmount (plus libblkid as an indirect dependency of libmount).
+# So disable all of the programs, unless BR2_PACKAGE_HOST_UTIL_LINUX is set
 
 HOST_UTIL_LINUX_CONF_OPTS += \
+	--enable-libblkid \
+	--enable-libmount \
 	--enable-libuuid \
-	--disable-libblkid --disable-libmount \
 	--without-ncurses
 
 ifeq ($(BR2_PACKAGE_HOST_UTIL_LINUX),y)
@@ -142,6 +150,7 @@ endif
 
 ifeq ($(BR2_PACKAGE_READLINE),y)
 UTIL_LINUX_CONF_OPTS += --with-readline
+UTIL_LINUX_LIBS += $(if $(BR2_STATIC_LIBS),-lcurses)
 UTIL_LINUX_DEPENDENCIES += readline
 else
 UTIL_LINUX_CONF_OPTS += --without-readline

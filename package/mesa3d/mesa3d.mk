@@ -86,6 +86,8 @@ MESA3D_DRI_DRIVERS-$(BR2_PACKAGE_MESA3D_DRI_DRIVER_I915)   += i915
 MESA3D_DRI_DRIVERS-$(BR2_PACKAGE_MESA3D_DRI_DRIVER_I965)   += i965
 MESA3D_DRI_DRIVERS-$(BR2_PACKAGE_MESA3D_DRI_DRIVER_NOUVEAU) += nouveau
 MESA3D_DRI_DRIVERS-$(BR2_PACKAGE_MESA3D_DRI_DRIVER_RADEON) += radeon
+# Vulkan Drivers
+MESA3D_VULKAN_DRIVERS-$(BR2_PACKAGE_MESA3D_VULKAN_DRIVER_INTEL)   += intel
 
 ifeq ($(BR2_PACKAGE_MESA3D_GALLIUM_DRIVER),)
 MESA3D_CONF_OPTS += \
@@ -109,14 +111,18 @@ endif
 ifeq ($(BR2_PACKAGE_XLIB_LIBXXF86VM),y)
 MESA3D_DEPENDENCIES += xlib_libXxf86vm
 endif
-# libGL is only provided for a full xorg stack
-ifeq ($(BR2_PACKAGE_XORG7),y)
-MESA3D_PROVIDES += libgl
-endif
 MESA3D_CONF_OPTS += \
 	--enable-shared-glapi \
 	--enable-driglx-direct \
 	--with-dri-drivers=$(subst $(space),$(comma),$(MESA3D_DRI_DRIVERS-y))
+endif
+
+ifeq ($(BR2_PACKAGE_MESA3D_VULKAN_DRIVER),)
+MESA3D_CONF_OPTS += \
+	--without-vulkan-drivers
+else
+MESA3D_CONF_OPTS += \
+	--with-vulkan-drivers=$(subst $(space),$(comma),$(MESA3D_VULKAN_DRIVERS-y))
 endif
 
 # APIs
@@ -134,6 +140,11 @@ MESA3D_CONF_OPTS += --enable-opengl --enable-dri
 # libva and mesa3d have a circular dependency
 # we do not need libva support in mesa3d, therefore disable this option
 MESA3D_CONF_OPTS += --disable-va
+
+# libGL is only provided for a full xorg stack
+ifeq ($(BR2_PACKAGE_XORG7),y)
+MESA3D_PROVIDES += libgl
+endif
 
 ifeq ($(BR2_PACKAGE_MESA3D_OPENGL_EGL),y)
 MESA3D_PROVIDES += libegl
