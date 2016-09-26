@@ -1,0 +1,283 @@
+From 62eaf52b21c0c41ff26d7a1f412efec9a4176142 Mon Sep 17 00:00:00 2001
+From: Markus Niebel <Markus.Niebel@tq-group.com>
+Date: Mon, 27 Apr 2015 14:52:58 +0200
+Subject: [PATCH] board: tqc: add common folder
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ board/tqc/common/Makefile             | 43 ++++++++++++++++
+ board/tqc/common/arm_sleep.c          | 97 +++++++++++++++++++++++++++++++++++
+ board/tqc/common/cmd_esbc_validate.c  |  1 +
+ board/tqc/common/dcu_sii9022a.c       |  1 +
+ board/tqc/common/dcu_sii9022a.h       |  1 +
+ board/tqc/common/eeprom.h             |  1 +
+ board/tqc/common/fsl_chain_of_trust.c |  1 +
+ board/tqc/common/fsl_validate.c       |  1 +
+ board/tqc/common/ls102xa_stream_id.c  |  1 +
+ board/tqc/common/ns_access.c          |  1 +
+ board/tqc/common/sdhc_boot.c          |  1 +
+ board/tqc/common/sgmii_riser.c        |  1 +
+ board/tqc/common/sgmii_riser.h        |  1 +
+ board/tqc/common/sleep.h              |  1 +
+ board/tqc/common/sys_eeprom.c         |  1 +
+ 15 files changed, 153 insertions(+)
+ create mode 100644 board/tqc/common/Makefile
+ create mode 100644 board/tqc/common/arm_sleep.c
+ create mode 100644 board/tqc/common/cmd_esbc_validate.c
+ create mode 100644 board/tqc/common/dcu_sii9022a.c
+ create mode 100644 board/tqc/common/dcu_sii9022a.h
+ create mode 100644 board/tqc/common/eeprom.h
+ create mode 100644 board/tqc/common/fsl_chain_of_trust.c
+ create mode 100644 board/tqc/common/fsl_validate.c
+ create mode 100644 board/tqc/common/ls102xa_stream_id.c
+ create mode 100644 board/tqc/common/ns_access.c
+ create mode 100644 board/tqc/common/sdhc_boot.c
+ create mode 100644 board/tqc/common/sgmii_riser.c
+ create mode 100644 board/tqc/common/sgmii_riser.h
+ create mode 100644 board/tqc/common/sleep.h
+ create mode 100644 board/tqc/common/sys_eeprom.c
+
+diff --git a/board/tqc/common/Makefile b/board/tqc/common/Makefile
+new file mode 100644
+index 0000000..d53cafa
+--- /dev/null
++++ b/board/tqc/common/Makefile
+@@ -0,0 +1,43 @@
++#
++# (C) Copyright 2006
++# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
++#
++# SPDX-License-Identifier:	GPL-2.0+
++#
++
++MINIMAL=
++
++ifdef CONFIG_SPL_BUILD
++ifdef CONFIG_SPL_INIT_MINIMAL
++MINIMAL=y
++endif
++endif
++
++ifdef MINIMAL
++# necessary to create built-in.o
++obj- := __dummy__.o
++else
++ifndef CONFIG_SPL_BUILD
++obj-$(CONFIG_ID_EEPROM)	+= sys_eeprom.o
++endif
++obj-$(CONFIG_FSL_SGMII_RISER)	+= sgmii_riser.o
++ifndef CONFIG_RAMBOOT_PBL
++obj-$(CONFIG_FSL_FIXED_MMC_LOCATION)	+= sdhc_boot.o
++endif
++
++ifdef CONFIG_ARM_SLEEP
++obj-$(CONFIG_DEEP_SLEEP)		+= arm_sleep.o
++endif
++
++obj-$(CONFIG_FSL_DCU_SII9022A)    += dcu_sii9022a.o
++
++obj-$(CONFIG_LS102XA_STREAM_ID)	+= ls102xa_stream_id.o
++
++obj-$(CONFIG_LAYERSCAPE_NS_ACCESS)	+= ns_access.o
++
++ifdef CONFIG_SECURE_BOOT
++obj-$(CONFIG_CMD_ESBC_VALIDATE) += fsl_validate.o cmd_esbc_validate.o
++endif
++obj-$(CONFIG_CHAIN_OF_TRUST) += fsl_chain_of_trust.o
++
++endif
+diff --git a/board/tqc/common/arm_sleep.c b/board/tqc/common/arm_sleep.c
+new file mode 100644
+index 0000000..71ed15e
+--- /dev/null
++++ b/board/tqc/common/arm_sleep.c
+@@ -0,0 +1,97 @@
++/*
++ * Copyright 2014 Freescale Semiconductor, Inc.
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <asm/io.h>
++#ifndef CONFIG_ARMV7_NONSEC
++#error " Deep sleep needs non-secure mode support. "
++#else
++#include <asm/secure.h>
++#endif
++#include <asm/armv7.h>
++
++#if defined(CONFIG_LS102XA)
++#include <asm/arch/immap_ls102xa.h>
++#endif
++
++#include "sleep.h"
++#ifdef CONFIG_U_QE
++#include <fsl_qe.h>
++#endif
++
++DECLARE_GLOBAL_DATA_PTR;
++
++void __weak board_mem_sleep_setup(void)
++{
++}
++
++void __weak board_sleep_prepare(void)
++{
++}
++
++bool is_warm_boot(void)
++{
++	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_FSL_GUTS_ADDR;
++
++	if (in_be32(&gur->crstsr) & DCFG_CCSR_CRSTSR_WDRFR)
++		return 1;
++
++	return 0;
++}
++
++void fsl_dp_disable_console(void)
++{
++	gd->flags |= GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE;
++}
++
++/*
++ * When wakeup from deep sleep, the first 128 bytes space
++ * will be used to do DDR training which corrupts the data
++ * in there. This function will restore them.
++ */
++static void dp_ddr_restore(void)
++{
++	u64 *src, *dst;
++	int i;
++	struct ccsr_scfg __iomem *scfg = (void *)CONFIG_SYS_FSL_SCFG_ADDR;
++
++	/* get the address of ddr date from SPARECR3 */
++	src = (u64 *)in_le32(&scfg->sparecr[2]);
++	dst = (u64 *)CONFIG_SYS_SDRAM_BASE;
++
++	for (i = 0; i < DDR_BUFF_LEN / 8; i++)
++		*dst++ = *src++;
++}
++
++static void dp_resume_prepare(void)
++{
++	dp_ddr_restore();
++	board_sleep_prepare();
++	armv7_init_nonsec();
++#ifdef CONFIG_U_QE
++	u_qe_resume();
++#endif
++}
++
++int fsl_dp_resume(void)
++{
++	u32 start_addr;
++	void (*kernel_resume)(void);
++	struct ccsr_scfg __iomem *scfg = (void *)CONFIG_SYS_FSL_SCFG_ADDR;
++
++	if (!is_warm_boot())
++		return 0;
++
++	dp_resume_prepare();
++
++	/* Get the entry address and jump to kernel */
++	start_addr = in_le32(&scfg->sparecr[1]);
++	debug("Entry address is 0x%08x\n", start_addr);
++	kernel_resume = (void (*)(void))start_addr;
++	secure_ram_addr(_do_nonsec_entry)(kernel_resume, 0, 0, 0);
++
++	return 0;
++}
+diff --git a/board/tqc/common/cmd_esbc_validate.c b/board/tqc/common/cmd_esbc_validate.c
+new file mode 100644
+index 0000000..16ae0fc
+--- /dev/null
++++ b/board/tqc/common/cmd_esbc_validate.c
+@@ -0,0 +1 @@
++#include "../../freescale/common/cmd_esbc_validate.c"
+diff --git a/board/tqc/common/dcu_sii9022a.c b/board/tqc/common/dcu_sii9022a.c
+new file mode 100644
+index 0000000..48043b5
+--- /dev/null
++++ b/board/tqc/common/dcu_sii9022a.c
+@@ -0,0 +1 @@
++#include "../../freescale/common/dcu_sii9022a.c"
+diff --git a/board/tqc/common/dcu_sii9022a.h b/board/tqc/common/dcu_sii9022a.h
+new file mode 100644
+index 0000000..851e472
+--- /dev/null
++++ b/board/tqc/common/dcu_sii9022a.h
+@@ -0,0 +1 @@
++#include "../../freescale/common/dcu_sii9022.h"
+diff --git a/board/tqc/common/eeprom.h b/board/tqc/common/eeprom.h
+new file mode 100644
+index 0000000..fdcb3dc
+--- /dev/null
++++ b/board/tqc/common/eeprom.h
+@@ -0,0 +1 @@
++#include "../../freescale/common/eeprom.h"
+diff --git a/board/tqc/common/fsl_chain_of_trust.c b/board/tqc/common/fsl_chain_of_trust.c
+new file mode 100644
+index 0000000..c869790
+--- /dev/null
++++ b/board/tqc/common/fsl_chain_of_trust.c
+@@ -0,0 +1 @@
++#include "../../freescale/common/fsl_chain_of_trust.c"
+diff --git a/board/tqc/common/fsl_validate.c b/board/tqc/common/fsl_validate.c
+new file mode 100644
+index 0000000..fa4d76d
+--- /dev/null
++++ b/board/tqc/common/fsl_validate.c
+@@ -0,0 +1 @@
++#include "../../freescale/common/fsl_validate.c"
+diff --git a/board/tqc/common/ls102xa_stream_id.c b/board/tqc/common/ls102xa_stream_id.c
+new file mode 100644
+index 0000000..60cd524
+--- /dev/null
++++ b/board/tqc/common/ls102xa_stream_id.c
+@@ -0,0 +1 @@
++#include "../../freescale/common/ls102xa_stream_id.c"
+diff --git a/board/tqc/common/ns_access.c b/board/tqc/common/ns_access.c
+new file mode 100644
+index 0000000..ee7a3c7
+--- /dev/null
++++ b/board/tqc/common/ns_access.c
+@@ -0,0 +1 @@
++#include "../../freescale/common/ns_access.c"
+diff --git a/board/tqc/common/sdhc_boot.c b/board/tqc/common/sdhc_boot.c
+new file mode 100644
+index 0000000..ee8e499
+--- /dev/null
++++ b/board/tqc/common/sdhc_boot.c
+@@ -0,0 +1 @@
++#include "../../freescale/common/sdhc_boot.c"
+diff --git a/board/tqc/common/sgmii_riser.c b/board/tqc/common/sgmii_riser.c
+new file mode 100644
+index 0000000..6db38ba
+--- /dev/null
++++ b/board/tqc/common/sgmii_riser.c
+@@ -0,0 +1 @@
++#include "../../freescale/common/sgmii_riser.c"
+diff --git a/board/tqc/common/sgmii_riser.h b/board/tqc/common/sgmii_riser.h
+new file mode 100644
+index 0000000..12e1e63
+--- /dev/null
++++ b/board/tqc/common/sgmii_riser.h
+@@ -0,0 +1 @@
++#include "../../freescale/common/sgmii_riser.h"
+diff --git a/board/tqc/common/sleep.h b/board/tqc/common/sleep.h
+new file mode 100644
+index 0000000..5d1eb5d
+--- /dev/null
++++ b/board/tqc/common/sleep.h
+@@ -0,0 +1 @@
++#include "../../freescale/common/sleep.h"
+\ No newline at end of file
+diff --git a/board/tqc/common/sys_eeprom.c b/board/tqc/common/sys_eeprom.c
+new file mode 100644
+index 0000000..aea6f50
+--- /dev/null
++++ b/board/tqc/common/sys_eeprom.c
+@@ -0,0 +1 @@
++#include "../../freescale/common/sys_eeprom.c"

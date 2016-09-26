@@ -1,0 +1,28 @@
+From 50ffcb61dfdd667e10d7e46b80836c86ee3da5f2 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 28 Apr 2016 12:15:33 +0200
+Subject: [PATCH] cmd:mmc: fix argument parsing for setdsr
+
+Commit 1fd93c6e7d8a1e4d6261058cefab11b875ded252 introduces
+new command table where argv[] contents are shifted by one.
+
+The arguments in do_mmc_setdsr must be adapted as well.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ cmd/mmc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmd/mmc.c b/cmd/mmc.c
+index c5454bf..c543fc3 100644
+--- a/cmd/mmc.c
++++ b/cmd/mmc.c
+@@ -768,7 +768,7 @@ static int do_mmc_setdsr(cmd_tbl_t *cmdtp, int flag,
+ 
+ 	if (argc != 2)
+ 		return CMD_RET_USAGE;
+-	val = simple_strtoul(argv[2], NULL, 16);
++	val = simple_strtoul(argv[1], NULL, 16);
+ 
+ 	mmc = find_mmc_device(curr_device);
+ 	if (!mmc) {

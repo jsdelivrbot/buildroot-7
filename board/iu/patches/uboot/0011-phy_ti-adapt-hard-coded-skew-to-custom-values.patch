@@ -1,0 +1,27 @@
+From 9d0df198fc55e930666c6093534534692f0b69a6 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 27 Apr 2016 14:05:15 +0200
+Subject: [PATCH] phy_ti: adapt hard-coded skew to custom values
+
+MBLS102xA.0200 has assigned 2.5ns for RX, 2ns for TX each
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/net/phy/ti.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/phy/ti.c b/drivers/net/phy/ti.c
+index 937426b..4704f41 100644
+--- a/drivers/net/phy/ti.c
++++ b/drivers/net/phy/ti.c
+@@ -149,8 +149,8 @@ static inline bool phy_interface_is_rgmii(struct phy_device *phydev)
+ }
+ 
+ /* User setting - can be taken from DTS */
+-#define RX_ID_DELAY	8
+-#define TX_ID_DELAY	0xa
++#define RX_ID_DELAY	9
++#define TX_ID_DELAY	7
+ #define FIFO_DEPTH	1
+ 
+ static int dp83867_config(struct phy_device *phydev)

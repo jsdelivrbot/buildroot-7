@@ -1,0 +1,31 @@
+From 554aa495f6ec679f4a09d6bf48c5dfe06d32079b Mon Sep 17 00:00:00 2001
+From: Marco Felsch <marco.felsch@gmail.com>
+Date: Mon, 25 Apr 2016 16:37:39 +0200
+Subject: [PATCH] fsl_qspi: Enable 1-1-4 mode
+
+Add the supported modes. It is necessary for
+the spi-nor framework to choose the right
+read/write command.
+Define FSL_QSPI_QUAD_MODE to enable this mode.
+
+Signed-off-by: Marco Felsch <marco.felsch@gmail.com>
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/spi/fsl_qspi.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/spi/fsl_qspi.c b/drivers/spi/fsl_qspi.c
+index 802163c..df6fe23 100644
+--- a/drivers/spi/fsl_qspi.c
++++ b/drivers/spi/fsl_qspi.c
+@@ -959,6 +959,10 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
+ 
+ 	regs = (struct fsl_qspi_regs *)spi_bases[bus];
+ 	qspi->priv.regs = regs;
++#ifdef FSL_QSPI_QUAD_MODE
++	qspi->slave.mode_rx = SPI_RX_QUAD;
++	qspi->slave.mode = SPI_TX_QUAD;
++#endif
+ 	/*
+ 	 * According cs, use different amba_base to choose the
+ 	 * corresponding flash devices.

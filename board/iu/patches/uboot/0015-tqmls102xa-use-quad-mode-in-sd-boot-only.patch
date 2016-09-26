@@ -1,0 +1,29 @@
+From 8a3116e743a7f54f9701daf094e420cd16db6a55 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 28 Apr 2016 18:24:57 +0200
+Subject: [PATCH] tqmls102xa: use quad mode in sd-boot only
+
+When in QSPI boot mode, environment does not get loaded
+because Quad Mode bit in EVCR is not set during init.
+Fix this in a later patch.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ include/configs/tqmls102xa.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
+index 40f94fa..f795aa9 100644
+--- a/include/configs/tqmls102xa.h
++++ b/include/configs/tqmls102xa.h
+@@ -218,7 +218,10 @@
+ #define FSL_QSPI_FLASH_SIZE		SZ_64M
+ #define FSL_QSPI_FLASH_NUM		2
+ #define FSL_QSPI_FLASH_DUALDIE
++
++#if defined(CONFIG_SD_BOOT)
+ #define FSL_QSPI_QUAD_MODE
++#endif
+ 
+ #define CONFIG_CMD_SF
+ #define CONFIG_SPI_FLASH

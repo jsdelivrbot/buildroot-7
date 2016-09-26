@@ -1,0 +1,258 @@
+From 10fa4c060f82d67a30fbc009a785868a0ad4d067 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 28 Apr 2016 15:55:32 +0200
+Subject: [PATCH] tqmls102xa: add eeprom support
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ board/tqc/tqmls102xa/Makefile            |   4 +-
+ board/tqc/tqmls102xa/tqmls102xa.c        |  24 ++++++
+ board/tqc/tqmls102xa/tqmls102xa_eeprom.c | 127 +++++++++++++++++++++++++++++++
+ board/tqc/tqmls102xa/tqmls102xa_eeprom.h |  35 +++++++++
+ include/configs/tqmls102xa.h             |   2 -
+ 5 files changed, 189 insertions(+), 3 deletions(-)
+ create mode 100644 board/tqc/tqmls102xa/tqmls102xa_eeprom.c
+ create mode 100644 board/tqc/tqmls102xa/tqmls102xa_eeprom.h
+
+diff --git a/board/tqc/tqmls102xa/Makefile b/board/tqc/tqmls102xa/Makefile
+index 2dcc252..1a39583 100644
+--- a/board/tqc/tqmls102xa/Makefile
++++ b/board/tqc/tqmls102xa/Makefile
+@@ -5,5 +5,7 @@
+ # SPDX-License-Identifier:      GPL-2.0+
+ #
+ 
+-obj-y += tqmls102xa.o
++obj-y += tqmls102xa.o \
++	tqmls102xa_eeprom.o
++
+ obj-$(CONFIG_FSL_DCU_FB) += dcu.o
+diff --git a/board/tqc/tqmls102xa/tqmls102xa.c b/board/tqc/tqmls102xa/tqmls102xa.c
+index d088568..9e7fd3c 100644
+--- a/board/tqc/tqmls102xa/tqmls102xa.c
++++ b/board/tqc/tqmls102xa/tqmls102xa.c
+@@ -28,6 +28,7 @@
+ #ifdef CONFIG_U_QE
+ #include <fsl_qe.h>
+ #endif
++#include "tqmls102xa_eeprom.h"
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+@@ -343,6 +344,29 @@ void board_sleep_prepare(void)
+ #ifdef CONFIG_BOARD_LATE_INIT
+ int board_late_init(void)
+ {
++	int ret;
++	struct tqmls102xa_eeprom_data eedat;
++	/* must hold largest field of eeprom data */
++	char safe_string[0x41];
++
++	ret = tqmls102xa_read_eeprom(CONFIG_SYS_EEPROM_BUS_NUM,
++				     CONFIG_SYS_I2C_EEPROM_ADDR, &eedat);
++	if (!ret) {
++		/* ID */
++		tqmls102xa_parse_eeprom_id(&eedat, safe_string,
++					   ARRAY_SIZE(safe_string));
++		if (0 == strncmp(safe_string, "TQM", 3))
++			setenv("boardtype", safe_string);
++		if (0 == tqmls102xa_parse_eeprom_serial(&eedat, safe_string,
++							ARRAY_SIZE(safe_string)))
++			setenv("serial#", safe_string);
++		else
++			setenv("serial#", "???");
++		tqmls102xa_show_eeprom(&eedat, "TQM");
++	} else {
++		printf("EEPROM: err %d\n", ret);
++	}
++
+ 	ls1021a_sata_init();
+ 
+ 	return 0;
+diff --git a/board/tqc/tqmls102xa/tqmls102xa_eeprom.c b/board/tqc/tqmls102xa/tqmls102xa_eeprom.c
+new file mode 100644
+index 0000000..7eb7f5a
+--- /dev/null
++++ b/board/tqc/tqmls102xa/tqmls102xa_eeprom.c
+@@ -0,0 +1,127 @@
++/*
++ * Copyright (C) 2014 TQ Systems GmbH
++ * Markus Niebel <Markus.Niebel@tq-group.com>
++ *
++ * SPDX-License-Identifier:    GPL-2.0+
++ */
++
++#include <common.h>
++#include <i2c.h>
++#include <malloc.h>
++#include <linux/ctype.h>
++
++#include "tqmls102xa_eeprom.h"
++
++int tqmls102xa_parse_eeprom_mac(struct tqmls102xa_eeprom_data *eeprom, char *buf,
++				size_t len)
++{
++	u8 *p;
++	int ret;
++
++	if (!buf || !eeprom)
++		return -1;
++	/* MAC address */
++	p = eeprom->mac;
++	ret = snprintf(buf, len, "%02x:%02x:%02x:%02x:%02x:%02x",
++		       p[0], p[1], p[2], p[3], p[4], p[5]);
++	if (ret < 0)
++		return ret;
++	if (ret >= len)
++		return ret;
++
++	return 0;
++}
++
++int tqmls102xa_parse_eeprom_serial(struct tqmls102xa_eeprom_data *eeprom, char *buf,
++				   size_t len)
++{
++	unsigned i;
++
++	if (!buf || !eeprom)
++		return -1;
++	if (len < (sizeof(eeprom->serial) + 1))
++		return -1;
++
++	for (i = 0; i < (sizeof(eeprom->serial)) &&
++		isdigit(eeprom->serial[i]); i++)
++		buf[i] = eeprom->serial[i];
++	buf[i] = '\0';
++	if (sizeof(eeprom->serial) != strlen(buf))
++		return -1;
++
++	return 0;
++}
++
++int tqmls102xa_parse_eeprom_id(struct tqmls102xa_eeprom_data *eeprom, char *buf,
++			       size_t len)
++{
++	unsigned i;
++
++	if (!buf || !eeprom)
++		return -1;
++	if (len < (sizeof(eeprom->id) + 1))
++		return -1;
++
++	for (i = 0; i < sizeof(eeprom->id) &&
++		isprint(eeprom->id[i]) && isascii(eeprom->id[i]); ++i)
++		buf[i] = eeprom->id[i];
++	buf[i] = '\0';
++
++	return 0;
++}
++
++/*
++ * show_eeprom - display the contents of the module EEPROM
++ */
++int tqmls102xa_show_eeprom(struct tqmls102xa_eeprom_data *eeprom, const char *id)
++{
++	/* must hold largest field of eeprom data */
++	char safe_string[0x41];
++
++	if (!eeprom)
++		return -1;
++
++	puts(id);
++	puts(" EEPROM:\n");
++	/* ID */
++	tqmls102xa_parse_eeprom_id(eeprom, safe_string,
++				   ARRAY_SIZE(safe_string));
++	if (0 == strncmp(safe_string, id, strlen(id)))
++		printf("  ID: %s\n", safe_string);
++	else
++		puts("  unknown hardware variant\n");
++
++	/* Serial number */
++	if (0 == tqmls102xa_parse_eeprom_serial(eeprom, safe_string,
++						ARRAY_SIZE(safe_string)))
++		printf("  SN: %s\n", safe_string);
++	else
++		puts("  unknown serial number\n");
++	/* MAC address */
++	if (0 == tqmls102xa_parse_eeprom_mac(eeprom, safe_string,
++					     ARRAY_SIZE(safe_string)))
++		printf("  MAC: %s\n", safe_string);
++	else
++		puts("  invalid MAC\n");
++
++	return 0;
++}
++
++/*
++ * read_eeprom - read the given EEPROM into memory
++ */
++int tqmls102xa_read_eeprom(unsigned int bus, unsigned int addr,
++			   struct tqmls102xa_eeprom_data *eeprom)
++{
++	int ret;
++	unsigned int oldbus;
++	if (!eeprom)
++		return -1;
++
++	oldbus = i2c_get_bus_num();
++	i2c_set_bus_num(bus);
++	ret = i2c_read(addr, 0, CONFIG_SYS_I2C_EEPROM_ADDR_LEN,
++		       (uchar *)eeprom, sizeof(*eeprom));
++	i2c_set_bus_num(oldbus);
++	return ret;
++}
+diff --git a/board/tqc/tqmls102xa/tqmls102xa_eeprom.h b/board/tqc/tqmls102xa/tqmls102xa_eeprom.h
+new file mode 100644
+index 0000000..099cd11
+--- /dev/null
++++ b/board/tqc/tqmls102xa/tqmls102xa_eeprom.h
+@@ -0,0 +1,35 @@
++/*
++ * Copyright (C) 2014 TQ Systems GmbH
++ * Markus Niebel <Markus.Niebel@tq-group.com>
++ *
++ * SPDX-License-Identifier:    GPL-2.0+
++ */
++
++#ifndef __TQMLS102XA_EEPROM_H__
++#define __TQMLS102XA_EEPROM_H__
++
++/*
++ * static EEPROM layout
++ */
++struct __attribute__ ((__packed__)) tqmls102xa_eeprom_data {
++	u8 hrcw_primary[0x20];
++	u8 mac[6];		/* 0x20 ... 0x25 */
++	u8 rsv1[10];
++	u8 serial[8];		/* 0x30 ... 0x37 */
++	u8 rsv2[8];
++	u8 id[0x40];		/* 0x40 ... 0x7f */
++};
++
++int tqmls102xa_parse_eeprom_mac(struct tqmls102xa_eeprom_data *eeprom, char *buf,
++				size_t len);
++
++int tqmls102xa_parse_eeprom_serial(struct tqmls102xa_eeprom_data *eeprom, char *buf,
++				   size_t len);
++int tqmls102xa_parse_eeprom_id(struct tqmls102xa_eeprom_data *eeprom, char *buf,
++			       size_t len);
++int tqmls102xa_show_eeprom(struct tqmls102xa_eeprom_data *eeprom, const char *id);
++int tqmls102xa_read_eeprom(unsigned int bus, unsigned int addr,
++			   struct tqmls102xa_eeprom_data *eeprom);
++
++
++#endif
+diff --git a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
+index c795682..40f94fa 100644
+--- a/include/configs/tqmls102xa.h
++++ b/include/configs/tqmls102xa.h
+@@ -193,8 +193,6 @@
+ #define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
+ 
+ /* I2C EEPROM (M24C64) */
+-#define CONFIG_ID_EEPROM
+-#define CONFIG_SYS_I2C_EEPROM_NXID
+ #define CONFIG_SYS_EEPROM_BUS_NUM			0
+ #define CONFIG_SYS_I2C_EEPROM_ADDR			0x50
+ #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN			2

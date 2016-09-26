@@ -1,0 +1,1440 @@
+From 9cfc23d29a52c4d1a01d2b64e5b49a9fca675c9d Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 28 Apr 2016 16:11:47 +0200
+Subject: [PATCH] boards: add tqmls102x
+
+This adds the TQMLS102xa module.
+
+The module needs a baseboard.
+
+Signed-off-by: Marco Felsch <Marco.Felsch@tq-group.com>
+---
+ arch/arm/Kconfig                          |   6 +
+ board/tqc/tqmls102xa/Kconfig              |  15 +
+ board/tqc/tqmls102xa/MAINTAINERS          |   7 +
+ board/tqc/tqmls102xa/Makefile             |   9 +
+ board/tqc/tqmls102xa/README               | 109 ++++++
+ board/tqc/tqmls102xa/dcu.c                |  47 +++
+ board/tqc/tqmls102xa/ls102xa_pbi.cfg      |  12 +
+ board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg |  22 ++
+ board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg   |  22 ++
+ board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg |  15 +
+ board/tqc/tqmls102xa/ls102xa_rcw_sd.cfg   |  56 +++
+ board/tqc/tqmls102xa/tqmls102xa.c         | 369 +++++++++++++++++++
+ configs/tqmls102xa_qspi_defconfig         |   9 +
+ configs/tqmls102xa_sdcard_defconfig       |  10 +
+ include/configs/tqmls102xa.h              | 588 ++++++++++++++++++++++++++++++
+ 15 files changed, 1296 insertions(+)
+ create mode 100644 board/tqc/tqmls102xa/Kconfig
+ create mode 100644 board/tqc/tqmls102xa/MAINTAINERS
+ create mode 100644 board/tqc/tqmls102xa/Makefile
+ create mode 100644 board/tqc/tqmls102xa/README
+ create mode 100644 board/tqc/tqmls102xa/dcu.c
+ create mode 100644 board/tqc/tqmls102xa/ls102xa_pbi.cfg
+ create mode 100644 board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
+ create mode 100644 board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
+ create mode 100644 board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg
+ create mode 100644 board/tqc/tqmls102xa/ls102xa_rcw_sd.cfg
+ create mode 100644 board/tqc/tqmls102xa/tqmls102xa.c
+ create mode 100644 configs/tqmls102xa_qspi_defconfig
+ create mode 100644 configs/tqmls102xa_sdcard_defconfig
+ create mode 100644 include/configs/tqmls102xa.h
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 6b65d8e..1737bc3 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -698,6 +698,11 @@ config TARGET_LS1043ARDB
+ 	help
+ 	  Support for Freescale LS1043ARDB platform.
+ 
++config TARGET_TQMLS102XA
++        bool "Support tqmls102xa"
++        select CPU_V7
++        select SUPPORT_SPL
++
+ config TARGET_H2200
+ 	bool "Support h2200"
+ 	select CPU_PXA
+@@ -878,6 +883,7 @@ source "board/timll/devkit3250/Kconfig"
+ source "board/toradex/colibri_pxa270/Kconfig"
+ source "board/toradex/colibri_vf/Kconfig"
+ source "board/technologic/ts4800/Kconfig"
++source "board/tqc/tqmls102xa/Kconfig"
+ source "board/vscom/baltos/Kconfig"
+ source "board/woodburn/Kconfig"
+ source "board/work-microwave/work_92105/Kconfig"
+diff --git a/board/tqc/tqmls102xa/Kconfig b/board/tqc/tqmls102xa/Kconfig
+new file mode 100644
+index 0000000..46241a3
+--- /dev/null
++++ b/board/tqc/tqmls102xa/Kconfig
+@@ -0,0 +1,15 @@
++if TARGET_TQMLS102XA
++
++config SYS_BOARD
++	default "tqmls102xa"
++
++config SYS_VENDOR
++	default "tqc"
++
++config SYS_SOC
++	default "ls102xa"
++
++config SYS_CONFIG_NAME
++	default "tqmls102xa"
++
++endif
+diff --git a/board/tqc/tqmls102xa/MAINTAINERS b/board/tqc/tqmls102xa/MAINTAINERS
+new file mode 100644
+index 0000000..e81aa90
+--- /dev/null
++++ b/board/tqc/tqmls102xa/MAINTAINERS
+@@ -0,0 +1,7 @@
++TQMLS102xa BOARD
++M:	Markus Niebel <Markus.Niebel@tq-group.com>
++S:	Maintained
++F:	board/tqc/tqmls102xa/
++F:	include/configs/tqmls102xa.h
++F:	configs/tqmls102xa_sdcard_defconfig
++F:	configs/tqmls102xa_qspi_defconfig
+diff --git a/board/tqc/tqmls102xa/Makefile b/board/tqc/tqmls102xa/Makefile
+new file mode 100644
+index 0000000..2dcc252
+--- /dev/null
++++ b/board/tqc/tqmls102xa/Makefile
+@@ -0,0 +1,9 @@
++#
++# Copyright 2014 Freescale Semiconductor, Inc.
++# Copyright 2015 TQ Systems GmbH
++#
++# SPDX-License-Identifier:      GPL-2.0+
++#
++
++obj-y += tqmls102xa.o
++obj-$(CONFIG_FSL_DCU_FB) += dcu.o
+diff --git a/board/tqc/tqmls102xa/README b/board/tqc/tqmls102xa/README
+new file mode 100644
+index 0000000..d2821cb
+--- /dev/null
++++ b/board/tqc/tqmls102xa/README
+@@ -0,0 +1,109 @@
++Overview
++--------
++The LS1021ATWR is a Freescale reference board that hosts the LS1021A SoC.
++
++LS1021A SoC Overview
++------------------
++The QorIQ LS1 family, which includes the LS1021A communications processor,
++is built on Layerscape architecture, the industry's first software-aware,
++core-agnostic networking architecture to offer unprecedented efficiency
++and scale.
++
++A member of the value-performance tier, the QorIQ LS1021A processor provides
++extensive integration and power efficiency for fanless, small form factor
++enterprise networking applications. Incorporating dual ARM Cortex-A7 cores
++running up to 1.0 GHz, the LS1021A processor delivers pre-silicon CoreMark
++performance of over 6,000, as well as virtualization support, advanced
++security features and the broadest array of high-speed interconnects and
++optimized peripheral features ever offered in a sub-3 W processor.
++
++The QorIQ LS1021A processor features an integrated LCD controller,
++CAN controller for implementing industrial protocols, DDR3L/4 running
++up to 1600 MHz, integrated security engine and QUICC Engine, and ECC
++protection on both L1 and L2 caches. The LS1021A processor is pin- and
++software-compatible with the QorIQ LS1020A and LS1022A processors.
++
++The LS1021A SoC includes the following function and features:
++
++ - ARM Cortex-A7 MPCore compliant with ARMv7-A architecture
++ - Dual high-preformance ARM Cortex-A7 cores, each core includes:
++   - 32 Kbyte L1 Instruction Cache and Data Cache for each core (ECC protection)
++   - 512 Kbyte shared coherent L2 Cache (with ECC protection)
++   - NEON Co-processor (per core)
++   - 40-bit physical addressing
++   - Vector floating-point support
++ - ARM Core-Link CCI-400 Cache Coherent Interconnect
++ - One DDR3L/DDR4 SDRAM memory controller with x8/x16/x32-bit configuration
++   supporting speeds up to 1600Mtps
++   - ECC and interleaving support
++ - VeTSEC Ethernet complex
++   - Up to 3x virtualized 10/100/1000 Ethernet controllers
++   - MII, RMII, RGMII, and SGMII support
++   - QoS, lossless flow control, and IEEE 1588 support
++ - 4-lane 6GHz SerDes
++ - High speed interconnect (4 SerDes lanes with are muxed for these protocol)
++   - Two PCI Express Gen2 controllers running at up to 5 GHz
++   - One Serial ATA 3.0 supporting 6 GT/s operation
++   - Two SGMII interfaces supporting 1000 Mbps
++ - Additional peripheral interfaces
++   - One high-speed USB 3.0 controller with integrated PHY and one high-speed
++     USB 2.00 controller with ULPI
++   - Integrated flash controller (IFC) with 16-bit interface
++   - Quad SPI NOR Flash
++   - One enhanced Secure digital host controller
++   - Display controller unit (DCU) 24-bit RGB (12-bit DDR pin interface)
++   - Ten UARTs comprised of two 16550 compliant DUARTs, and six low power
++     UARTs
++   - Three I2C controllers
++   - Eight FlexTimers four supporting PWM and four FlexCAN ports
++   - Four GPIO controllers supporting up to 109 general purpose I/O signals
++ - Integrated advanced audio block:
++   - Four synchronous audio interfaces (SAI)
++   - Sony/Philips Digital Interconnect Format (SPDIF)
++   - Asynchronous Sample Rate Converter (ASRC)
++ - Hardware based crypto offload engine
++   - IPSec forwarding at up to 1Gbps
++   - QorIQ Trust Architecture, Secure Boot, and ARM TrustZone supported
++   - Public key hardware accelerator
++   - True Random Number Generator (NIST Certified)
++   - Advanced Encryption Standard Accelerators (AESA)
++   - Data Encryption Standard Accelerators
++ - QUICC Engine ULite block
++   - Two universal communication controllers (TDM and HDLC) supporting 64
++   multichannels, each running at 64 Kbps
++   - Support for 256 channels of HDLC
++ - QorIQ TrustArchitecture with Secure Boot, as well as ARM TrustZone supported
++
++LS1021ATWR board Overview
++-------------------------
++ - DDR Controller
++     - Supports rates of up to 1600 MHz data-rate
++     - Supports one DDR3LP SDRAM.
++ - IFC/Local Bus
++     - NOR: 128MB 16-bit NOR Flash
++ - Ethernet
++     - Three on-board RGMII 10/100/1G ethernet ports.
++ - CPLD
++ - Clocks
++     - System and DDR clock (SYSCLK, DDRCLK)
++     - SERDES clocks
++ - Power Supplies
++ - SDHC
++     - SDHC/SDXC connector
++ - Other IO
++    - One Serial port
++    - Three I2C ports
++
++Memory map
++-----------
++The addresses in brackets are physical addresses.
++
++Start Address	End Address	Description			Size
++0x00_0000_0000	0x00_000F_FFFF	Secure Boot ROM			1MB
++0x00_0100_0000	0x00_0FFF_FFFF	CCSRBAR				240MB
++0x00_1000_0000	0x00_1000_FFFF	OCRAM0				64KB
++0x00_1001_0000	0x00_1001_FFFF	OCRAM1				64KB
++0x00_2000_0000	0x00_20FF_FFFF	DCSR				16MB
++0x00_4000_0000	0x00_5FFF_FFFF	QSPI				512MB
++0x00_6000_0000	0x00_67FF_FFFF	IFC - NOR Flash			128MB
++0x00_8000_0000	0x00_FFFF_FFFF	DRAM1				2GB
+diff --git a/board/tqc/tqmls102xa/dcu.c b/board/tqc/tqmls102xa/dcu.c
+new file mode 100644
+index 0000000..8fe4ccb
+--- /dev/null
++++ b/board/tqc/tqmls102xa/dcu.c
+@@ -0,0 +1,47 @@
++/*
++ * Copyright 2014 Freescale Semiconductor, Inc.
++ *
++ * FSL DCU Framebuffer driver
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <fsl_dcu_fb.h>
++#include "div64.h"
++#include "../common/dcu_sii9022a.h"
++
++DECLARE_GLOBAL_DATA_PTR;
++
++unsigned int dcu_set_pixel_clock(unsigned int pixclock)
++{
++	unsigned long long div;
++
++	div = (unsigned long long)(gd->bus_clk / 1000);
++	div *= (unsigned long long)pixclock;
++	do_div(div, 1000000000);
++
++	return div;
++}
++
++int platform_dcu_init(unsigned int xres, unsigned int yres,
++		      const char *port,
++		      struct fb_videomode *dcu_fb_videomode)
++{
++	const char *name;
++	unsigned int pixel_format;
++
++	if (strncmp(port, "twr_lcd", 4) == 0) {
++		name = "TWR_LCD_RGB card";
++	} else {
++		name = "HDMI";
++		dcu_set_dvi_encoder(dcu_fb_videomode);
++	}
++
++	printf("DCU: Switching to %s monitor @ %ux%u\n", name, xres, yres);
++
++	pixel_format = 32;
++	fsl_dcu_init(xres, yres, pixel_format);
++
++	return 0;
++}
+diff --git a/board/tqc/tqmls102xa/ls102xa_pbi.cfg b/board/tqc/tqmls102xa/ls102xa_pbi.cfg
+new file mode 100644
+index 0000000..f1a1b63
+--- /dev/null
++++ b/board/tqc/tqmls102xa/ls102xa_pbi.cfg
+@@ -0,0 +1,12 @@
++#PBI commands
++
++09570200 ffffffff
++09570158 00000300
++8940007c 21f47300
++
++#Configure Scratch register
++09ee0200 10000000
++#Configure alternate space
++09570158 00001000
++#Flush PBL data
++096100c0 000FFFFF
+diff --git a/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg b/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
+new file mode 100644
+index 0000000..ecd2d5b
+--- /dev/null
++++ b/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
+@@ -0,0 +1,22 @@
++#PBI commands
++
++# apply bit reversing to all register
++# must be written before writen to any other SCFG reg
++09570200 ffffffff
++# alternative config base
++09570158 00000300
++# ACS=1, 4 Bytes - 340 007c -> PCIE1 link caps register
++# clear bits as errata A-007997
++8940007c 21f47300
++# TODO: also needed for PCIE2
++
++# configure QSPI clock (from rcw repo)
++0957015c 00000803
++
++#Configure Scratch register
++#set boot location pointer -> OCRAM 1
++09ee0200 10000000
++#Configure alternate space
++09570158 00001000
++#Flush PBL data
++096100c0 000FFFFF
+diff --git a/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg b/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
+new file mode 100644
+index 0000000..ecd2d5b
+--- /dev/null
++++ b/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
+@@ -0,0 +1,22 @@
++#PBI commands
++
++# apply bit reversing to all register
++# must be written before writen to any other SCFG reg
++09570200 ffffffff
++# alternative config base
++09570158 00000300
++# ACS=1, 4 Bytes - 340 007c -> PCIE1 link caps register
++# clear bits as errata A-007997
++8940007c 21f47300
++# TODO: also needed for PCIE2
++
++# configure QSPI clock (from rcw repo)
++0957015c 00000803
++
++#Configure Scratch register
++#set boot location pointer -> OCRAM 1
++09ee0200 10000000
++#Configure alternate space
++09570158 00001000
++#Flush PBL data
++096100c0 000FFFFF
+diff --git a/board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg b/board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg
+new file mode 100644
+index 0000000..6f69f1d
+--- /dev/null
++++ b/board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg
+@@ -0,0 +1,15 @@
++#PBL preamble and RCW header
++aa55aa55 01ee0100
++
++#enable IFC, disable QSPI and DSPI
++#0608000a 00000000 00000000 00000000
++#20000000 00404000 60025a00 21042000
++#00200000 00000000 00000000 01038000
++#00000000 001b1200 00000000 00000000
++
++#disable IFC, enable QSPI and DSPI
++0608000a 00000000 00000000 00000000
++# SERDES1=70, ,PBI from QSPI,
++70000000 00407900 40025a00 21046000
++00000000 00000000 00000000 01038000
++20024800 881b1540 00000000 00000000
+diff --git a/board/tqc/tqmls102xa/ls102xa_rcw_sd.cfg b/board/tqc/tqmls102xa/ls102xa_rcw_sd.cfg
+new file mode 100644
+index 0000000..16565a9
+--- /dev/null
++++ b/board/tqc/tqmls102xa/ls102xa_rcw_sd.cfg
+@@ -0,0 +1,56 @@
++#PBL preamble and RCW header
++aa55aa55 01ee0100
++
++#enable IFC, disable QSPI and DSPI
++#0608000a 00000000 00000000 00000000
++#20000000 00404000 60025a00 21042000
++#00200000 00000000 00000000 01038000
++#00000000 001b1200 00000000 00000000
++
++#disable IFC, enable QSPI and DSPI
++# 01: SYS_PLL_RAT = 3:1, MEM_PLL_RAT = 8:1; CGA_PLL_RAT = 10:1
++# 02: reserved
++# 03: reserved
++# 04: C1_PLL_SEL = CGA_PLL1/1
++0608000a 00000000 00000000 00000000
++# 05: SERDES1=70,
++# 06: PLL1/2 not powered down
++# 07: PBI from SD/MMC, IFC Mode QSPI, A7 ACE clkdiv 10, A7 DBG clkdiv 10
++# 08: HWA_CGA_M1_CLK_SEL = 001, DRAM_LAT = 8-8-8 / 9-9-9 / 10-10-10 / 11-11-11
++#     use working values, this forces reserved bits to be set and unset
++70000000 00007900 60044a00 21046000
++# 09:
++# 10: free usable
++# 11: unused
++# 12: UART_EXT 001b -> use UART1 and LPUART1 with flow control
++#     IRQ_EXT -> 000b -> use IRQ_BASE
++#     IIC_EXT -> 001b SD_CD/WP
++#     SDHC_EXT -> 000b -> use SDHC_BASE
++#     UART_BASE: 111b -> UART1 ... 4
++#     ASLEEP: 1b -> GPIO1[13]
++#     RTC: 0b -> RTC
++#     SDHC_BASE: 0b SDHC
++#     EVT9: 1b -> GPIO2[24]
++#     IRQ_BASE: 111b -> GPIO1[23 .. 25]
++#     IIC_BASE: 00b
++00000000 00000000 00000000 0823cf00
++# 13: IFC_GRP_A_EXT 001b -> QSPI,
++#     IFC_GRP_D_EXT 001b -> QSPI,
++#     IFC_GRP_E1_EXT 001b -> SPI1_PCS0,SCK/QSPI_DIO_B
++#     IFC_GRP_F_EXT 001b -> QSPI
++#     IFC_GRP_G_EXT 001b -> SPI
++#     IFC_GRP_E1_BASE 1b -> unused, GRP_E1_BASE
++#     IFC_GRP_D_BASE 1b -> GPIO2[13..15]
++#     IFC_GRP_A_BASE 00b -> unused, GRP_A_EXT
++#     IFC_A_22_24 0b -> unused
++# 14: EC1=000b -> RGMII
++#     EC2=100b -> USB
++#     EC3=000b -> RGMII
++#     MDC/MDIO=00b -> MDIO
++#     QE_TDMA/B=110110b -> 2D-ACE
++#     SDHC=01b -> GPIO4[23..26]
++#     DVDD/EVDD/BVDD 3,3V LVDD 2,5V
++#     MDC/MDIO normal mode
++# 15: unused
++# 16: unused
++20124900 101b3340 00000000 00000000
+diff --git a/board/tqc/tqmls102xa/tqmls102xa.c b/board/tqc/tqmls102xa/tqmls102xa.c
+new file mode 100644
+index 0000000..e9eef3e
+--- /dev/null
++++ b/board/tqc/tqmls102xa/tqmls102xa.c
+@@ -0,0 +1,369 @@
++/*
++ * Copyright 2016 TQ Systems GmbH
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <i2c.h>
++#include <asm/io.h>
++#include <asm/arch/immap_ls102xa.h>
++#include <asm/arch/clock.h>
++#include <asm/arch/fsl_serdes.h>
++#include <asm/arch/ls102xa_soc.h>
++#include <asm/arch/ls102xa_sata.h>
++#include <libfdt.h>
++#include <fdt_support.h>
++#include <mmc.h>
++#include <fsl_csu.h>
++#include <fsl_esdhc.h>
++#include <fsl_immap.h>
++#include <fsl_ifc.h>
++#include <netdev.h>
++#include <fsl_mdio.h>
++#include <tsec.h>
++#include <fsl_sec.h>
++#include <spl.h>
++#include "../common/sleep.h"
++#ifdef CONFIG_U_QE
++#include <fsl_qe.h>
++#endif
++
++DECLARE_GLOBAL_DATA_PTR;
++
++int checkboard(void)
++{
++	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
++	unsigned int svr, ver;
++
++	svr = in_be32(&gur->svr);
++
++	puts("Board: TQM");
++	ver = SVR_SOC_VER(svr);
++	switch (ver) {
++	case SOC_VER_LS1020:
++		puts("LS1020A");
++		break;
++	case SOC_VER_LS1021:
++		puts("LS1021A");
++		break;
++	case SOC_VER_LS1022:
++		puts("LS1022A");
++		break;
++	default:
++		puts("Unknown");
++		break;
++	}
++
++	puts(" on MBLS102xa\n");
++	return 0;
++}
++
++void ddrmc_init(void)
++{
++	struct ccsr_ddr *ddr = (struct ccsr_ddr *)CONFIG_SYS_FSL_DDR_ADDR;
++	u32 temp_sdram_cfg;
++
++	out_be32(&ddr->sdram_cfg, DDR_SDRAM_CFG);
++
++	out_be32(&ddr->cs0_bnds, DDR_CS0_BNDS);
++	out_be32(&ddr->cs0_config, DDR_CS0_CONFIG);
++
++	out_be32(&ddr->timing_cfg_0, DDR_TIMING_CFG_0);
++	out_be32(&ddr->timing_cfg_1, DDR_TIMING_CFG_1);
++	out_be32(&ddr->timing_cfg_2, DDR_TIMING_CFG_2);
++	out_be32(&ddr->timing_cfg_3, DDR_TIMING_CFG_3);
++	out_be32(&ddr->timing_cfg_4, DDR_TIMING_CFG_4);
++	out_be32(&ddr->timing_cfg_5, DDR_TIMING_CFG_5);
++
++#ifdef CONFIG_DEEP_SLEEP
++	if (is_warm_boot()) {
++		out_be32(&ddr->sdram_cfg_2,
++				 DDR_SDRAM_CFG_2 & ~SDRAM_CFG2_D_INIT);
++		out_be32(&ddr->init_addr, CONFIG_SYS_SDRAM_BASE);
++		out_be32(&ddr->init_ext_addr, (1 << 31));
++
++		/* DRAM VRef will not be trained */
++		out_be32(&ddr->ddr_cdr2,
++				 DDR_DDR_CDR2 & ~DDR_CDR2_VREF_TRAIN_EN);
++	} else
++#endif
++	{
++		out_be32(&ddr->sdram_cfg_2, DDR_SDRAM_CFG_2);
++		out_be32(&ddr->ddr_cdr2, DDR_DDR_CDR2);
++	}
++
++	out_be32(&ddr->sdram_mode, DDR_SDRAM_MODE);
++	out_be32(&ddr->sdram_mode_2, DDR_SDRAM_MODE_2);
++
++	out_be32(&ddr->sdram_interval, DDR_SDRAM_INTERVAL);
++
++	out_be32(&ddr->ddr_wrlvl_cntl, DDR_DDR_WRLVL_CNTL);
++
++	out_be32(&ddr->ddr_wrlvl_cntl_2, DDR_DDR_WRLVL_CNTL_2);
++	out_be32(&ddr->ddr_wrlvl_cntl_3, DDR_DDR_WRLVL_CNTL_3);
++
++	out_be32(&ddr->ddr_cdr1, DDR_DDR_CDR1);
++
++	out_be32(&ddr->sdram_clk_cntl, DDR_SDRAM_CLK_CNTL);
++	out_be32(&ddr->ddr_zq_cntl, DDR_DDR_ZQ_CNTL);
++
++	out_be32(&ddr->cs0_config_2, DDR_CS0_CONFIG_2);
++	udelay(1);
++
++#ifdef CONFIG_DEEP_SLEEP
++	if (is_warm_boot()) {
++		/* enter self-refresh */
++		temp_sdram_cfg = in_be32(&ddr->sdram_cfg_2);
++		temp_sdram_cfg |= SDRAM_CFG2_FRC_SR;
++		out_be32(&ddr->sdram_cfg_2, temp_sdram_cfg);
++
++		temp_sdram_cfg = (DDR_SDRAM_CFG_MEM_EN | SDRAM_CFG_BI);
++	} else
++#endif
++		temp_sdram_cfg = (DDR_SDRAM_CFG_MEM_EN & ~SDRAM_CFG_BI);
++
++	out_be32(&ddr->sdram_cfg, DDR_SDRAM_CFG | temp_sdram_cfg);
++
++#ifdef CONFIG_DEEP_SLEEP
++	if (is_warm_boot()) {
++		/* exit self-refresh */
++		temp_sdram_cfg = in_be32(&ddr->sdram_cfg_2);
++		temp_sdram_cfg &= ~SDRAM_CFG2_FRC_SR;
++		out_be32(&ddr->sdram_cfg_2, temp_sdram_cfg);
++	}
++#endif
++}
++
++int dram_init(void)
++{
++#if (!defined(CONFIG_SPL) || defined(CONFIG_SPL_BUILD))
++	ddrmc_init();
++#endif
++
++	gd->ram_size = get_ram_size((void *)PHYS_SDRAM, PHYS_SDRAM_SIZE);
++
++#if defined(CONFIG_DEEP_SLEEP) && !defined(CONFIG_SPL_BUILD)
++	fsl_dp_resume();
++#endif
++
++	return 0;
++}
++
++#ifdef CONFIG_FSL_ESDHC
++struct fsl_esdhc_cfg esdhc_cfg[1] = {
++	{CONFIG_SYS_FSL_ESDHC_ADDR},
++};
++
++int board_mmc_init(bd_t *bis)
++{
++	esdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
++
++	return fsl_esdhc_initialize(bis, &esdhc_cfg[0]);
++}
++#endif
++
++#ifdef CONFIG_TSEC_ENET
++extern int phy_read_mmd_indirect(struct phy_device *phydev, int prtad,
++			  int devad, int addr);
++extern void phy_write_mmd_indirect(struct phy_device *phydev, int prtad,
++			    int devad, int addr, u32 data);
++#define DP83867_DEVADDR		0x1f
++
++int board_eth_init(bd_t *bis)
++{
++	struct fsl_pq_mdio_info mdio_info;
++	struct tsec_info_struct tsec_info[4];
++	int num = 0;
++	struct phy_device *phy;
++	int regval;
++
++#ifdef CONFIG_TSEC1
++	SET_STD_TSEC_INFO(tsec_info[num], 1);
++	num++;
++#endif
++#ifdef CONFIG_TSEC2
++	SET_STD_TSEC_INFO(tsec_info[num], 2);
++	num++;
++#endif
++#ifdef CONFIG_TSEC3
++	SET_STD_TSEC_INFO(tsec_info[num], 3);
++	num++;
++#endif
++	if (!num) {
++		printf("No TSECs initialized\n");
++		return 0;
++	}
++
++#ifdef CONFIG_FSL_SGMII_RISER
++	fsl_sgmii_riser_init(tsec_info, num);
++#endif
++
++	mdio_info.regs = (struct tsec_mii_mng *)CONFIG_SYS_MDIO_BASE_ADDR;
++	mdio_info.name = DEFAULT_MII_NAME;
++	fsl_pq_mdio_init(bis, &mdio_info);
++
++	tsec_eth_init(bis, tsec_info, num);
++
++#ifdef CONFIG_TSEC1
++	phy = mdio_phydev_for_ethname(CONFIG_TSEC1_NAME);
++	/* set GPIO to out low */
++	phy_write_mmd_indirect(phy, 0x0171, DP83867_DEVADDR, TSEC1_PHY_ADDR,
++			       0x8888);
++	phy_write_mmd_indirect(phy, 0x0172, DP83867_DEVADDR, TSEC1_PHY_ADDR,
++			       0x0888);
++	/* LED configuration */
++	phy_write(phy, TSEC1_PHY_ADDR, 0x18, 0x6b90);
++	phy_write(phy, TSEC1_PHY_ADDR, 0x19, 0x0000);
++#endif
++#ifdef CONFIG_TSEC2
++	phy = mdio_phydev_for_ethname(CONFIG_TSEC2_NAME);
++	/* set GPIO to out low */
++	phy_write_mmd_indirect(phy, 0x0171, DP83867_DEVADDR, TSEC2_PHY_ADDR,
++			       0x8888);
++	phy_write_mmd_indirect(phy, 0x0172, DP83867_DEVADDR, TSEC2_PHY_ADDR,
++			       0x0888);
++	/* LED configuration */
++	phy_write(phy, TSEC2_PHY_ADDR, 0x18, 0x6b90);
++	phy_write(phy, TSEC2_PHY_ADDR, 0x19, 0x0000);
++#endif
++#ifdef CONFIG_TSEC3
++	phy = mdio_phydev_for_ethname(CONFIG_TSEC3_NAME);
++	/* set GPIO to out low */
++	phy_write_mmd_indirect(phy, 0x0171, DP83867_DEVADDR, TSEC3_PHY_ADDR,
++			       0x8888);
++	phy_write_mmd_indirect(phy, 0x0172, DP83867_DEVADDR, TSEC3_PHY_ADDR,
++			       0x0888);
++	/* enable clock out */
++	regval = phy_read_mmd_indirect(phy, 0x0170, DP83867_DEVADDR,
++				       TSEC3_PHY_ADDR);
++	phy_write_mmd_indirect(phy, 0x0170, DP83867_DEVADDR, TSEC3_PHY_ADDR,
++			       regval | 0x040);
++	/* LED configuration */
++	phy_write(phy, TSEC3_PHY_ADDR, 0x18, 0x6b90);
++	phy_write(phy, TSEC3_PHY_ADDR, 0x19, 0x0000);
++#endif
++
++	return pci_eth_init(bis);
++}
++#endif
++
++int board_early_init_f(void)
++{
++	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
++
++#ifdef CONFIG_TSEC_ENET
++	/* clear BD & FR bits for BE BD's and frame data */
++	clrbits_be32(&scfg->etsecdmamcr, SCFG_ETSECDMAMCR_LE_BD_FR);
++	out_be32(&scfg->etsecmcr, SCFG_ETSECCMCR_GE2_CLK125);
++#endif
++
++#ifdef CONFIG_FSL_IFC
++	init_early_memctl_regs();
++#endif
++
++	arch_soc_init();
++
++#if defined(CONFIG_DEEP_SLEEP)
++	if (is_warm_boot()) {
++		timer_init();
++		dram_init();
++	}
++#endif
++
++	return 0;
++}
++
++#ifdef CONFIG_SPL_BUILD
++void board_init_f(ulong dummy)
++{
++	/* Clear the BSS */
++	memset(__bss_start, 0, __bss_end - __bss_start);
++
++	get_clocks();
++
++#if defined(CONFIG_DEEP_SLEEP)
++	if (is_warm_boot())
++		fsl_dp_disable_console();
++#endif
++
++	preloader_console_init();
++
++	dram_init();
++
++	/* Allow OCRAM access permission as R/W */
++#ifdef CONFIG_LAYERSCAPE_NS_ACCESS
++	enable_layerscape_ns_access();
++	enable_layerscape_ns_access();
++#endif
++
++	board_init_r(NULL, 0);
++}
++#endif
++
++int board_init(void)
++{
++#ifndef CONFIG_SYS_FSL_NO_SERDES
++	fsl_serdes_init();
++#endif
++
++	ls102xa_smmu_stream_id_init();
++
++#ifdef CONFIG_LAYERSCAPE_NS_ACCESS
++	enable_layerscape_ns_access();
++#endif
++
++#ifdef CONFIG_U_QE
++	u_qe_init();
++#endif
++
++	return 0;
++}
++
++#if defined(CONFIG_MISC_INIT_R)
++int misc_init_r(void)
++{
++#ifdef CONFIG_FSL_CAAM
++	return sec_init();
++#endif
++}
++#endif
++
++#if defined(CONFIG_DEEP_SLEEP)
++void board_sleep_prepare(void)
++{
++#ifdef CONFIG_LAYERSCAPE_NS_ACCESS
++	enable_layerscape_ns_access();
++#endif
++}
++#endif
++
++#ifdef CONFIG_BOARD_LATE_INIT
++int board_late_init(void)
++{
++	ls1021a_sata_init();
++
++	return 0;
++}
++#endif
++
++int ft_board_setup(void *blob, bd_t *bd)
++{
++	int off;
++
++	ft_cpu_setup(blob, bd);
++
++#ifdef CONFIG_PCI
++	ft_pci_setup(blob, bd);
++#endif
++
++	off = fdt_node_offset_by_compat_reg(blob, FSL_IFC_COMPAT,
++					    CONFIG_SYS_IFC_ADDR);
++	fdt_set_node_status(blob, off, FDT_STATUS_DISABLED, 0);
++
++	off = fdt_node_offset_by_compat_reg(blob, FSL_QSPI_COMPAT,
++					    QSPI0_BASE_ADDR);
++	fdt_set_node_status(blob, off, FDT_STATUS_OKAY, 0);
++
++	return 0;
++}
+diff --git a/configs/tqmls102xa_qspi_defconfig b/configs/tqmls102xa_qspi_defconfig
+new file mode 100644
+index 0000000..d475813
+--- /dev/null
++++ b/configs/tqmls102xa_qspi_defconfig
+@@ -0,0 +1,9 @@
++CONFIG_ARM=y
++CONFIG_TARGET_TQMLS102XA=y
++CONFIG_ARMV7_LPAE=y
++CONFIG_OF_BOARD_SETUP=y
++CONFIG_SYS_EXTRA_OPTIONS="RAMBOOT_PBL,QSPI_BOOT"
++# CONFIG_CMD_IMLS is not set
++CONFIG_SYS_NS16550=y
++CONFIG_OF_LIBFDT=y
++# CONFIG_EFI_LOADER is not set
+diff --git a/configs/tqmls102xa_sdcard_defconfig b/configs/tqmls102xa_sdcard_defconfig
+new file mode 100644
+index 0000000..eb042ba
+--- /dev/null
++++ b/configs/tqmls102xa_sdcard_defconfig
+@@ -0,0 +1,10 @@
++CONFIG_ARM=y
++CONFIG_TARGET_TQMLS102XA=y
++CONFIG_ARMV7_LPAE=y
++CONFIG_SPL=y
++CONFIG_OF_BOARD_SETUP=y
++CONFIG_SYS_EXTRA_OPTIONS="RAMBOOT_PBL,SPL_FSL_PBL,SD_BOOT"
++# CONFIG_CMD_IMLS is not set
++CONFIG_SYS_NS16550=y
++CONFIG_OF_LIBFDT=y
++# CONFIG_EFI_LOADER is not set
+diff --git a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
+new file mode 100644
+index 0000000..62eb58f
+--- /dev/null
++++ b/include/configs/tqmls102xa.h
+@@ -0,0 +1,588 @@
++/*
++ * Copyright 2014 Freescale Semiconductor, Inc.
++ * Copyright 2015 TQ Systems GmbH
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef __CONFIG_H
++#define __CONFIG_H
++
++#include <linux/sizes.h>
++
++#define CONFIG_LS102XA
++
++#define CONFIG_ARMV7_PSCI
++
++#define CONFIG_SYS_FSL_CLK
++
++#define CONFIG_DISPLAY_CPUINFO
++#define CONFIG_DISPLAY_BOARDINFO
++
++#define CONFIG_SKIP_LOWLEVEL_INIT
++#define CONFIG_BOARD_EARLY_INIT_F
++
++/*
++ * Size of malloc() pool
++ */
++#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 16 * 1024 * 1024)
++
++#define CONFIG_SYS_INIT_RAM_ADDR	OCRAM_BASE_ADDR
++#define CONFIG_SYS_INIT_RAM_SIZE	OCRAM_SIZE
++
++/*
++ * USB
++ */
++
++/*
++ * EHCI Support - disbaled by default as
++ * there is no signal coming out of soc on
++ * this board for this controller. However,
++ * the silicon still has this controller,
++ * and anyone can use this controller by
++ * taking signals out on their board.
++ */
++
++/*#define CONFIG_HAS_FSL_DR_USB*/
++
++#ifdef CONFIG_HAS_FSL_DR_USB
++#define CONFIG_USB_EHCI
++#define CONFIG_USB_EHCI_FSL
++#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
++#endif
++
++/* XHCI Support - enabled by default */
++#define CONFIG_HAS_FSL_XHCI_USB
++
++#ifdef CONFIG_HAS_FSL_XHCI_USB
++#define CONFIG_USB_XHCI_FSL
++#define CONFIG_USB_XHCI_DWC3
++#define CONFIG_USB_XHCI
++#define CONFIG_USB_MAX_CONTROLLER_COUNT        1
++#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS     2
++#endif
++
++#if defined(CONFIG_HAS_FSL_DR_USB) || defined(CONFIG_HAS_FSL_XHCI_USB)
++#define CONFIG_CMD_USB
++#define CONFIG_USB_STORAGE
++#define CONFIG_CMD_EXT2
++#endif
++
++/*
++ * Generic Timer Definitions
++ */
++#define GENERIC_TIMER_CLK		12500000
++
++#define CONFIG_SYS_CLK_FREQ		100000000
++#define CONFIG_DDR_CLK_FREQ		100000000
++
++#define DDR_SDRAM_CFG			0x470c0008
++#define DDR_CS0_BNDS			0x008000bf
++#define DDR_CS0_CONFIG			0x80014302
++#define DDR_TIMING_CFG_0		0x50550004
++#define DDR_TIMING_CFG_1		0xbcb38c56
++#define DDR_TIMING_CFG_2		0x0040d120
++#define DDR_TIMING_CFG_3		0x010e1000
++#define DDR_TIMING_CFG_4		0x00000001
++#define DDR_TIMING_CFG_5		0x03401400
++#define DDR_SDRAM_CFG_2			0x00401010
++#define DDR_SDRAM_MODE			0x00061c60
++#define DDR_SDRAM_MODE_2		0x00180000
++#define DDR_SDRAM_INTERVAL		0x18600618
++#define DDR_DDR_WRLVL_CNTL		0x8655f605
++#define DDR_DDR_WRLVL_CNTL_2	0x05060607
++#define DDR_DDR_WRLVL_CNTL_3	0x05050505
++#define DDR_DDR_CDR1			0x80040000
++#define DDR_DDR_CDR2			0x00000001
++#define DDR_SDRAM_CLK_CNTL		0x02000000
++#define DDR_DDR_ZQ_CNTL			0x89080600
++#define DDR_CS0_CONFIG_2		0
++#define DDR_SDRAM_CFG_MEM_EN	0x80000000
++#define SDRAM_CFG2_D_INIT		0x00000010
++#define DDR_CDR2_VREF_TRAIN_EN	0x00000080
++#define SDRAM_CFG2_FRC_SR		0x80000000
++#define SDRAM_CFG_BI			0x00000001
++
++#ifdef CONFIG_SD_BOOT
++
++#define CONFIG_SYS_FSL_PBL_RCW	board/tqc/tqmls102xa/ls102xa_rcw_sd.cfg
++
++#ifdef CONFIG_RAMBOOT_PBL
++#define CONFIG_SYS_FSL_PBL_PBI	board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
++#endif
++
++#define CONFIG_SPL_FRAMEWORK
++#define CONFIG_SPL_LDSCRIPT	"arch/$(ARCH)/cpu/u-boot-spl.lds"
++#define CONFIG_SPL_LIBCOMMON_SUPPORT
++#define CONFIG_SPL_LIBGENERIC_SUPPORT
++#define CONFIG_SPL_ENV_SUPPORT
++#define CONFIG_SPL_MPC8XXX_INIT_DDR_SUPPORT
++#define CONFIG_SPL_I2C_SUPPORT
++#define CONFIG_SPL_WATCHDOG_SUPPORT
++#define CONFIG_SPL_SERIAL_SUPPORT
++#define CONFIG_SPL_MMC_SUPPORT
++#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR		0xe8
++#define CONFIG_SYS_U_BOOT_MAX_SIZE_SECTORS		0x400
++
++#define CONFIG_SPL_TEXT_BASE		0x10000000
++#define CONFIG_SPL_MAX_SIZE		0x1a000
++#define CONFIG_SPL_STACK		0x1001d000
++#define CONFIG_SPL_PAD_TO		0x1c000
++#define CONFIG_SYS_TEXT_BASE		0x82000000
++
++#define CONFIG_SYS_SPL_MALLOC_START	(CONFIG_SYS_TEXT_BASE + \
++		CONFIG_SYS_MONITOR_LEN)
++#define CONFIG_SYS_SPL_MALLOC_SIZE	0x100000
++#define CONFIG_SPL_BSS_START_ADDR	0x80100000
++#define CONFIG_SPL_BSS_MAX_SIZE		0x80000
++#define CONFIG_SYS_MONITOR_LEN		0x80000
++#endif
++
++#ifdef CONFIG_QSPI_BOOT
++#define CONFIG_SYS_TEXT_BASE		0x40010000
++#endif
++
++#if defined(CONFIG_QSPI_BOOT) || defined(CONFIG_SD_BOOT)
++#define CONFIG_SYS_NO_FLASH
++#endif
++
++#ifndef CONFIG_SYS_TEXT_BASE
++#define CONFIG_SYS_TEXT_BASE		0x60100000
++#endif
++
++#define CONFIG_NR_DRAM_BANKS		1
++#define PHYS_SDRAM			0x80000000
++#define PHYS_SDRAM_SIZE			(1u * 1024 * 1024 * 1024)
++
++#define CONFIG_SYS_DDR_SDRAM_BASE      0x80000000UL
++#define CONFIG_SYS_SDRAM_BASE          CONFIG_SYS_DDR_SDRAM_BASE
++
++#define CONFIG_SYS_HAS_SERDES
++
++#define CONFIG_FSL_CAAM			/* Enable CAAM */
++
++#if !defined(CONFIG_SD_BOOT) && !defined(CONFIG_NAND_BOOT) && \
++	!defined(CONFIG_QSPI_BOOT)
++#define CONFIG_U_QE
++#endif
++
++/*
++ * Serial Port
++ */
++#ifdef CONFIG_LPUART
++#define CONFIG_LPUART_32B_REG
++#else
++#define CONFIG_CONS_INDEX		1
++#define CONFIG_SYS_NS16550_SERIAL
++#ifndef CONFIG_DM_SERIAL
++#define CONFIG_SYS_NS16550_REG_SIZE	1
++#endif
++#define CONFIG_SYS_NS16550_CLK		get_serial_clock()
++#endif
++
++#define CONFIG_BAUDRATE			115200
++
++/*
++ * I2C
++ */
++#define CONFIG_CMD_I2C
++#define CONFIG_SYS_I2C
++#define CONFIG_SYS_I2C_MXC
++#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
++#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
++#define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
++
++/* I2C EEPROM (M24C64) */
++#define CONFIG_ID_EEPROM
++#define CONFIG_SYS_I2C_EEPROM_NXID
++#define CONFIG_SYS_EEPROM_BUS_NUM			0
++#define CONFIG_SYS_I2C_EEPROM_ADDR			0x50
++#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN			2
++#define CONFIG_SYS_I2C_EEPROM_PAGE_WRITE_BITS		5 /* 32 Bytes */
++#define CONFIG_SYS_I2C_EEPROM_PAGE_WRITE_DELAY_MS	20
++#define CONFIG_CMD_EEPROM
++
++/*
++ * MMC
++ */
++#define CONFIG_MMC
++#define CONFIG_CMD_MMC
++#define CONFIG_FSL_ESDHC
++#define CONFIG_GENERIC_MMC
++#define CONFIG_SYS_FSL_ERRATUM_ESDHC111
++#define ESDHCI_QUIRK_BROKEN_TIMEOUT_VALUE
++
++/* QSPI */
++#if defined(CONFIG_QSPI_BOOT) || defined(CONFIG_SD_BOOT)
++
++#define CONFIG_FSL_QSPI
++#define QSPI0_AMBA_BASE			0x40000000
++#define FSL_QSPI_FLASH_SIZE		SZ_64M
++#define FSL_QSPI_FLASH_NUM		2
++#define FSL_QSPI_FLASH_DUALDIE
++#define FSL_QSPI_QUAD_MODE
++
++#define CONFIG_CMD_SF
++#define CONFIG_SPI_FLASH
++/* Banked address mode - TODO implement 4 Byte adressing */
++#define CONFIG_SPI_FLASH_BAR
++#define CONFIG_SPI_FLASH_STMICRO
++
++#define CONFIG_CMD_TIME
++
++#endif /* QSPI */
++
++/*
++ * Video -> TODO
++ */
++/* #define CONFIG_FSL_DCU_FB */
++
++#ifdef CONFIG_FSL_DCU_FB
++
++#define CONFIG_VIDEO
++#define CONFIG_CMD_BMP
++#define CONFIG_CFB_CONSOLE
++#define CONFIG_VGA_AS_SINGLE_DEVICE
++#define CONFIG_VIDEO_LOGO
++#define CONFIG_VIDEO_BMP_LOGO
++
++#define CONFIG_FSL_DCU_SII9022A
++#define CONFIG_SYS_I2C_DVI_BUS_NUM	1
++#define CONFIG_SYS_I2C_DVI_ADDR		0x39
++
++#endif /* CONFIG_FSL_DCU_FB */
++
++/*
++ * eTSEC
++ */
++#define CONFIG_TSEC_ENET
++
++#ifdef CONFIG_TSEC_ENET
++#define CONFIG_MII
++#define CONFIG_MII_DEFAULT_TSEC		1
++#define CONFIG_TSEC1			1
++#define CONFIG_TSEC1_NAME		"eTSEC1"
++#define CONFIG_TSEC2			1
++#define CONFIG_TSEC2_NAME		"eTSEC2"
++#define CONFIG_TSEC3			1
++#define CONFIG_TSEC3_NAME		"eTSEC3"
++
++#define TSEC1_FLAGS			(TSEC_GIGABIT | TSEC_REDUCED)
++#define TSEC2_FLAGS			(TSEC_GIGABIT | TSEC_REDUCED | TSEC_SGMII)
++#define TSEC3_FLAGS			(TSEC_GIGABIT | TSEC_REDUCED)
++
++#define TSEC1_PHY_ADDR			0x0d
++#define TSEC2_PHY_ADDR			0x13
++#define TSEC3_PHY_ADDR			0x05
++
++#define CONFIG_SYS_TBIPA_VALUE		0x08
++
++#define CONFIG_ETHPRIME			"eTSEC3"
++
++#define CONFIG_PHY_GIGE
++#define CONFIG_PHYLIB
++#define CONFIG_PHY_TI
++
++#define CONFIG_HAS_ETH0
++#define CONFIG_HAS_ETH1
++#define CONFIG_HAS_ETH2
++
++#endif /* eTSEC */
++
++/* PCIe */
++#define CONFIG_PCI		/* Enable PCI/PCIE */
++#define CONFIG_PCIE1		/* PCIE controler 1 */
++#define CONFIG_PCIE2		/* PCIE controler 2 */
++#define CONFIG_PCIE_LAYERSCAPE	/* Use common FSL Layerscape PCIe code */
++#define FSL_PCIE_COMPAT "fsl,ls1021a-pcie"
++
++#define CONFIG_SYS_PCI_64BIT
++
++#define CONFIG_SYS_PCIE_CFG0_PHYS_OFF	0x00000000
++#define CONFIG_SYS_PCIE_CFG0_SIZE	0x00001000	/* 4k */
++#define CONFIG_SYS_PCIE_CFG1_PHYS_OFF	0x00001000
++#define CONFIG_SYS_PCIE_CFG1_SIZE	0x00001000	/* 4k */
++
++#define CONFIG_SYS_PCIE_IO_BUS		0x00000000
++#define CONFIG_SYS_PCIE_IO_PHYS_OFF	0x00010000
++#define CONFIG_SYS_PCIE_IO_SIZE		0x00010000	/* 64k */
++
++#define CONFIG_SYS_PCIE_MEM_BUS		0x08000000
++#define CONFIG_SYS_PCIE_MEM_PHYS_OFF	0x04000000
++#define CONFIG_SYS_PCIE_MEM_SIZE	0x08000000	/* 128M */
++
++#ifdef CONFIG_PCI
++#define CONFIG_NET_MULTI
++#define CONFIG_PCI_PNP
++#define CONFIG_E1000
++#define CONFIG_PCI_SCAN_SHOW
++#define CONFIG_CMD_PCI
++#endif
++
++#define CONFIG_CMD_PING
++#define CONFIG_CMD_DHCP
++#define CONFIG_CMD_MII
++#define CONFIG_CMD_MDIO
++
++#define CONFIG_CMDLINE_TAG
++#define CONFIG_CMDLINE_EDITING
++
++#if defined(CONFIG_SYS_NO_FLASH)
++#undef CONFIG_CMD_IMLS
++#endif
++
++#define CONFIG_ARMV7_NONSEC
++#define CONFIG_ARMV7_VIRT
++#define CONFIG_PEN_ADDR_BIG_ENDIAN
++#define CONFIG_LAYERSCAPE_NS_ACCESS
++#define CONFIG_SMP_PEN_ADDR		0x01ee0200
++#define CONFIG_TIMER_CLK_FREQ		12500000
++#define CONFIG_ARMV7_SECURE_BASE	OCRAM_BASE_S_ADDR
++
++#define CONFIG_HWCONFIG
++#define HWCONFIG_BUFFER_SIZE		128
++
++#define CONFIG_BOOTDELAY		3
++
++#ifdef CONFIG_LPUART
++#define TQMLS201X_CONSOLE_DEV		"ttyLP0"
++#else
++#define TQMLS201X_CONSOLE_DEV		"ttyS0"
++#endif
++
++/*
++ * Miscellaneous configurable options
++ */
++#define CONFIG_SYS_LONGHELP		/* undef to save memory */
++#define CONFIG_SYS_HUSH_PARSER		/* use "hush" command parser */
++#define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
++#define CONFIG_AUTO_COMPLETE
++#define CONFIG_SYS_CBSIZE		512	/* Console I/O Buffer Size */
++#define CONFIG_SYS_PBSIZE		\
++		(CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
++#define CONFIG_SYS_MAXARGS		16	/* max number of command args */
++#define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
++
++#define CONFIG_CMD_GREPENV
++#define CONFIG_CMD_MEMINFO
++#define CONFIG_CMD_MEMTEST
++#define CONFIG_SYS_MEMTEST_START	0x80000000
++#define CONFIG_SYS_MEMTEST_END		0x9fffffff
++
++/* set to RAMBASE + 32 MiB -> advice from Documentation/arm/booting */
++#define CONFIG_SYS_LOAD_ADDR		0x82000000
++
++#define CONFIG_LS102XA_STREAM_ID
++
++/*
++ * Stack sizes
++ * The stack sizes are set up in start.S using the settings below
++ */
++#define CONFIG_STACKSIZE		(30 * 1024)
++
++#define CONFIG_SYS_INIT_SP_OFFSET \
++	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
++#define CONFIG_SYS_INIT_SP_ADDR \
++	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
++
++#ifdef CONFIG_SPL_BUILD
++#define CONFIG_SYS_MONITOR_BASE CONFIG_SPL_TEXT_BASE
++#else
++#define CONFIG_SYS_MONITOR_BASE CONFIG_SYS_TEXT_BASE    /* start of monitor */
++#endif
++
++#define CONFIG_SYS_QE_FW_ADDR		0x67f40000
++
++/*
++ * Environment
++ */
++#define CONFIG_ENV_OVERWRITE
++#define CONFIG_ENV_SIZE			(SZ_32K)
++#define CONFIG_LOADADDR			CONFIG_SYS_LOAD_ADDR
++
++#if defined(CONFIG_SD_BOOT)
++
++#define CONFIG_ENV_IS_IN_MMC
++#define CONFIG_SYS_MMC_ENV_DEV		0
++#define CONFIG_ENV_OFFSET		SZ_1M
++
++#define CONFIG_SYS_REDUNDAND_ENVIRONMENT
++#define CONFIG_ENV_SIZE_REDUND		CONFIG_ENV_SIZE
++#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)
++
++#elif defined(CONFIG_QSPI_BOOT)
++
++#define CONFIG_ENV_IS_IN_SPI_FLASH
++#define CONFIG_ENV_OFFSET		0x100000
++#define CONFIG_ENV_SECT_SIZE		0x10000
++
++#define TQMLS102X_UBOOT_SPI_OFFSET	SZ_64K
++
++#else
++#error
++#endif
++
++/* Partitioning */
++#define TQMLS102X_UBOOT_OFFSET		SZ_4K
++#define TQMLS102X_UBOOT_SECTOR_START	0x8
++#define TQMLS102X_UBOOT_SECTOR_COUNT	0x7f8
++#define TQMLS102X_UBOOT_SPI_OFFSET	SZ_64K
++
++#define TQMLS102X_FDT_OFFSET		(2 * SZ_1M)
++#define TQMLS102X_FDT_SECTOR_START	0x1000
++#define TQMLS102X_FDT_SECTOR_COUNT	0x800
++#define CONFIG_DEFAULT_FDT_FILE		"ls1021a-tqmls1021a-mbls102x.dtb"
++
++#define TQMLS102X_KERNEL_SECTOR_START	0x2000
++#define TQMLS102X_KERNEL_SECTOR_COUNT	0x4000
++
++/* 128 MiB offset as in ARM related docu for linux suggested */
++#define TQMLS102X_FDT_ADDRESS		0x88000000
++
++#define TQMLS102X_EXTRA_BOOTDEV_ENV_SETTINGS                                   \
++	"uboot_start="__stringify(TQMLS102X_UBOOT_SECTOR_START)"\0"            \
++	"uboot_size="__stringify(TQMLS102X_UBOOT_SECTOR_COUNT)"\0"             \
++	"fdt_start="__stringify(TQMLS102X_FDT_SECTOR_START)"\0"                \
++	"fdt_size="__stringify(TQMLS102X_FDT_SECTOR_COUNT)"\0"                 \
++	"kernel_start="__stringify(TQMLS102X_KERNEL_SECTOR_START)"\0"          \
++	"kernel_size="__stringify(TQMLS102X_KERNEL_SECTOR_COUNT)"\0"           \
++	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0"                       \
++	"loadimage=mmc dev ${mmcdev}; "                                        \
++		"mmc read ${loadaddr} ${kernel_start} ${kernel_size};\0"       \
++	"loadfdt=mmc dev ${mmcdev}; "                                          \
++		"mmc read ${fdt_addr} ${fdt_start} ${fdt_size};\0"             \
++	"update_uboot=if tftp ${uboot}; then "                                 \
++		"if itest ${filesize} > 0; then "                              \
++			"mmc dev ${mmcdev}; mmc rescan; "                      \
++			"setexpr blkc ${filesize} / 0x200; "                   \
++			"setexpr blkc ${blkc} + 1; "                           \
++			"if itest ${blkc} <= ${uboot_size}; then "             \
++				"mmc write ${loadaddr} ${uboot_start} "        \
++					"${blkc}; "                            \
++			"fi; "                                                 \
++		"fi; fi; "                                                     \
++		"setenv filesize; setenv blkc \0"                              \
++	"update_kernel=run kernel_name; "                                      \
++		"if tftp ${kernel}; then "                                     \
++			"if itest ${filesize} > 0; then "                      \
++				"mmc dev ${mmcdev}; mmc rescan; "              \
++				"setexpr blkc ${filesize} / 0x200; "           \
++				"setexpr blkc ${blkc} + 1; "                   \
++				"if itest ${blkc} <= ${kernel_size}; then "    \
++					"mmc write ${loadaddr} "               \
++						"${kernel_start} ${blkc}; "    \
++				"fi; "                                         \
++			"fi; "                                                 \
++		"fi; "                                                         \
++		"setenv filesize; setenv blkc \0"                              \
++	"update_fdt=if tftp ${fdt_file}; then "                                \
++		"if itest ${filesize} > 0; then "                              \
++			"mmc dev ${mmcdev}; mmc rescan; "                      \
++			"setexpr blkc ${filesize} / 0x200; "                   \
++			"setexpr blkc ${blkc} + 1; "                           \
++			"if itest ${blkc} <= ${fdt_size}; then "               \
++				"mmc write ${loadaddr} ${fdt_start} ${blkc}; " \
++			"fi; "                                                 \
++		"fi; fi; "                                                     \
++		"setenv filesize; setenv blkc \0"                              \
++
++
++#define CONFIG_BOOTCOMMAND \
++	"run mmcboot; run netboot; run panicboot"
++
++#define CONFIG_EXTRA_ENV_SETTINGS                                              \
++	"board=tqmls102x\0"                                                    \
++	"uimage=uImage\0"                                                      \
++	"zimage=zImage\0"                                                      \
++	"boot_type=bootz\0"                                                    \
++	"kernel_name=if test \"${boot_type}\" != bootz; then "                 \
++		"setenv kernel ${uimage}; "                                    \
++		"else setenv kernel ${zimage}; fi\0"                           \
++	"uboot=u-boot-with-spl-pbl-mmcsd-2016.05-rc1.bin\0"                    \
++	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0"                               \
++	"fdt_addr="__stringify(TQMLS102X_FDT_ADDRESS)"\0"                      \
++	"console=" TQMLS201X_CONSOLE_DEV "\0"                                  \
++	"fdt_high=0xffffffff\0"                                                \
++	"initrd_high=0xffffffff\0"                                             \
++	"addtty=setenv bootargs ${bootargs} console=${console},${baudrate}\0"  \
++	"mmcpart=2\0"                                                          \
++	"mmcblkdev=0\0"                                                        \
++	"mmcargs=run addmmc addtty\0"                                          \
++	"addmmc=setenv bootargs ${bootargs} "                                  \
++		"root=/dev/mmcblk${mmcblkdev}p${mmcpart} rw rootwait\0"        \
++	"mmcboot=echo Booting from mmc ...; "                                  \
++		"setenv bootargs; "                                            \
++		"run mmcargs; "                                                \
++		"run loadimage; "                                              \
++		"if run loadfdt; then "                                        \
++			"echo boot device tree kernel ...; "                   \
++			"${boot_type} ${loadaddr} - ${fdt_addr}; "             \
++		"else "                                                        \
++			"${boot_type}; "                                       \
++		"fi;\0"                                                        \
++		"setenv bootargs \0"                                           \
++	"netdev=eth0\0"                                                        \
++	"rootpath=/srv/nfs/tqmls1021a\0"                                       \
++	"ipmode=static\0"                                                      \
++	"netargs=run addnfs addip addtty addfb\0"                              \
++	"addnfs=setenv bootargs ${bootargs} "                                  \
++		"root=/dev/nfs rw "                                            \
++		"nfsroot=${serverip}:${rootpath},v3,tcp;\0"                    \
++	"addip_static=setenv bootargs ${bootargs} "                            \
++		"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:"            \
++		"${hostname}:${netdev}:off\0"                                  \
++	"addip_dynamic=setenv bootargs ${bootargs} ip=dhcp\0"                  \
++	"addip=if test \"${ipmode}\" != static; then "                         \
++		"run addip_dynamic; else run addip_static; fi\0"               \
++	"set_getcmd=if test \"${ipmode}\" != static; then "                    \
++		"setenv getcmd dhcp; setenv autoload yes; "                    \
++		"else setenv getcmd tftp; setenv autoload no; fi\0"            \
++	"netboot=echo Booting from net ...; "                                  \
++		"run kernel_name; "                                            \
++		"run set_getcmd; "                                             \
++		"setenv bootargs; "                                            \
++		"run netargs; "                                                \
++		"if ${getcmd} ${kernel}; then "                                \
++			"if ${getcmd} ${fdt_addr} ${fdt_file}; then "          \
++				"${boot_type} ${loadaddr} - ${fdt_addr}; "     \
++			"fi; "                                                 \
++		"fi; "                                                         \
++		"echo ... failed\0"                                            \
++	"panicboot=echo No boot device !!! reset\0"                            \
++	"uboot-qspi=u-boot.bin-u-boot-qspi\0"                                  \
++	"update_uboot-qspi=if tftp ${uboot-qspi}; then "                       \
++		"if itest ${filesize} > 0; then "                              \
++			"setexpr erasesz ${filesize} / 0x10000; "              \
++			"setexpr erasesz ${erasesz} + 1; "                     \
++			"setexpr erasesz ${erasesz} * 0x10000; "               \
++			"sf probe; sf erase "__stringify(TQMLS102X_UBOOT_SPI_OFFSET)" ${erasesz}; " \
++			"sf write ${loadaddr} "__stringify(TQMLS102X_UBOOT_SPI_OFFSET)" ${filesize}; " \
++		"fi; fi; "                                                     \
++		"setenv filesize; setenv erasesz\0"                            \
++	"rcw-qspi=ls102xa-rcw-tqmls-qspi-0100.bin.bswap\0"                     \
++	"update_rcw=if tftp ${rcw-qspi}; then "                                \
++		"if itest ${filesize} > 0; then "                              \
++			"setexpr erasesz ${filesize} / 0x10000; "              \
++			"setexpr erasesz ${erasesz} + 1; "                     \
++			"setexpr erasesz ${erasesz} * 0x10000; "               \
++			"sf probe; sf erase 0 ${erasesz}; "                    \
++			"sf write ${loadaddr} 0 ${filesize}; "                 \
++		"fi; fi; "                                                     \
++		"setenv filesize; setenv erasesz\0"                            \
++	TQMLS102X_EXTRA_BOOTDEV_ENV_SETTINGS                                   \
++
++#define CONFIG_CMD_BOOTZ
++
++#define CONFIG_MISC_INIT_R
++
++/* Hash command with SHA acceleration supported in hardware */
++#ifdef CONFIG_FSL_CAAM
++#define CONFIG_CMD_HASH
++#define CONFIG_SHA_HW_ACCEL
++#endif
++
++#ifdef CONFIG_SECURE_BOOT
++#define CONFIG_CMD_BLOB
++#endif
++
++#endif /* __CONFIG_H */

@@ -1,0 +1,30 @@
+From 6c703808fe5b5f675f128ad4539fed81f8a517e3 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Mon, 25 Apr 2016 17:06:43 +0200
+Subject: [PATCH] i2c: imx: recover bus stall on ls1021a
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/i2c/mxc_i2c.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/i2c/mxc_i2c.c b/drivers/i2c/mxc_i2c.c
+index 445fa21..f9ab1ae 100644
+--- a/drivers/i2c/mxc_i2c.c
++++ b/drivers/i2c/mxc_i2c.c
+@@ -262,8 +262,14 @@ static void i2c_imx_stop(struct mxc_i2c_bus *i2c_bus)
+ 	temp &= ~(I2CR_MSTA | I2CR_MTX);
+ 	writeb(temp, base + (I2CR << reg_shift));
+ 	ret = wait_for_sr_state(i2c_bus, ST_BUS_IDLE);
+-	if (ret < 0)
++	if (ret < 0) {
+ 		printf("%s:trigger stop failed\n", __func__);
++		temp |= I2CR_RSTA;
++		writeb(temp, base + (I2CR << reg_shift));
++		udelay(10);
++		writeb(temp, base + (I2CR << reg_shift));
++		wait_for_sr_state(i2c_bus, ST_BUS_IDLE);
++	}
+ }
+ 
+ /*

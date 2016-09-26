@@ -1,0 +1,35 @@
+From 1c1c448fe9d5fe061f9d9ceb4f3a2ca0b9ad8f21 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 27 Apr 2016 15:46:35 +0200
+Subject: [PATCH] tqmls102xa: tsec: set interface types
+
+phy_ti driver expects phydev->interface to be either
+RGMII_ID or RGMII_RXID (see include/phy.h) to setup
+rgmii delays. According to tsec_get_interface() this
+cannot be detected, so set it manually in boardfile.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ board/tqc/tqmls102xa/tqmls102xa.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/board/tqc/tqmls102xa/tqmls102xa.c b/board/tqc/tqmls102xa/tqmls102xa.c
+index e9eef3e..d088568 100644
+--- a/board/tqc/tqmls102xa/tqmls102xa.c
++++ b/board/tqc/tqmls102xa/tqmls102xa.c
+@@ -180,6 +180,7 @@ int board_eth_init(bd_t *bis)
+ 
+ #ifdef CONFIG_TSEC1
+ 	SET_STD_TSEC_INFO(tsec_info[num], 1);
++	tsec_info[num].interface = PHY_INTERFACE_MODE_RGMII_ID;
+ 	num++;
+ #endif
+ #ifdef CONFIG_TSEC2
+@@ -188,6 +189,7 @@ int board_eth_init(bd_t *bis)
+ #endif
+ #ifdef CONFIG_TSEC3
+ 	SET_STD_TSEC_INFO(tsec_info[num], 3);
++	tsec_info[num].interface = PHY_INTERFACE_MODE_RGMII_ID;
+ 	num++;
+ #endif
+ 	if (!num) {
