@@ -2,10 +2,10 @@
 Name=phys0
 
 [Network]
-Address=192.168.0.12/24
+#Address=192.168.0.12/24
 #Address=172.20.20.11/16
 #Gateway=172.20.1.10
 #DHCP=ipv4
 #LinkLocalAddressing=ipv4
 #LLMNR=resolve
-VLAN=vlan.100
+#VLAN=vlan.100

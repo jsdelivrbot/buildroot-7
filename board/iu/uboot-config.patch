@@ -161,7 +161,7 @@ diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
 -			"sf write ${loadaddr} 0 ${filesize}; "                 \
 -		"fi; fi; "                                                     \
 -		"setenv filesize; setenv erasesz\0"                            \
-+	"ethact=eth1\0"                                                        \
++	"ethact=eTSEC2\0"                                                  \
 +	"defaultboot=sf probe; sf read 0x82000000 0x150000 0x500000; sf read 0x88000000 0x140000 0x10000; setenv bootargs console=ttyS0,115200 rootfstype=squashfs root=/dev/mtdblock5 quiet systemd.show_status=auto libata.force=disable; bootz 0x82000000 - 0x88000000\0" \
  	TQMLS102X_EXTRA_BOOTDEV_ENV_SETTINGS                                   \
  
