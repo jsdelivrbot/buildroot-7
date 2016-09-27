@@ -1,0 +1,12 @@
+diff -ruN a/dbus/dbus-message.c b/dbus/dbus-message.c
+--- a/dbus/dbus-message.c	2016-03-02 19:52:34.000000000 +0100
++++ b/dbus/dbus-message.c	2016-09-14 14:40:16.651889832 +0200
+@@ -4181,7 +4181,7 @@
+   DBusValidationMode mode;
+   dbus_uint32_t n_unix_fds = 0;
+ 
+-  mode = DBUS_VALIDATION_MODE_DATA_IS_UNTRUSTED;
++  mode = DBUS_VALIDATION_MODE_WE_TRUST_THIS_DATA_ABSOLUTELY;
+   
+   oom = FALSE;
+ 
