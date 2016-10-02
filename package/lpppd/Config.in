@@ -1,0 +1,40 @@
+config BR2_PACKAGE_LPPPD
+	bool "lpppd (experimental)"
+	depends on !BR2_STATIC_LIBS
+	depends on BR2_USE_MMU
+	help
+	  A light-weight implementation of the Point-to-point protocol.
+
+	  https://github.com/snickl/lpppd
+
+if BR2_PACKAGE_LPPPD
+
+config BR2_PACKAGE_LPPPD_FILTER
+	select BR2_PACKAGE_LIBPCAP
+	bool "filtering"
+	help
+	  Packet filtering abilities for lpppd. If enabled,
+	  the lpppd active-filter and pass-filter options
+	  are available.
+
+config BR2_PACKAGE_LPPPD_MULTILINK
+	bool "multilink"
+	help
+	  Enable multilink
+
+config BR2_PACKAGE_LPPPD_PLUGINS
+	bool "plugins"
+	help
+	  Enable plugins
+
+config BR2_PACKAGE_LPPPD_RADIUS
+	bool "radius"
+	depends on BR2_PACKAGE_LPPPD_PLUGINS
+	help
+	  Install RADIUS support for lpppd
+
+endif
+
+comment "lpppd needs a toolchain w/ dynamic library"
+	depends on BR2_STATIC_LIBS
+	depends on BR2_USE_MMU
