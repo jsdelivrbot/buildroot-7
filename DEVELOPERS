@@ -418,6 +418,7 @@ F:	package/acpica/
 F:	package/acpitool/
 F:	package/efibootmgr/
 F:	package/efivar/
+F:	package/fwts/
 F:	package/spi-tools/
 F:	package/xdotool/
 
@@ -1185,6 +1186,9 @@ N:	Pieterjan Camerlynck <pieterjan.camerlynck@gmail.com>
 F:	package/libdvbpsi/
 F:	package/mraa/
 
+N:	Pranit Sirsat <Pranit.Sirsat@imgtec.com>
+F:	package/paho-mqtt-c/
+
 N:	Qais Yousef <Qais.Yousef@imgtec.com>
 F:	package/bellagio/
 
@@ -1198,6 +1202,9 @@ F:	package/gupnp-av/
 
 N:	Renaud Aubin <root@renaud.io>
 F:	package/libhttpparser/
+
+N:	Ricardo Martincoski <ricardo.martincoski@datacom.ind.br>
+F:	package/atop/
 
 N:	Rhys Williams <github@wilberforce.co.nz>
 F:	package/lirc-tools/
@@ -1275,6 +1282,7 @@ F:	package/python-numpy/
 F:	package/scrub/
 F:	package/urg/
 F:	package/ussp-push/
+F:	support/misc/toolchainfile.cmake.in
 
 N:	Santosh Multhalli <santosh.multhalli@rockwellcollins.com>
 F:	package/valijson/
@@ -1524,6 +1532,8 @@ N:	Waldemar Brodkorb <wbx@openadk.org>
 F:	arch/Config.in.bfin
 F:	arch/Config.in.sparc
 F:	arch/Config.in.m68k
+F:	package/uclibc/
+F:	package/mksh/
 
 N:	Waldemar Rymarkiewicz <waldemar.rymarkiewicz@tieto.com>
 F:	package/ccid/
