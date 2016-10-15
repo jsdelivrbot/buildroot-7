@@ -235,7 +235,16 @@ F:	package/perl-www-robotrules/
 F:	package/pixman/
 F:	package/pound/
 F:	package/pure-ftpd/
+F:	package/python-couchdb/
+F:	package/python-cssutils/
+F:	package/python-futures/
+F:	package/python-mwclient/
+F:	package/python-mwscrape/
+F:	package/python-mwscrape2slob/
 F:	package/python-mako/
+F:	package/python-pyicu/
+F:	package/python-pylru/
+F:	package/python-slob/
 F:	package/rtmpdump/
 F:	package/softether/
 F:	package/taglib/
@@ -509,6 +518,7 @@ N:	Frank Hunleth <fhunleth@troodon-software.com>
 F:	package/am335x-pru-package/
 F:	package/libdmtx/
 F:	package/libsodium/
+F:	package/php-amqp/
 F:	package/python-cherrypy/
 F:	package/sane-backends/
 F:	package/ucl/
@@ -708,6 +718,7 @@ F:	package/webkitgtk/
 F:	package/webkitgtk24/
 F:	package/whois/
 F:	package/wireshark/
+F:	package/wpa_supplicant/
 F:	package/wpan-tools/
 F:	package/x11r7/xdriver_xf86-video-qxl/
 F:	package/xtables-addons/
@@ -1089,6 +1100,9 @@ N:	Oli Vogt <oli.vogt.pub01@gmail.com>
 F:	package/python-django/
 F:	package/python-flup/
 
+N:	Olivier Matz <olivier.matz@6wind.com>
+F:	package/python-pyelftools/
+
 N:	Olivier Schonken <olivier.schonken@gmail.com>
 F:	package/ijs/
 F:	package/poppler/
@@ -1134,7 +1148,6 @@ F:	package/python-ipaddr/
 F:	package/python-pam/
 F:	package/python-psutil/
 F:	package/triggerhappy/
-F:	package/wpa_supplicant/
 
 N:	Peter Seiderer <ps.report@gmx.net>
 F:	board/raspberrypi/
@@ -1438,8 +1451,7 @@ F:	package/cmake/
 F:	package/cramfs/
 F:	package/dmidecode/
 F:	package/flashrom/
-F:	package/gcc/gcc-final/
-F:	package/gcc/gcc-initial/
+F:	package/gcc/
 F:	package/genext2fs/
 F:	package/genromfs/
 F:	package/getent/
@@ -1573,6 +1585,7 @@ F:	package/libedit/
 F:	package/libinput/
 F:	package/libiscsi/
 F:	package/libseccomp/
+F:	package/linux-tools/
 F:	package/mesa3d-headers/
 F:	package/mke2img/
 F:	package/nut/
@@ -1584,11 +1597,15 @@ F:	package/slirp/
 F:	package/snappy/
 F:	package/spice/
 F:	package/spice-protocol/
+F:	package/systemd/
+F:	package/systemd-bootchart/
 F:	package/tmux/
 F:	package/tvheadend/
 F:	package/usbredir/
 F:	package/vde2/
 F:	package/w_scan/
+F:	package/wayland/
+F:	package/weston/
 F:	support/download/
 
 N:	Yegor Yefremov <yegorslists@googlemail.com>
