@@ -715,7 +715,6 @@ F:	package/vorbis-tools/
 F:	package/wavpack/
 F:	package/wayland-protocols/
 F:	package/webkitgtk/
-F:	package/webkitgtk24/
 F:	package/whois/
 F:	package/wireshark/
 F:	package/wpa_supplicant/
@@ -1263,6 +1262,9 @@ F:	package/python-pysnmp-apps/
 F:	package/python-pysnmp-mibs/
 F:	package/python-tornado/
 
+N:	Ryan Coe <bluemrp9@gmail.com>
+F:	package/libite/
+
 N:	Ryan Wilkins <ryan@deadfrog.net>
 F:	package/biosdevname/
 
@@ -1349,8 +1351,6 @@ F:	package/sconeserver/
 F:	package/sound-theme-borealis/
 F:	package/sound-theme-freedesktop/
 F:	package/vlc/
-F:	package/wvdial/
-F:	package/wvstreams/
 F:	package/xscreensaver/
 F:	package/zmqpp/
 F:	package/zyre/

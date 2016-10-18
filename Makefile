@@ -143,28 +143,19 @@ $(if $(BASE_DIR),, $(error output directory "$(O)" does not exist))
 # Handling of BR2_EXTERNAL.
 #
 # The value of BR2_EXTERNAL is stored in .br-external in the output directory.
-# On subsequent invocations of make, it is read in. It can still be overridden
-# on the command line, therefore the file is re-created every time make is run.
-#
-# When BR2_EXTERNAL is set to an empty value (e.g. explicitly in command
-# line), the .br-external file is removed and we point to
-# support/dummy-external. This makes sure we can unconditionally include the
-# Config.in and external.mk from the BR2_EXTERNAL directory. In this case,
-# override is necessary so the user can clear BR2_EXTERNAL from the command
-# line, but the dummy path is still used internally.
+# The location of the external.mk makefile fragments is computed in that file.
+# On subsequent invocations of make, this file is read in. BR2_EXTERNAL can
+# still be overridden on the command line, therefore the file is re-created
+# every time make is run.
 
-BR2_EXTERNAL_FILE = $(BASE_DIR)/.br-external
+BR2_EXTERNAL_FILE = $(BASE_DIR)/.br-external.mk
 -include $(BR2_EXTERNAL_FILE)
-ifeq ($(BR2_EXTERNAL),)
-  override BR2_EXTERNAL = support/dummy-external
-  $(shell rm -f $(BR2_EXTERNAL_FILE))
-else
-  _BR2_EXTERNAL = $(shell cd $(BR2_EXTERNAL) >/dev/null 2>&1 && pwd)
-  ifeq ($(_BR2_EXTERNAL),)
-    $(error BR2_EXTERNAL='$(BR2_EXTERNAL)' does not exist, relative to $(TOPDIR))
-  endif
-  override BR2_EXTERNAL := $(_BR2_EXTERNAL)
-  $(shell echo BR2_EXTERNAL ?= $(BR2_EXTERNAL) > $(BR2_EXTERNAL_FILE))
+$(shell support/scripts/br2-external \
+	-m -o '$(BR2_EXTERNAL_FILE)' $(BR2_EXTERNAL))
+BR2_EXTERNAL_ERROR =
+include $(BR2_EXTERNAL_FILE)
+ifneq ($(BR2_EXTERNAL_ERROR),)
+$(error $(BR2_EXTERNAL_ERROR))
 endif
 
 # To make sure that the environment variable overrides the .config option,
@@ -436,9 +427,7 @@ all: world
 
 # Include legacy before the other things, because package .mk files
 # may rely on it.
-ifneq ($(BR2_DEPRECATED),y)
 include Makefile.legacy
-endif
 
 include package/Makefile.in
 include support/dependencies/dependencies.mk
@@ -459,7 +448,15 @@ include boot/common.mk
 include linux/linux.mk
 include fs/common.mk
 
-include $(BR2_EXTERNAL)/external.mk
+# If using a br2-external tree, the BR2_EXTERNAL_$(NAME)_PATH variables
+# are also present in the .config file. Since .config is included after
+# we defined them in the Makefile, the values for those variables are
+# quoted. We just include the generated Makefile fragment .br2-external.mk
+# a third time, which will set those variables to the un-quoted values.
+include $(BR2_EXTERNAL_FILE)
+
+# Nothing to include if no BR2_EXTERNAL tree in use
+include $(BR2_EXTERNAL_MKS)
 
 # Now we are sure we have all the packages scanned and defined. We now
 # check for each package in the list of enabled packages, that all its
@@ -773,7 +770,6 @@ COMMON_CONFIG_ENV = \
 	KCONFIG_AUTOHEADER=$(BUILD_DIR)/buildroot-config/autoconf.h \
 	KCONFIG_TRISTATE=$(BUILD_DIR)/buildroot-config/tristate.config \
 	BR2_CONFIG=$(BR2_CONFIG) \
-	BR2_EXTERNAL=$(BR2_EXTERNAL) \
 	HOST_GCC_VERSION="$(HOSTCC_VERSION)" \
 	BUILD_DIR=$(BUILD_DIR) \
 	SKIP_LEGACY=
@@ -852,7 +848,7 @@ define percent_defconfig
 	@$$(COMMON_CONFIG_ENV) BR2_DEFCONFIG=$(1)/configs/$$@ \
 		$$< --defconfig=$(1)/configs/$$@ $$(CONFIG_CONFIG_IN)
 endef
-$(eval $(foreach d,$(TOPDIR) $(BR2_EXTERNAL),$(call percent_defconfig,$(d))$(sep)))
+$(eval $(foreach d,$(call reverse,$(TOPDIR) $(BR2_EXTERNAL_DIRS)),$(call percent_defconfig,$(d))$(sep)))
 
 savedefconfig: $(BUILD_DIR)/buildroot-config/conf prepare-kconfig
 	@$(COMMON_CONFIG_ENV) $< \
@@ -881,7 +877,7 @@ endif
 # value of BR2_EXTERNAL is changed.
 .PHONY: $(BUILD_DIR)/.br2-external.in
 $(BUILD_DIR)/.br2-external.in: $(BUILD_DIR)
-	@touch $@
+	$(Q)support/scripts/br2-external -k -o "$(@)" $(BR2_EXTERNAL)
 
 # printvars prints all the variables currently defined in our
 # Makefiles. Alternatively, if a non-empty VARS variable is passed,
@@ -975,17 +971,34 @@ help:
 	@echo 'it on-line at http://buildroot.org/docs.html'
 	@echo
 
+# List the defconfig files
+# $(1): base directory
+# $(2): br2-external name, empty for bundled
+define list-defconfigs
+	@first=true; \
+	for defconfig in $(1)/configs/*_defconfig; do \
+		[ -f "$${defconfig}" ] || continue; \
+		if $${first}; then \
+			if [ "$(2)" ]; then \
+				printf 'External configs in "$(call qstrip,$(2))":\n'; \
+			else \
+				printf "Built-in configs:\n"; \
+			fi; \
+			first=false; \
+		fi; \
+		defconfig="$${defconfig##*/}"; \
+		printf "  %-35s - Build for %s\n" "$${defconfig}" "$${defconfig%_defconfig}"; \
+	done; \
+	$${first} || printf "\n"
+endef
+
+# We iterate over BR2_EXTERNAL_NAMES rather than BR2_EXTERNAL_DIRS,
+# because we want to display the name of the br2-external tree.
 list-defconfigs:
-	@echo 'Built-in configs:'
-	@$(foreach b, $(sort $(notdir $(wildcard $(TOPDIR)/configs/*_defconfig))), \
-	  printf "  %-35s - Build for %s\\n" $(b) $(b:_defconfig=);)
-ifneq ($(wildcard $(BR2_EXTERNAL)/configs/*_defconfig),)
-	@echo
-	@echo 'User-provided configs:'
-	@$(foreach b, $(sort $(notdir $(wildcard $(BR2_EXTERNAL)/configs/*_defconfig))), \
-	  printf "  %-35s - Build for %s\\n" $(b) $(b:_defconfig=);)
-endif
-	@echo
+	$(call list-defconfigs,$(TOPDIR))
+	$(foreach name,$(BR2_EXTERNAL_NAMES),\
+		$(call list-defconfigs,$(BR2_EXTERNAL_$(name)_PATH),\
+			$(BR2_EXTERNAL_$(name)_DESC))$(sep))
 
 release: OUT = buildroot-$(BR2_VERSION)
 
@@ -1004,7 +1017,7 @@ print-version:
 	@echo $(BR2_VERSION_FULL)
 
 include docs/manual/manual.mk
--include $(BR2_EXTERNAL)/docs/*/*.mk
+-include $(foreach dir,$(BR2_EXTERNAL_DIRS),$(dir)/docs/*/*.mk)
 
 .PHONY: $(noconfig_targets)
 

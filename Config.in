@@ -14,10 +14,6 @@ config BR2_HOSTARCH
 	string
 	option env="HOSTARCH"
 
-config BR2_EXTERNAL
-	string
-	option env="BR2_EXTERNAL"
-
 config BR2_BUILD_DIR
 	string
 	option env="BUILD_DIR"
@@ -358,36 +354,6 @@ config BR2_CCACHE_USE_BASEDIR
 	  sure you cd to the build directory before starting gdb. See
 	  the section "COMPILING IN DIFFERENT DIRECTORIES" in the ccache
 	  manual for more information.
-
-endif
-
-config BR2_DEPRECATED
-	bool "Show options and packages that are deprecated or obsolete"
-	help
-	  This option shows outdated/obsolete versions of packages and
-	  options that are otherwise hidden.
-
-if BR2_DEPRECATED
-
-config BR2_DEPRECATED_SINCE_2015_11
-	bool
-	default y
-
-config BR2_DEPRECATED_SINCE_2016_02
-	bool
-	default y
-
-config BR2_DEPRECATED_SINCE_2016_05
-	bool
-	default y
-
-config BR2_DEPRECATED_SINCE_2016_08
-	bool
-	default y
-
-config BR2_DEPRECATED_SINCE_2016_11
-	bool
-	default y
 
 endif
 
@@ -758,12 +724,5 @@ source "boot/Config.in"
 source "package/Config.in.host"
 
 source "Config.in.legacy"
-
-menu "User-provided options"
-	depends on BR2_EXTERNAL != "support/dummy-external"
-
-source "$BR2_EXTERNAL/Config.in"
-
-endmenu
 
 source "$BR2_BUILD_DIR/.br2-external.in"
