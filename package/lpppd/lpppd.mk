@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LPPPD_VERSION = 2.4.7
+LPPPD_VERSION = 1
 #LPPPD_SOURCE = lppp-$(LPPPD_VERSION).tar.gz
 #LPPPD_SITE = https://download.samba.org/pub/ppp
 LPPPD_SITE = $(HOME)/git/ppp
@@ -80,10 +80,6 @@ define LPPPD_INSTALL_PLUGINS
 		$(TARGET_DIR)/usr/lib/pppd/$(LPPPD_VERSION)/passwordfd.so
 	$(INSTALL) -D $(LPPPD_DIR)/pppd/plugins/pppoatm/pppoatm.so \
 		$(TARGET_DIR)/usr/lib/pppd/$(LPPPD_VERSION)/pppoatm.so
-	$(INSTALL) -D $(LPPPD_DIR)/pppd/plugins/rp-pppoe/rp-pppoe.so \
-		$(TARGET_DIR)/usr/lib/pppd/$(LPPPD_VERSION)/rp-pppoe.so
-	$(INSTALL) -D $(LPPPD_DIR)/pppd/plugins/rp-pppoe/pppoe-discovery \
-		$(TARGET_DIR)/usr/sbin/pppoe-discovery
 	$(INSTALL) -D $(LPPPD_DIR)/pppd/plugins/pppol2tp/openl2tp.so \
 		$(TARGET_DIR)/usr/lib/pppd/$(LPPPD_VERSION)/openl2tp.so
 	$(INSTALL) -D $(LPPPD_DIR)/pppd/plugins/pppol2tp/pppol2tp.so \
