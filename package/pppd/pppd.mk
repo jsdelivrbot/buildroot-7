@@ -80,7 +80,6 @@ define PPPD_CONFIGURE_CMDS
 	$(SED) 's/^USE_TDB=y/#USE_TDB=y/' $(PPPD_DIR)/*/Makefile.linux
 	$(SED) 's/^HAS_SHADOW=y/#HAS_SHADOW=y/' $(PPPD_DIR)/*/Makefile.linux
 	$(SED) 's/^USE_LIBUTIL=y/#USE_LIBUTIL=y/' $(PPPD_DIR)/*/Makefile.linux
-	$(PPPD_CONFIGURE_PLUGINS)
 	( cd $(@D); $(TARGET_MAKE_ENV) ./configure --prefix=/usr )
 endef
 
