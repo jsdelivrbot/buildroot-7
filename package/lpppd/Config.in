@@ -1,9 +1,11 @@
 config BR2_PACKAGE_LPPPD
 	bool "lpppd (experimental)"
 	depends on !BR2_STATIC_LIBS
+	depends on !BR2_PACKAGE_PPPD
 	depends on BR2_USE_MMU
 	help
-	  A light-weight implementation of the Point-to-point protocol.
+	  A Linux-centered fork of the Point-to-point
+          protocol daemon.
 
 	  https://github.com/snickl/lpppd
 
@@ -22,18 +24,10 @@ config BR2_PACKAGE_LPPPD_MULTILINK
 	help
 	  Enable multilink
 
-config BR2_PACKAGE_LPPPD_PLUGINS
-	bool "plugins"
-	help
-	  Enable plugins
-
-config BR2_PACKAGE_LPPPD_RADIUS
-	bool "radius"
-	depends on BR2_PACKAGE_LPPPD_PLUGINS
-	help
-	  Install RADIUS support for lpppd
-
 endif
+
+comment "lpppd conflicts with pppd"
+        depends on BR2_PACKAGE_PPPD
 
 comment "lpppd needs a toolchain w/ dynamic library"
 	depends on BR2_STATIC_LIBS
