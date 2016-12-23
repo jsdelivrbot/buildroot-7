@@ -144,6 +144,7 @@ HOST_UTIL_LINUX_CONF_OPTS += \
 	--enable-libmount \
 	--enable-libuuid \
 	--without-ncurses \
+	--without-ncursesw \
 	--without-tinfo
 
 ifeq ($(BR2_PACKAGE_HOST_UTIL_LINUX),y)
