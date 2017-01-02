@@ -1,11 +1,11 @@
 config BR2_PACKAGE_LPPPD
-	bool "lpppd (experimental)"
+	bool "lpppd"
 	depends on !BR2_STATIC_LIBS
 	depends on !BR2_PACKAGE_PPPD
 	depends on BR2_USE_MMU
 	help
-	  A Linux-centered fork of the Point-to-point
-          protocol daemon.
+	  A fork of the Point-to-point protocol daemon
+	  for Linux systems.
 
 	  https://github.com/snickl/lpppd
 
