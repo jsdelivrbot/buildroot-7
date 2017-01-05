@@ -25,8 +25,8 @@ BR2_ROOTFS_POST_BUILD_SCRIPT="board/iu/post-build.sh"
 BR2_ROOTFS_POST_IMAGE_SCRIPT="board/iu/post-image.sh"
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_VERSION=y
-BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="4.4.38"
-BR2_LINUX_KERNEL_PATCH="https://www.kernel.org/pub/linux/kernel/projects/rt/4.4/patch-4.4.38-rt49.patch.xz $(HOME)/work/iu/private/adis16355.patch"
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="4.4.39"
+BR2_LINUX_KERNEL_PATCH="https://www.kernel.org/pub/linux/kernel/projects/rt/4.4/patch-4.4.39-rt50.patch.xz $(HOME)/work/iu/private/adis16355.patch"
 BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
 BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="board/iu/linux.config"
 BR2_LINUX_KERNEL_LZ4=y
@@ -114,7 +114,6 @@ BR2_PACKAGE_SWUPDATE=y
 BR2_PACKAGE_SWUPDATE_CONFIG="board/iu/swupdate.config"
 # BR2_PACKAGE_SWUPDATE_INSTALL_WEBSITE is not set
 BR2_PACKAGE_SYSTEMD_JOURNAL_GATEWAY=y
-# BR2_PACKAGE_SYSTEMD_FIRSTBOOT is not set
 # BR2_PACKAGE_SYSTEMD_HOSTNAMED is not set
 # BR2_PACKAGE_SYSTEMD_HWDB is not set
 # BR2_PACKAGE_SYSTEMD_MYHOSTNAME is not set
