@@ -1,0 +1,458 @@
+From 59e8716b3e98b74dc1893ea8a96e06177d5ad254 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Mon, 22 Aug 2016 18:52:28 +0200
+Subject: [PATCH] tqmls102xa: split module and baseboard sources
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ board/tqc/tqmls102xa/Kconfig                 |  14 +++
+ board/tqc/tqmls102xa/Makefile                |   2 +
+ board/tqc/tqmls102xa/tqmls102xa.c            | 134 +--------------------------
+ board/tqc/tqmls102xa/tqmls102xa_bb.h         |  42 +++++++++
+ board/tqc/tqmls102xa/tqmls102xa_mbls102xa.c  | 114 +++++++++++++++++++++++
+ configs/tqmls102xa_mbls102xa_mmcsd_defconfig |  11 +++
+ configs/tqmls102xa_mbls102xa_qspi_defconfig  |  10 ++
+ configs/tqmls102xa_qspi_defconfig            |   9 --
+ configs/tqmls102xa_sdcard_defconfig          |  10 --
+ 9 files changed, 197 insertions(+), 149 deletions(-)
+ create mode 100644 board/tqc/tqmls102xa/tqmls102xa_bb.h
+ create mode 100644 board/tqc/tqmls102xa/tqmls102xa_mbls102xa.c
+ create mode 100644 configs/tqmls102xa_mbls102xa_mmcsd_defconfig
+ create mode 100644 configs/tqmls102xa_mbls102xa_qspi_defconfig
+ delete mode 100644 configs/tqmls102xa_qspi_defconfig
+ delete mode 100644 configs/tqmls102xa_sdcard_defconfig
+
+diff --git a/board/tqc/tqmls102xa/Kconfig b/board/tqc/tqmls102xa/Kconfig
+index 46241a3..032fffa 100644
+--- a/board/tqc/tqmls102xa/Kconfig
++++ b/board/tqc/tqmls102xa/Kconfig
+@@ -12,4 +12,18 @@ config SYS_SOC
+ config SYS_CONFIG_NAME
+ 	default "tqmls102xa"
+ 
++choice
++	prompt "Base board variant"
++	optional
++	help
++	  Select base board for TQMLS102xA module
++
++config TQMLS102XA_MBLS102XA
++	bool "TQMLS102xA on MBLS102xA Starterkit"
++	help
++	  Select the MBLS102xA starterkit.
++	  This features a Ethernet, USB, SD-Card, etc.
++
++endchoice
++
+ endif
+diff --git a/board/tqc/tqmls102xa/Makefile b/board/tqc/tqmls102xa/Makefile
+index 1a39583..11ba71c 100644
+--- a/board/tqc/tqmls102xa/Makefile
++++ b/board/tqc/tqmls102xa/Makefile
+@@ -8,4 +8,6 @@
+ obj-y += tqmls102xa.o \
+ 	tqmls102xa_eeprom.o
+ 
++obj-$(CONFIG_TQMLS102XA_MBLS102XA) += tqmls102xa_mbls102xa.o
++
+ obj-$(CONFIG_FSL_DCU_FB) += dcu.o
+diff --git a/board/tqc/tqmls102xa/tqmls102xa.c b/board/tqc/tqmls102xa/tqmls102xa.c
+index feb7e11..b1ac6ac 100644
+--- a/board/tqc/tqmls102xa/tqmls102xa.c
++++ b/board/tqc/tqmls102xa/tqmls102xa.c
+@@ -4,31 +4,7 @@
+  * SPDX-License-Identifier:	GPL-2.0+
+  */
+ 
+-#include <common.h>
+-#include <i2c.h>
+-#include <asm/io.h>
+-#include <asm/arch/immap_ls102xa.h>
+-#include <asm/arch/clock.h>
+-#include <asm/arch/fsl_serdes.h>
+-#include <asm/arch/ls102xa_soc.h>
+-#include <asm/arch/ls102xa_sata.h>
+-#include <libfdt.h>
+-#include <fdt_support.h>
+-#include <mmc.h>
+-#include <fsl_csu.h>
+-#include <fsl_esdhc.h>
+-#include <fsl_immap.h>
+-#include <fsl_ifc.h>
+-#include <netdev.h>
+-#include <fsl_mdio.h>
+-#include <tsec.h>
+-#include <fsl_sec.h>
+-#include <spl.h>
+-#include "../common/sleep.h"
+-#ifdef CONFIG_U_QE
+-#include <fsl_qe.h>
+-#endif
+-#include "tqmls102xa_eeprom.h"
++#include "tqmls102xa_bb.h"
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+@@ -164,112 +140,8 @@ int board_mmc_init(bd_t *bis)
+ }
+ #endif
+ 
+-#ifdef CONFIG_TSEC_ENET
+-extern int phy_read_mmd_indirect(struct phy_device *phydev, int prtad,
+-			  int devad, int addr);
+-extern void phy_write_mmd_indirect(struct phy_device *phydev, int prtad,
+-			    int devad, int addr, u32 data);
+-#define DP83867_DEVADDR		0x1f
+-
+-int board_eth_init(bd_t *bis)
+-{
+-	struct fsl_pq_mdio_info mdio_info;
+-	struct tsec_info_struct tsec_info[4];
+-	int num = 0;
+-	struct phy_device *phy;
+-	int regval;
+-
+-#ifdef CONFIG_TSEC1
+-	SET_STD_TSEC_INFO(tsec_info[num], 1);
+-	tsec_info[num].interface = PHY_INTERFACE_MODE_RGMII_ID;
+-	num++;
+-#endif
+-#ifdef CONFIG_TSEC2
+-	SET_STD_TSEC_INFO(tsec_info[num], 2);
+-	num++;
+-#endif
+-#ifdef CONFIG_TSEC3
+-	SET_STD_TSEC_INFO(tsec_info[num], 3);
+-	tsec_info[num].interface = PHY_INTERFACE_MODE_RGMII_ID;
+-	num++;
+-#endif
+-	if (!num) {
+-		printf("No TSECs initialized\n");
+-		return 0;
+-	}
+-
+-#ifdef CONFIG_FSL_SGMII_RISER
+-	fsl_sgmii_riser_init(tsec_info, num);
+-#endif
+-
+-	mdio_info.regs = (struct tsec_mii_mng *)CONFIG_SYS_MDIO_BASE_ADDR;
+-	mdio_info.name = DEFAULT_MII_NAME;
+-	fsl_pq_mdio_init(bis, &mdio_info);
+-
+-	tsec_eth_init(bis, tsec_info, num);
+-
+-#ifdef CONFIG_TSEC1
+-	phy = mdio_phydev_for_ethname(CONFIG_TSEC1_NAME);
+-	if (phy) {
+-		/* set GPIO to out low */
+-		phy_write_mmd_indirect(phy, 0x0171, DP83867_DEVADDR,
+-				       TSEC1_PHY_ADDR, 0x8888);
+-		phy_write_mmd_indirect(phy, 0x0172, DP83867_DEVADDR,
+-				       TSEC1_PHY_ADDR, 0x0888);
+-		/* LED configuration */
+-		phy_write(phy, TSEC1_PHY_ADDR, 0x18, 0x6b90);
+-		phy_write(phy, TSEC1_PHY_ADDR, 0x19, 0x0000);
+-	} else {
+-		printf("Unregistering %s\n", CONFIG_TSEC1_NAME);
+-		eth_unregister(eth_get_dev_by_name(CONFIG_TSEC1_NAME));
+-	}
+-#endif
+-#ifdef CONFIG_TSEC2
+-	phy = mdio_phydev_for_ethname(CONFIG_TSEC2_NAME);
+-	if (phy) {
+-		/* set GPIO to out low */
+-		phy_write_mmd_indirect(phy, 0x0171, DP83867_DEVADDR,
+-				       TSEC2_PHY_ADDR, 0x8888);
+-		phy_write_mmd_indirect(phy, 0x0172, DP83867_DEVADDR,
+-				       TSEC2_PHY_ADDR, 0x0888);
+-		/* LED configuration */
+-		phy_write(phy, TSEC2_PHY_ADDR, 0x18, 0x6b90);
+-		phy_write(phy, TSEC2_PHY_ADDR, 0x19, 0x0000);
+-	}
+-#endif
+-#ifdef CONFIG_TSEC3
+-	phy = mdio_phydev_for_ethname(CONFIG_TSEC3_NAME);
+-	if (phy) {
+-		/* set GPIO to out low */
+-		phy_write_mmd_indirect(phy, 0x0171, DP83867_DEVADDR,
+-				       TSEC3_PHY_ADDR, 0x8888);
+-		phy_write_mmd_indirect(phy, 0x0172, DP83867_DEVADDR,
+-				       TSEC3_PHY_ADDR, 0x0888);
+-		/* enable clock out */
+-		regval = phy_read_mmd_indirect(phy, 0x0170, DP83867_DEVADDR,
+-					       TSEC3_PHY_ADDR);
+-		phy_write_mmd_indirect(phy, 0x0170, DP83867_DEVADDR,
+-				       TSEC3_PHY_ADDR, regval | 0x040);
+-		/* LED configuration */
+-		phy_write(phy, TSEC3_PHY_ADDR, 0x18, 0x6b90);
+-		phy_write(phy, TSEC3_PHY_ADDR, 0x19, 0x0000);
+-	}
+-#endif
+-
+-	return pci_eth_init(bis);
+-}
+-#endif
+-
+ int board_early_init_f(void)
+ {
+-	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
+-
+-#ifdef CONFIG_TSEC_ENET
+-	/* clear BD & FR bits for BE BD's and frame data */
+-	clrbits_be32(&scfg->etsecdmamcr, SCFG_ETSECDMAMCR_LE_BD_FR);
+-	out_be32(&scfg->etsecmcr, SCFG_ETSECCMCR_GE2_CLK125);
+-#endif
+-
+ #ifdef CONFIG_FSL_IFC
+ 	init_early_memctl_regs();
+ #endif
+@@ -283,6 +155,8 @@ int board_early_init_f(void)
+ 	}
+ #endif
+ 
++	tqmls102xa_bb_early_init();
++
+ 	return 0;
+ }
+ 
+@@ -376,7 +250,7 @@ int board_late_init(void)
+ 		printf("EEPROM: err %d\n", ret);
+ 	}
+ 
+-	ls1021a_sata_init();
++	tqmls102xa_bb_late_init();
+ 
+ 	return 0;
+ }
+diff --git a/board/tqc/tqmls102xa/tqmls102xa_bb.h b/board/tqc/tqmls102xa/tqmls102xa_bb.h
+new file mode 100644
+index 0000000..7012bcb
+--- /dev/null
++++ b/board/tqc/tqmls102xa/tqmls102xa_bb.h
+@@ -0,0 +1,42 @@
++/*
++ * Copyright 2016 TQ Systems GmbH
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++#ifndef __TQMLS102XA_BB_H__
++#define __TQMLS102XA_BB_H__
++#include <common.h>
++#include <i2c.h>
++#include <asm/io.h>
++#include <asm/arch/immap_ls102xa.h>
++#include <asm/arch/clock.h>
++#include <asm/arch/fsl_serdes.h>
++#include <asm/arch/ls102xa_soc.h>
++#include <asm/arch/ls102xa_sata.h>
++#include <libfdt.h>
++#include <fdt_support.h>
++#include <mmc.h>
++#include <fsl_csu.h>
++#include <fsl_esdhc.h>
++#include <fsl_immap.h>
++#include <fsl_ifc.h>
++#include <netdev.h>
++#include <fsl_mdio.h>
++#include <tsec.h>
++#include <fsl_sec.h>
++#include <spl.h>
++#include "../common/sleep.h"
++#ifdef CONFIG_U_QE
++#include <fsl_qe.h>
++#endif
++#include "tqmls102xa_eeprom.h"
++
++extern int phy_read_mmd_indirect(struct phy_device *phydev, int prtad,
++			  int devad, int addr);
++extern void phy_write_mmd_indirect(struct phy_device *phydev, int prtad,
++			    int devad, int addr, u32 data);
++#define DP83867_DEVADDR		0x1f
++int board_eth_init(bd_t *bis);
++void tqmls102xa_bb_early_init(void);
++void tqmls102xa_bb_late_init(void);
++#endif /* __TQMLS102XA_BB_H__ */
+diff --git a/board/tqc/tqmls102xa/tqmls102xa_mbls102xa.c b/board/tqc/tqmls102xa/tqmls102xa_mbls102xa.c
+new file mode 100644
+index 0000000..bf8c52a
+--- /dev/null
++++ b/board/tqc/tqmls102xa/tqmls102xa_mbls102xa.c
+@@ -0,0 +1,114 @@
++/*
++ * Copyright 2016 TQ Systems GmbH
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include "tqmls102xa_bb.h"
++
++#ifdef CONFIG_TSEC_ENET
++
++int board_eth_init(bd_t *bis)
++{
++	struct fsl_pq_mdio_info mdio_info;
++	struct tsec_info_struct tsec_info[4];
++	int num = 0;
++	struct phy_device *phy;
++	int regval;
++
++#ifdef CONFIG_TSEC1
++	SET_STD_TSEC_INFO(tsec_info[num], 1);
++	tsec_info[num].interface = PHY_INTERFACE_MODE_RGMII_ID;
++	num++;
++#endif
++#ifdef CONFIG_TSEC2
++	SET_STD_TSEC_INFO(tsec_info[num], 2);
++	num++;
++#endif
++#ifdef CONFIG_TSEC3
++	SET_STD_TSEC_INFO(tsec_info[num], 3);
++	tsec_info[num].interface = PHY_INTERFACE_MODE_RGMII_ID;
++	num++;
++#endif
++	if (!num) {
++		printf("No TSECs initialized\n");
++		return 0;
++	}
++
++#ifdef CONFIG_FSL_SGMII_RISER
++	fsl_sgmii_riser_init(tsec_info, num);
++#endif
++
++	mdio_info.regs = (struct tsec_mii_mng *)CONFIG_SYS_MDIO_BASE_ADDR;
++	mdio_info.name = DEFAULT_MII_NAME;
++	fsl_pq_mdio_init(bis, &mdio_info);
++
++	tsec_eth_init(bis, tsec_info, num);
++
++#ifdef CONFIG_TSEC1
++	phy = mdio_phydev_for_ethname(CONFIG_TSEC1_NAME);
++	if (phy) {
++		/* set GPIO to out low */
++		phy_write_mmd_indirect(phy, 0x0171, DP83867_DEVADDR,
++				       TSEC1_PHY_ADDR, 0x8888);
++		phy_write_mmd_indirect(phy, 0x0172, DP83867_DEVADDR,
++				       TSEC1_PHY_ADDR, 0x0888);
++		/* LED configuration */
++		phy_write(phy, TSEC1_PHY_ADDR, 0x18, 0x6b90);
++		phy_write(phy, TSEC1_PHY_ADDR, 0x19, 0x0000);
++	} else {
++		printf("Unregistering %s\n", CONFIG_TSEC1_NAME);
++		eth_unregister(eth_get_dev_by_name(CONFIG_TSEC1_NAME));
++	}
++#endif
++#ifdef CONFIG_TSEC2
++	phy = mdio_phydev_for_ethname(CONFIG_TSEC2_NAME);
++	if (phy) {
++		/* set GPIO to out low */
++		phy_write_mmd_indirect(phy, 0x0171, DP83867_DEVADDR,
++				       TSEC2_PHY_ADDR, 0x8888);
++		phy_write_mmd_indirect(phy, 0x0172, DP83867_DEVADDR,
++				       TSEC2_PHY_ADDR, 0x0888);
++		/* LED configuration */
++		phy_write(phy, TSEC2_PHY_ADDR, 0x18, 0x6b90);
++		phy_write(phy, TSEC2_PHY_ADDR, 0x19, 0x0000);
++	}
++#endif
++#ifdef CONFIG_TSEC3
++	phy = mdio_phydev_for_ethname(CONFIG_TSEC3_NAME);
++	if (phy) {
++		/* set GPIO to out low */
++		phy_write_mmd_indirect(phy, 0x0171, DP83867_DEVADDR,
++				       TSEC3_PHY_ADDR, 0x8888);
++		phy_write_mmd_indirect(phy, 0x0172, DP83867_DEVADDR,
++				       TSEC3_PHY_ADDR, 0x0888);
++		/* enable clock out */
++		regval = phy_read_mmd_indirect(phy, 0x0170, DP83867_DEVADDR,
++					       TSEC3_PHY_ADDR);
++		phy_write_mmd_indirect(phy, 0x0170, DP83867_DEVADDR,
++				       TSEC3_PHY_ADDR, regval | 0x040);
++		/* LED configuration */
++		phy_write(phy, TSEC3_PHY_ADDR, 0x18, 0x6b90);
++		phy_write(phy, TSEC3_PHY_ADDR, 0x19, 0x0000);
++	}
++#endif
++
++	return pci_eth_init(bis);
++}
++
++void tqmls102xa_bb_early_init(void)
++{
++#ifdef CONFIG_TSEC_ENET
++	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
++
++	/* clear BD & FR bits for BE BD's and frame data */
++	clrbits_be32(&scfg->etsecdmamcr, SCFG_ETSECDMAMCR_LE_BD_FR);
++	out_be32(&scfg->etsecmcr, SCFG_ETSECCMCR_GE2_CLK125);
++#endif
++}
++
++void tqmls102xa_bb_late_init(void)
++{
++	ls1021a_sata_init();
++}
++#endif
+diff --git a/configs/tqmls102xa_mbls102xa_mmcsd_defconfig b/configs/tqmls102xa_mbls102xa_mmcsd_defconfig
+new file mode 100644
+index 0000000..11d93f2
+--- /dev/null
++++ b/configs/tqmls102xa_mbls102xa_mmcsd_defconfig
+@@ -0,0 +1,11 @@
++CONFIG_ARM=y
++CONFIG_TARGET_TQMLS102XA=y
++CONFIG_ARMV7_LPAE=y
++CONFIG_SPL=y
++CONFIG_OF_BOARD_SETUP=y
++CONFIG_SYS_EXTRA_OPTIONS="RAMBOOT_PBL,SPL_FSL_PBL,SD_BOOT"
++# CONFIG_CMD_IMLS is not set
++CONFIG_SYS_NS16550=y
++CONFIG_OF_LIBFDT=y
++CONFIG_TQMLS102XA_MBLS102XA=y
++# CONFIG_EFI_LOADER is not set
+diff --git a/configs/tqmls102xa_mbls102xa_qspi_defconfig b/configs/tqmls102xa_mbls102xa_qspi_defconfig
+new file mode 100644
+index 0000000..99edabe
+--- /dev/null
++++ b/configs/tqmls102xa_mbls102xa_qspi_defconfig
+@@ -0,0 +1,10 @@
++CONFIG_ARM=y
++CONFIG_TARGET_TQMLS102XA=y
++CONFIG_ARMV7_LPAE=y
++CONFIG_OF_BOARD_SETUP=y
++CONFIG_SYS_EXTRA_OPTIONS="RAMBOOT_PBL_BIN,QSPI_BOOT"
++# CONFIG_CMD_IMLS is not set
++CONFIG_SYS_NS16550=y
++CONFIG_OF_LIBFDT=y
++CONFIG_TQMLS102XA_MBLS102XA=y
++# CONFIG_EFI_LOADER is not set
+diff --git a/configs/tqmls102xa_qspi_defconfig b/configs/tqmls102xa_qspi_defconfig
+deleted file mode 100644
+index 7e8d7ea..0000000
+--- a/configs/tqmls102xa_qspi_defconfig
++++ /dev/null
+@@ -1,9 +0,0 @@
+-CONFIG_ARM=y
+-CONFIG_TARGET_TQMLS102XA=y
+-CONFIG_ARMV7_LPAE=y
+-CONFIG_OF_BOARD_SETUP=y
+-CONFIG_SYS_EXTRA_OPTIONS="RAMBOOT_PBL_BIN,QSPI_BOOT"
+-# CONFIG_CMD_IMLS is not set
+-CONFIG_SYS_NS16550=y
+-CONFIG_OF_LIBFDT=y
+-# CONFIG_EFI_LOADER is not set
+diff --git a/configs/tqmls102xa_sdcard_defconfig b/configs/tqmls102xa_sdcard_defconfig
+deleted file mode 100644
+index eb042ba..0000000
+--- a/configs/tqmls102xa_sdcard_defconfig
++++ /dev/null
+@@ -1,10 +0,0 @@
+-CONFIG_ARM=y
+-CONFIG_TARGET_TQMLS102XA=y
+-CONFIG_ARMV7_LPAE=y
+-CONFIG_SPL=y
+-CONFIG_OF_BOARD_SETUP=y
+-CONFIG_SYS_EXTRA_OPTIONS="RAMBOOT_PBL,SPL_FSL_PBL,SD_BOOT"
+-# CONFIG_CMD_IMLS is not set
+-CONFIG_SYS_NS16550=y
+-CONFIG_OF_LIBFDT=y
+-# CONFIG_EFI_LOADER is not set

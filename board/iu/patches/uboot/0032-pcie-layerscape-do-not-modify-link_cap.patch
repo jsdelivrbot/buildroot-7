@@ -1,0 +1,42 @@
+From a718a8b17ffe9e4f488f931a7ef2a51f6ff7fc39 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 19 Oct 2016 21:40:48 +0200
+Subject: [PATCH] pcie-layerscape: do not modify link_cap
+
+The removed lines limited PCIe to Gen1 with 2.5GT/s.
+Adapters capable of PCIe Gen2 (5GT/s) were not used to their full potential.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ drivers/pci/pcie_layerscape.c | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/drivers/pci/pcie_layerscape.c b/drivers/pci/pcie_layerscape.c
+index 0ba960e..7416041 100644
+--- a/drivers/pci/pcie_layerscape.c
++++ b/drivers/pci/pcie_layerscape.c
+@@ -173,15 +173,7 @@ static int ls_pcie_link_state(struct ls_pcie *pcie)
+ static int ls_pcie_link_up(struct ls_pcie *pcie)
+ {
+ 	int state;
+-	u32 cap;
+ 
+-	state = ls_pcie_link_state(pcie);
+-	if (state)
+-		return state;
+-
+-	/* Try to download speed to gen1 */
+-	cap = readl(pcie->dbi + PCIE_LINK_CAP);
+-	writel((cap & (~PCIE_LINK_SPEED_MASK)) | 1, pcie->dbi + PCIE_LINK_CAP);
+ 	/*
+ 	 * Notice: the following delay has critical impact on link training
+ 	 * if too short (<30ms) the link doesn't get up.
+@@ -191,8 +183,6 @@ static int ls_pcie_link_up(struct ls_pcie *pcie)
+ 	if (state)
+ 		return state;
+ 
+-	writel(cap, pcie->dbi + PCIE_LINK_CAP);
+-
+ 	return 0;
+ }
+ 

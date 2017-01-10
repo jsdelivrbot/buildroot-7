@@ -1,0 +1,22 @@
+From a64f55a27288594c7595278abc3c99771a8a92cd Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Fri, 3 Jun 2016 16:10:31 +0200
+Subject: [PATCH] dt: tqmls102xa: add rtc offset
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index f99a65b..fb4f3a7 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -79,6 +79,7 @@
+ 	rtc: pcf85063@51 {
+ 		compatible = "nxp,pcf85063";
+ 		nxp,quartz_load = "12.5pF";
++		nxp,offset = <0x80>;
+ 		reg = <0x51>;
+ 		status = "okay";
+ 	};

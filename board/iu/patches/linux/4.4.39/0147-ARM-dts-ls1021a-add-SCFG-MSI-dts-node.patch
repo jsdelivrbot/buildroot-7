@@ -1,0 +1,56 @@
+From 7a51ef847122d7f8f717be90db0a26e0a8a4fddf Mon Sep 17 00:00:00 2001
+From: Minghuan Lian <Minghuan.Lian@nxp.com>
+Date: Thu, 13 Oct 2016 09:49:53 +0200
+Subject: [PATCH] ARM: dts: ls1021a: add SCFG MSI dts node
+
+Add SCFG MSI dts node and add msi-parent property to PCIe dts node
+that points to the corresponding MSI node.
+
+Signed-off-by: Minghuan Lian <Minghuan.Lian@nxp.com>
+Tested-by: Alexander Stein <alexander.stein@systec-electronic.com>
+Signed-off-by: Shawn Guo <shawnguo@kernel.org>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index c98aa33..b1d8d96 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -145,6 +145,20 @@
+ 
+ 		};
+ 
++		msi1: msi-controller@1570e00 {
++			compatible = "fsl,1s1021a-msi";
++			reg = <0x0 0x1570e00 0x0 0x8>;
++			msi-controller;
++			interrupts =  <GIC_SPI 179 IRQ_TYPE_LEVEL_HIGH>;
++		};
++
++		msi2: msi-controller@1570e08 {
++			compatible = "fsl,1s1021a-msi";
++			reg = <0x0 0x1570e08 0x0 0x8>;
++			msi-controller;
++			interrupts = <GIC_SPI 180 IRQ_TYPE_LEVEL_HIGH>;
++		};
++
+ 		ifc: ifc@1530000 {
+ 			compatible = "fsl,ifc", "simple-bus";
+ 			reg = <0x0 0x1530000 0x0 0x10000>;
+@@ -857,6 +871,7 @@
+ 			bus-range = <0x0 0xff>;
+ 			ranges = <0x81000000 0x0 0x00000000 0x40 0x00010000 0x0 0x00010000   /* downstream I/O */
+ 				  0x82000000 0x0 0x40000000 0x40 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
++			msi-parent = <&msi1>;
+ 			#interrupt-cells = <1>;
+ 			interrupt-map-mask = <0 0 0 7>;
+ 			interrupt-map = <0000 0 0 1 &gic GIC_SPI 91  IRQ_TYPE_LEVEL_HIGH>,
+@@ -880,6 +895,7 @@
+ 			bus-range = <0x0 0xff>;
+ 			ranges = <0x81000000 0x0 0x00000000 0x48 0x00010000 0x0 0x00010000   /* downstream I/O */
+ 				  0x82000000 0x0 0x40000000 0x48 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
++			msi-parent = <&msi2>;
+ 			#interrupt-cells = <1>;
+ 			interrupt-map-mask = <0 0 0 7>;
+ 			interrupt-map = <0000 0 0 1 &gic GIC_SPI 92  IRQ_TYPE_LEVEL_HIGH>,

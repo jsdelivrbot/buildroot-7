@@ -1,0 +1,141 @@
+From ed6d07ebfcd985af86331220564b6e54c08636b8 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 19 Oct 2016 21:41:00 +0200
+Subject: [PATCH] mbls102xa: add cpld_mux command and use in config header
+
+This baseboard has a CPLD that muxes peripheral interfaces
+depending on four GPIOs at the CPLD. The GPIOs are readable via
+an i2c port expander. The function allows testing against a
+user defined pin mask and when matching allows to execute a
+user defined shell command.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ cmd/Makefile                 |  1 +
+ cmd/cpld_mux.c               | 43 +++++++++++++++++++++++++++++++++++++++++++
+ include/configs/tqmls102xa.h | 27 ++++++++++++++++++++++++---
+ 3 files changed, 68 insertions(+), 3 deletions(-)
+ create mode 100644 cmd/cpld_mux.c
+
+diff --git a/cmd/Makefile b/cmd/Makefile
+index f95759e..a2f04b4 100644
+--- a/cmd/Makefile
++++ b/cmd/Makefile
+@@ -31,6 +31,7 @@ obj-$(CONFIG_CMD_CBFS) += cbfs.o
+ obj-$(CONFIG_CMD_CLK) += clk.o
+ obj-$(CONFIG_CMD_CONSOLE) += console.o
+ obj-$(CONFIG_CMD_CPLBINFO) += cplbinfo.o
++obj-$(CONFIG_CMD_CPLD_MUX) += cpld_mux.o
+ obj-$(CONFIG_CMD_CPU) += cpu.o
+ obj-$(CONFIG_DATAFLASH_MMC_SELECT) += dataflash_mmc_mux.o
+ obj-$(CONFIG_CMD_DATE) += date.o
+diff --git a/cmd/cpld_mux.c b/cmd/cpld_mux.c
+new file mode 100644
+index 0000000..7798158
+--- /dev/null
++++ b/cmd/cpld_mux.c
+@@ -0,0 +1,43 @@
++/*
++ * (C) Copyright 2016 Michael Krummsdorf, TQ-Systems GmbH, <michael.krummsdorf@tq-group.com>
++ *
++ * SPDX-License-Identifier:    GPL-2.0+
++ */
++
++#include <common.h>
++#include <command.h>
++#include <i2c.h>
++#include <stdlib.h>
++
++int do_cpld_mux (cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
++{
++	int ret;
++	unsigned char cpld_mux;
++	unsigned int oldbus;
++	char *cmd = CONFIG_CPLD_MUX_MATCH_COMMAND;
++
++	if (!cmd)
++		return 0;
++
++	/* Parse DIP switch for CPLD mux mode */
++	oldbus = i2c_get_bus_num();
++	i2c_set_bus_num(CONFIG_CPLD_MUX_DIP_BUS);
++	ret = i2c_read(CONFIG_CPLD_MUX_DIP_ADDRESS,
++		       CONFIG_CPLD_MUX_DIP_REGISTER,
++		       1, &cpld_mux, sizeof(cpld_mux));
++	i2c_set_bus_num(oldbus);
++
++	if ((!ret) && (cpld_mux & CONFIG_CPLD_MUX_DIP_MASK))
++		run_command_list(cmd, -1, 0);
++
++	return 0;
++}
++/***************************************************/
++
++U_BOOT_CMD(
++	cpld_mux,	CONFIG_SYS_MAXARGS,	0,	do_cpld_mux,
++	"run command on read i2c value",
++	     "- Reads from i2c bus/address/register,\n"
++	     "         - compares to predefined mask and on a match\n"
++	     "         - runs predefined command"
++);
+diff --git a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
+index 5a6de01..742f185 100644
+--- a/include/configs/tqmls102xa.h
++++ b/include/configs/tqmls102xa.h
+@@ -324,6 +324,20 @@
+ #define CONFIG_CMD_PCI
+ #endif
+ 
++#ifdef CONFIG_TQMLS102XA_MBLS102XA
++#define CONFIG_CMD_CPLD_MUX
++#define CONFIG_CPLD_MUX_DIP_BUS		0x0
++#define CONFIG_CPLD_MUX_DIP_ADDRESS	0x22
++#define CONFIG_CPLD_MUX_DIP_REGISTER	0x0
++/* for LVDS and LVDS_RGBINV add video mode definition to bootargs
++ * in order to disable HDMI connector modes
++ */
++#define CONFIG_CPLD_MUX_DIP_MASK	0x08
++#define CONFIG_CPLD_MUX_MATCH_COMMAND	"setenv bootargs ${bootargs} " \
++					"video=HDMI-A-1:d video=LVDS-1:800x480-32"
++#endif
++
++
+ #define CONFIG_CMD_PING
+ #define CONFIG_CMD_DHCP
+ #define CONFIG_CMD_MII
+@@ -450,6 +464,12 @@
+ /* 128 MiB offset as in ARM related docu for linux suggested */
+ #define TQMLS102X_FDT_ADDRESS		0x88000000
+ 
++#if defined(CONFIG_TQMLS102XA_MBLS102XA)
++#define BASEBOARD_EXTRA_ENV_SETTINGS	"addplatform=cpld_mux\0"
++#else
++#define BASEBOARD_EXTRA_ENV_SETTINGS	"addplatform=\0"
++#endif
++
+ #define TQMLS102X_EXTRA_BOOTDEV_ENV_SETTINGS                                   \
+ 	"uboot_start="__stringify(TQMLS102X_UBOOT_SECTOR_START)"\0"            \
+ 	"uboot_size="__stringify(TQMLS102X_UBOOT_SECTOR_COUNT)"\0"             \
+@@ -496,7 +516,7 @@
+ 			"fi; "                                                 \
+ 		"fi; fi; "                                                     \
+ 		"setenv filesize; setenv blkc \0"                              \
+-
++	BASEBOARD_EXTRA_ENV_SETTINGS                                           \
+ 
+ #define CONFIG_BOOTCOMMAND \
+ 	"run mmcboot; run netboot; run panicboot"
+@@ -516,10 +536,11 @@
+ 	"console=" TQMLS201X_CONSOLE_DEV "\0"                                  \
+ 	"fdt_high=0xffffffff\0"                                                \
+ 	"initrd_high=0xffffffff\0"                                             \
+-	"addtty=setenv bootargs ${bootargs} console=${console},${baudrate}\0"  \
++	"addtty=setenv bootargs ${bootargs} console=tty0 "                     \
++		"console=${console},${baudrate}\0"                             \
+ 	"mmcpart=2\0"                                                          \
+ 	"mmcblkdev=0\0"                                                        \
+-	"mmcargs=run addmmc addtty addmisc\0"                                  \
++	"mmcargs=run addmmc addtty addmisc addplatform\0"                      \
+ 	"addmmc=setenv bootargs ${bootargs} "                                  \
+ 		"root=/dev/mmcblk${mmcblkdev}p${mmcpart} rw rootwait\0"        \
+ 	"mmcboot=echo Booting from mmc ...; "                                  \

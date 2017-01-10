@@ -1,0 +1,99 @@
+From b0bb32fe3cc5b13cc03ad087430e62393aecaf44 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 19 Oct 2016 21:40:05 +0200
+Subject: [PATCH] tqmls102xa: debug pbi content
+
+Do not limit PCIe Link Cap to Gen1.
+Remove unused ls102xa_pbi.cfg.
+Reorder PBIs and add a comment.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ board/tqc/tqmls102xa/ls102xa_pbi.cfg      | 12 ------------
+ board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg | 20 ++++++++------------
+ board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg   | 12 ++++--------
+ 3 files changed, 12 insertions(+), 32 deletions(-)
+ delete mode 100644 board/tqc/tqmls102xa/ls102xa_pbi.cfg
+
+diff --git a/board/tqc/tqmls102xa/ls102xa_pbi.cfg b/board/tqc/tqmls102xa/ls102xa_pbi.cfg
+deleted file mode 100644
+index f1a1b63..0000000
+--- a/board/tqc/tqmls102xa/ls102xa_pbi.cfg
++++ /dev/null
+@@ -1,12 +0,0 @@
+-#PBI commands
+-
+-09570200 ffffffff
+-09570158 00000300
+-8940007c 21f47300
+-
+-#Configure Scratch register
+-09ee0200 10000000
+-#Configure alternate space
+-09570158 00001000
+-#Flush PBL data
+-096100c0 000FFFFF
+diff --git a/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg b/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
+index fc0f0c9..9df52d9 100644
+--- a/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
++++ b/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
+@@ -1,5 +1,9 @@
+ #PBI commands
+ 
++# apply bit reversing to all register
++# must be written before writen to any other SCFG reg
++09570200 ffffffff
++
+ # configure QSPI clock (from rcw repo)
+ 0957015c 00000803
+ 
+@@ -7,16 +11,8 @@
+ #set boot location pointer -> QSPI0@64K
+ 09ee0200 40010000
+ 
+-# apply bit reversing to all register
+-# must be written before writen to any other SCFG reg
+-09570200 ffffffff
+-
+-# alternative config base
+-09570158 00000300
+-# ACS=1, 4 Bytes - 340 007c -> PCIE1 link caps register
+-# clear bits as errata A-007997
+-8940007c 21f47300
+-# TODO: also needed for PCIE2
+-
++# Increase IO drive strength to avoid FCS error on RGMII ports
+ 09570d00 b7fb4000
+-09ea00e4 10000000
++
++#Configure alternate space
++09570158 00001000
+diff --git a/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg b/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
+index ecd2d5b..4f9b93d 100644
+--- a/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
++++ b/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
+@@ -3,12 +3,6 @@
+ # apply bit reversing to all register
+ # must be written before writen to any other SCFG reg
+ 09570200 ffffffff
+-# alternative config base
+-09570158 00000300
+-# ACS=1, 4 Bytes - 340 007c -> PCIE1 link caps register
+-# clear bits as errata A-007997
+-8940007c 21f47300
+-# TODO: also needed for PCIE2
+ 
+ # configure QSPI clock (from rcw repo)
+ 0957015c 00000803
+@@ -16,7 +10,9 @@
+ #Configure Scratch register
+ #set boot location pointer -> OCRAM 1
+ 09ee0200 10000000
++
++# Increase IO drive strength to avoid FCS error on RGMII ports
++09570d00 b7fb4000
++
+ #Configure alternate space
+ 09570158 00001000
+-#Flush PBL data
+-096100c0 000FFFFF

@@ -1,0 +1,23 @@
+From f314de9f34b030494cf71237fc70148630452860 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 19 Oct 2016 11:40:44 +0200
+Subject: [PATCH] dt:ls1021a: fix scfg region for msi-controllers
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 13149b7..10d7ddf 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -208,7 +208,7 @@
+ 
+ 		scfg: scfg@1570000 {
+ 			compatible = "fsl,ls1021a-scfg", "syscon";
+-			reg = <0x0 0x1570000 0x0 0x10000>;
++			reg = <0x0 0x1570000 0x0 0x0e00>;
+ 			big-endian;
+ 		};
+ 

@@ -1,0 +1,86 @@
+From ddb2cd29f85f737e3b2ef4a379e893da08204d50 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 11 Aug 2016 10:09:11 +0200
+Subject: [PATCH] net: phy: dp83867: change dt properties to optional
+
+Otherwise PHY would not initialize correctly when in SGMII mode and no delays defined.
+LEDCFG and FIFO-DEPTH optional as well.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ .../devicetree/bindings/net/ti,dp83867.txt         |  2 ++
+ drivers/net/phy/dp83867.c                          | 33 ++++++++++++++--------
+ 2 files changed, 24 insertions(+), 11 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/net/ti,dp83867.txt b/Documentation/devicetree/bindings/net/ti,dp83867.txt
+index b308fb22..2ce7661 100644
+--- a/Documentation/devicetree/bindings/net/ti,dp83867.txt
++++ b/Documentation/devicetree/bindings/net/ti,dp83867.txt
+@@ -2,10 +2,12 @@
+ 
+ Required properties:
+ 	- reg - The ID number for the phy, usually a small integer
++Required properties for RGMII_ID type interfaces:
+ 	- ti,rx-internal-delay - RGMII Recieve Clock Delay - see dt-bindings/net/ti-dp83867.h
+ 		for applicable values
+ 	- ti,tx-internal-delay - RGMII Transmit Clock Delay - see dt-bindings/net/ti-dp83867.h
+ 		for applicable values
++Optional properties:
+ 	- ti,fifo-depth - Transmitt FIFO depth- see dt-bindings/net/ti-dp83867.h
+ 		for applicable values
+ 	- ti,led-cfg1 - Value of LED configuration register 1
+diff --git a/drivers/net/phy/dp83867.c b/drivers/net/phy/dp83867.c
+index 7e6acbb..4b3d03e 100644
+--- a/drivers/net/phy/dp83867.c
++++ b/drivers/net/phy/dp83867.c
+@@ -117,28 +117,39 @@ static int dp83867_of_init(struct phy_device *phydev)
+ 	if (!phydev->dev.of_node)
+ 		return -ENODEV;
+ 
+-	ret = of_property_read_u32(of_node, "ti,rx-internal-delay",
+-				   &dp83867->rx_id_delay);
+-	if (ret)
+-		return ret;
++	if ((phydev->interface >= PHY_INTERFACE_MODE_RGMII_ID) &&
++	    (phydev->interface <= PHY_INTERFACE_MODE_RGMII_RXID)) {
++		ret = of_property_read_u32(of_node, "ti,rx-internal-delay",
++					   &dp83867->rx_id_delay);
++		if (ret) {
++			dev_err(dev, "could not find ti,rx-internal-delay\n");
++			return ret;
++		}
+ 
+-	ret = of_property_read_u32(of_node, "ti,tx-internal-delay",
+-				   &dp83867->tx_id_delay);
+-	if (ret)
+-		return ret;
++		ret = of_property_read_u32(of_node, "ti,tx-internal-delay",
++					   &dp83867->tx_id_delay);
++		if (ret) {
++			dev_err(dev, "could not find ti,tx-internal-delay\n");
++			return ret;
++		}
++	}
+ 
+ 	ret = of_property_read_u32(of_node, "ti,led-cfg1",
+ 				&dp83867->led_cfg1);
+ 	if (ret)
+-		return ret;
++		dev_dbg(dev, "could not find ti,led-cfg1\n");
+ 
+ 	ret = of_property_read_u32(of_node, "ti,led-cfg2",
+ 				&dp83867->led_cfg2);
+ 	if (ret)
+-		return ret;
++		dev_dbg(dev, "could not find ti,led-cfg2\n");
+ 
+-	return of_property_read_u32(of_node, "ti,fifo-depth",
++	ret = of_property_read_u32(of_node, "ti,fifo-depth",
+ 				   &dp83867->fifo_depth);
++	if (ret)
++		dev_dbg(dev, "could not find ti,fifo-depth\n");
++
++	return 0;
+ }
+ #else
+ static int dp83867_of_init(struct phy_device *phydev)

@@ -1,0 +1,115 @@
+From a8ec24f8e9125d9a0ef33dc33ecca167aa88f54d Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Fri, 19 Aug 2016 17:19:44 +0200
+Subject: [PATCH] tqmls102xa: synch mmcsd rcw/spi to qspi
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg | 20 +++++------
+ board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg | 58 +++++++++++++++++++++++++------
+ 2 files changed, 57 insertions(+), 21 deletions(-)
+
+diff --git a/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg b/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
+index ecd2d5b..fc0f0c9 100644
+--- a/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
++++ b/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
+@@ -1,8 +1,16 @@
+ #PBI commands
+ 
++# configure QSPI clock (from rcw repo)
++0957015c 00000803
++
++#Configure Scratch register
++#set boot location pointer -> QSPI0@64K
++09ee0200 40010000
++
+ # apply bit reversing to all register
+ # must be written before writen to any other SCFG reg
+ 09570200 ffffffff
++
+ # alternative config base
+ 09570158 00000300
+ # ACS=1, 4 Bytes - 340 007c -> PCIE1 link caps register
+@@ -10,13 +18,5 @@
+ 8940007c 21f47300
+ # TODO: also needed for PCIE2
+ 
+-# configure QSPI clock (from rcw repo)
+-0957015c 00000803
+-
+-#Configure Scratch register
+-#set boot location pointer -> OCRAM 1
+-09ee0200 10000000
+-#Configure alternate space
+-09570158 00001000
+-#Flush PBL data
+-096100c0 000FFFFF
++09570d00 b7fb4000
++09ea00e4 10000000
+diff --git a/board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg b/board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg
+index 6f69f1d..5b1523c 100644
+--- a/board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg
++++ b/board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg
+@@ -1,15 +1,51 @@
+ #PBL preamble and RCW header
+ aa55aa55 01ee0100
+ 
+-#enable IFC, disable QSPI and DSPI
+-#0608000a 00000000 00000000 00000000
+-#20000000 00404000 60025a00 21042000
+-#00200000 00000000 00000000 01038000
+-#00000000 001b1200 00000000 00000000
+-
+-#disable IFC, enable QSPI and DSPI
++# 01: SYS_PLL_RAT = 3:1, MEM_PLL_RAT = 8:1; CGA_PLL_RAT = 10:1
++# 02: reserved
++# 03: reserved
++# 04: C1_PLL_SEL = CGA_PLL1/1
+ 0608000a 00000000 00000000 00000000
+-# SERDES1=70, ,PBI from QSPI,
+-70000000 00407900 40025a00 21046000
+-00000000 00000000 00000000 01038000
+-20024800 881b1540 00000000 00000000
++# 05: SERDES1=70,
++# 06: PLL1/2 not powered down
++# 07: PBI from QSPI0,
++#     (IFC Mode need QSPI?)
++#     IFC Mode 16bit NOR ALE4, ALE before CS, A7 ACE clkdiv 10, A7 DBG clkdiv 10
++# 08: HWA_CGA_M1_CLK_SEL = 001, DRAM_LAT = 8-8-8 / 9-9-9 / 10-10-10 / 11-11-11
++#     use working values, this forces reserved bits to be set and unset
++70000000 00007900 40025a00 21046000
++# 09:
++# 10: free usable
++# 11: unused
++# 12: UART_EXT 100b -> use UART1 and LPUART1 with flow control and 2D-ACE SYNC
++#     IRQ_EXT -> 000b -> use IRQ_BASE
++#     IIC_EXT -> 010b GPIO4[27..28]
++#     SDHC_EXT -> 000b -> use SDHC_BASE
++#     UART_BASE: 111b -> UART1 ... 4
++#     ASLEEP: 1b -> GPIO1[13]
++#     RTC: 0b -> RTC
++#     SDHC_BASE: 0b SDHC
++#     EVT9: 1b -> GPIO2[24]
++#     IRQ_BASE: 111b -> GPIO1[23 .. 25]
++#     IIC_BASE: 00b
++00000000 00000000 00000000 2043cf00
++# 13: IFC_GRP_A_EXT 001b -> QSPI,
++#     IFC_GRP_D_EXT 001b -> QSPI,
++#     IFC_GRP_E1_EXT 001b -> SPI1_PCS0,SCK/QSPI_DIO_B
++#     IFC_GRP_F_EXT 001b -> QSPI
++#     IFC_GRP_G_EXT 001b -> SPI
++#     IFC_GRP_E1_BASE 1b -> unused, GRP_E1_BASE
++#     IFC_GRP_D_BASE 1b -> GPIO2[13..15]
++#     IFC_GRP_A_BASE 00b -> unused, GRP_A_EXT
++#     IFC_A_22_24 0b -> unused
++# 14: EC1=000b -> RGMII
++#     EC2=100b -> USB
++#     EC3=000b -> RGMII
++#     MDC/MDIO=00b -> MDIO
++#     QE_TDMA/B=110110b -> 2D-ACE
++#     SDHC=00b -> SDHC_DAT[4:7]
++#     DVDD/EVDD/BVDD 3,3V LVDD 2,5V
++#     MDC/MDIO normal mode
++# 15: unused
++# 16: unused
++20124900 101b1340 00000000 00000000

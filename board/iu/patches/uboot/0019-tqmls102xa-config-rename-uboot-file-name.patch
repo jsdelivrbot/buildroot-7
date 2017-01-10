@@ -1,0 +1,23 @@
+From 99422e425e66b7a72924c6dd7832751a78cfb450 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Tue, 17 May 2016 22:31:28 +0200
+Subject: [PATCH] tqmls102xa: config: rename uboot file name
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ include/configs/tqmls102xa.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
+index f795aa9..856a8b7 100644
+--- a/include/configs/tqmls102xa.h
++++ b/include/configs/tqmls102xa.h
+@@ -499,7 +499,7 @@
+ 	"kernel_name=if test \"${boot_type}\" != bootz; then "                 \
+ 		"setenv kernel ${uimage}; "                                    \
+ 		"else setenv kernel ${zimage}; fi\0"                           \
+-	"uboot=u-boot-with-spl-pbl-mmcsd-2016.05-rc1.bin\0"                    \
++	"uboot=u-boot-with-spl-pbl-mmcsd-2016.05.bin\0"                        \
+ 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0"                               \
+ 	"fdt_addr="__stringify(TQMLS102X_FDT_ADDRESS)"\0"                      \
+ 	"console=" TQMLS201X_CONSOLE_DEV "\0"                                  \

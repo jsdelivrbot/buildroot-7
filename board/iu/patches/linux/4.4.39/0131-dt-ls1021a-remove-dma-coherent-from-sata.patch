@@ -1,0 +1,27 @@
+From 54c9ca66244032f7e30d86f0a9a305bf78a0998f Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Tue, 31 May 2016 17:27:40 +0200
+Subject: [PATCH] dt: ls1021a: remove dma-coherent from sata
+
+Until further investigation remove the property from
+sata node to allow detection of drives on sata port.
+
+Otherwise the port would only report freeze.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index d493416..b09cd96 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -174,7 +174,6 @@
+ 			reg-names = "ahci", "sata-ecc";
+ 			interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&platform_clk 1>;
+-			dma-coherent;
+ 			status = "disabled";
+ 		};
+ 

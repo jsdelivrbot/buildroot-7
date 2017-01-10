@@ -1,0 +1,49 @@
+From 69e43d1586ff967a9790ec6735afdf166d424e53 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 19 Oct 2016 11:40:47 +0200
+Subject: [PATCH] panel-simple: revert get edid over sii9022a transceiver
+
+Original commit 6504fd947b04b09de96813c57442a38315c34904
+because HDMI output does not need those changes.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 1 -
+ drivers/gpu/drm/panel/panel-simple.c              | 5 +----
+ 2 files changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index 116d9475..ddf5fef 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -58,7 +58,6 @@
+ 		compatible = "edt,etm0700g0dh6";
+ 		backlight = <&backlight_dcu>;
+ 		power-supply = <&reg_lcd>;
+-		ddc-i2c-bus = <&i2c0>;
+ 	};
+ };
+ 
+diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+index bc7872e..c7dd076 100644
+--- a/drivers/gpu/drm/panel/panel-simple.c
++++ b/drivers/gpu/drm/panel/panel-simple.c
+@@ -231,9 +231,6 @@ static int panel_simple_enable(struct drm_panel *panel)
+ 	return 0;
+ }
+ 
+-extern struct edid *sii902x_drm_get_edid(struct drm_connector *connector,
+-					 struct i2c_adapter *adapter);
+-
+ static int panel_simple_get_modes(struct drm_panel *panel)
+ {
+ 	struct panel_simple *p = to_panel_simple(panel);
+@@ -241,7 +238,7 @@ static int panel_simple_get_modes(struct drm_panel *panel)
+ 
+ 	/* probe EDID if a DDC bus is available */
+ 	if (p->ddc) {
+-		struct edid *edid = sii902x_drm_get_edid(panel->connector,
++		struct edid *edid = drm_get_edid(panel->connector,
+ 							 p->ddc);
+ 		drm_mode_connector_update_edid_property(panel->connector, edid);
+ 		if (edid) {

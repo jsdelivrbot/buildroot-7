@@ -1,0 +1,42 @@
+diff -ruN a/drivers/ata/libahci.c b/drivers/ata/libahci.c
+--- a/drivers/ata/libahci.c	2017-01-10 10:05:00.640892758 +0100
++++ b/drivers/ata/libahci.c	2017-01-10 10:20:51.623159175 +0100
+@@ -1805,7 +1805,7 @@
+ 	ahci_handle_port_interrupt(ap, port_mmio, status);
+ }
+ 
+-static irqreturn_t ahci_multi_irqs_intr_hard(int irq, void *dev_instance)
++static irqreturn_t __maybe_unused ahci_multi_irqs_intr_hard(int irq, void *dev_instance)
+ {
+ 	struct ata_port *ap = dev_instance;
+ 	void __iomem *port_mmio = ahci_port_base(ap);
+@@ -2463,6 +2463,7 @@
+ }
+ EXPORT_SYMBOL_GPL(ahci_set_em_messages);
+ 
++#ifdef CONFIG_PCI_MSI
+ static int ahci_host_activate_multi_irqs(struct ata_host *host,
+ 					 struct scsi_host_template *sht)
+ {
+@@ -2501,6 +2502,7 @@
+ 
+ 	return ata_host_register(host, sht);
+ }
++#endif
+ 
+ /**
+  *	ahci_host_activate - start AHCI host, request IRQs and register it
+@@ -2519,9 +2521,12 @@
+ 	int irq = hpriv->irq;
+ 	int rc;
+ 
++#ifdef CONFIG_PCI_MSI
+ 	if (hpriv->flags & (AHCI_HFLAG_MULTI_MSI | AHCI_HFLAG_MULTI_MSIX))
+ 		rc = ahci_host_activate_multi_irqs(host, sht);
+-	else if (hpriv->flags & AHCI_HFLAG_EDGE_IRQ)
++	else
++#endif
++    if (hpriv->flags & AHCI_HFLAG_EDGE_IRQ)
+ 		rc = ata_host_activate(host, irq, ahci_single_edge_irq_intr,
+ 				       IRQF_SHARED, sht);
+ 	else

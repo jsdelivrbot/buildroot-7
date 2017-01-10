@@ -1,0 +1,24 @@
+From cc1222a0a6eb1fbbe9d2ec960495b9c8e0fa157f Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Fri, 20 May 2016 16:04:12 +0200
+Subject: [PATCH] dt: mbls102xa: rtc - add quartz_load
+
+Add property for correct quartz load value.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index 1eec421..f99a65b 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -78,6 +78,7 @@
+ 
+ 	rtc: pcf85063@51 {
+ 		compatible = "nxp,pcf85063";
++		nxp,quartz_load = "12.5pF";
+ 		reg = <0x51>;
+ 		status = "okay";
+ 	};

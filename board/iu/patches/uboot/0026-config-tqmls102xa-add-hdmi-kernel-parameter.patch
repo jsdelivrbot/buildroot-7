@@ -1,0 +1,40 @@
+From 23269311f34d85be89f2fb6cd613b258fbb13d67 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Fri, 9 Sep 2016 08:40:57 +0200
+Subject: [PATCH] config: tqmls102xa: add hdmi kernel parameter
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ include/configs/tqmls102xa.h | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
+index 00ff20a..ba80eac 100644
+--- a/include/configs/tqmls102xa.h
++++ b/include/configs/tqmls102xa.h
+@@ -490,6 +490,7 @@
+ 	"run mmcboot; run netboot; run panicboot"
+ 
+ #define CONFIG_EXTRA_ENV_SETTINGS                                              \
++	"addmisc=setenv bootargs ${bootargs} hdmi\0"                           \
+ 	"board=tqmls102x\0"                                                    \
+ 	"uimage=uImage\0"                                                      \
+ 	"zimage=zImage\0"                                                      \
+@@ -506,7 +507,7 @@
+ 	"addtty=setenv bootargs ${bootargs} console=${console},${baudrate}\0"  \
+ 	"mmcpart=2\0"                                                          \
+ 	"mmcblkdev=0\0"                                                        \
+-	"mmcargs=run addmmc addtty\0"                                          \
++	"mmcargs=run addmmc addtty addmisc\0"                                  \
+ 	"addmmc=setenv bootargs ${bootargs} "                                  \
+ 		"root=/dev/mmcblk${mmcblkdev}p${mmcpart} rw rootwait\0"        \
+ 	"mmcboot=echo Booting from mmc ...; "                                  \
+@@ -523,7 +524,7 @@
+ 	"netdev=eth0\0"                                                        \
+ 	"rootpath=/srv/nfs/tqmls1021a\0"                                       \
+ 	"ipmode=static\0"                                                      \
+-	"netargs=run addnfs addip addtty addfb\0"                              \
++	"netargs=run addnfs addip addtty addmisc\0"                            \
+ 	"addnfs=setenv bootargs ${bootargs} "                                  \
+ 		"root=/dev/nfs rw "                                            \
+ 		"nfsroot=${serverip}:${rootpath},v3,tcp;\0"                    \

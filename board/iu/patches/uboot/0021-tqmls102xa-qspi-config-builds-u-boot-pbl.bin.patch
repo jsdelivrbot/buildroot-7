@@ -1,0 +1,92 @@
+From d3bd248bda9fe797d343a770560b44b173514b87 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Fri, 19 Aug 2016 17:06:15 +0200
+Subject: [PATCH] tqmls102xa: qspi config builds u-boot-pbl.bin
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ board/tqc/common/Makefile         |  2 ++
+ configs/tqmls102xa_qspi_defconfig |  2 +-
+ include/configs/tqmls102xa.h      | 20 ++++++++++----------
+ 3 files changed, 13 insertions(+), 11 deletions(-)
+
+diff --git a/board/tqc/common/Makefile b/board/tqc/common/Makefile
+index d53cafa..4f18a6a 100644
+--- a/board/tqc/common/Makefile
++++ b/board/tqc/common/Makefile
+@@ -22,8 +22,10 @@ obj-$(CONFIG_ID_EEPROM)	+= sys_eeprom.o
+ endif
+ obj-$(CONFIG_FSL_SGMII_RISER)	+= sgmii_riser.o
+ ifndef CONFIG_RAMBOOT_PBL
++ifndef CONFIG_RAMBOOT_PBL_BIN
+ obj-$(CONFIG_FSL_FIXED_MMC_LOCATION)	+= sdhc_boot.o
+ endif
++endif
+ 
+ ifdef CONFIG_ARM_SLEEP
+ obj-$(CONFIG_DEEP_SLEEP)		+= arm_sleep.o
+diff --git a/configs/tqmls102xa_qspi_defconfig b/configs/tqmls102xa_qspi_defconfig
+index d475813..7e8d7ea 100644
+--- a/configs/tqmls102xa_qspi_defconfig
++++ b/configs/tqmls102xa_qspi_defconfig
+@@ -2,7 +2,7 @@ CONFIG_ARM=y
+ CONFIG_TARGET_TQMLS102XA=y
+ CONFIG_ARMV7_LPAE=y
+ CONFIG_OF_BOARD_SETUP=y
+-CONFIG_SYS_EXTRA_OPTIONS="RAMBOOT_PBL,QSPI_BOOT"
++CONFIG_SYS_EXTRA_OPTIONS="RAMBOOT_PBL_BIN,QSPI_BOOT"
+ # CONFIG_CMD_IMLS is not set
+ CONFIG_SYS_NS16550=y
+ CONFIG_OF_LIBFDT=y
+diff --git a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
+index 856a8b7..31f8e88 100644
+--- a/include/configs/tqmls102xa.h
++++ b/include/configs/tqmls102xa.h
+@@ -104,13 +104,6 @@
+ #define SDRAM_CFG_BI			0x00000001
+ 
+ #ifdef CONFIG_SD_BOOT
+-
+-#define CONFIG_SYS_FSL_PBL_RCW	board/tqc/tqmls102xa/ls102xa_rcw_sd.cfg
+-
+-#ifdef CONFIG_RAMBOOT_PBL
+-#define CONFIG_SYS_FSL_PBL_PBI	board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
+-#endif
+-
+ #define CONFIG_SPL_FRAMEWORK
+ #define CONFIG_SPL_LDSCRIPT	"arch/$(ARCH)/cpu/u-boot-spl.lds"
+ #define CONFIG_SPL_LIBCOMMON_SUPPORT
+@@ -140,6 +133,7 @@
+ 
+ #ifdef CONFIG_QSPI_BOOT
+ #define CONFIG_SYS_TEXT_BASE		0x40010000
++#define CONFIG_SPL_PAD_TO		0x10000
+ #endif
+ 
+ #if defined(CONFIG_QSPI_BOOT) || defined(CONFIG_SD_BOOT)
+@@ -211,7 +205,15 @@
+ #define ESDHCI_QUIRK_BROKEN_TIMEOUT_VALUE
+ 
+ /* QSPI */
+-#if defined(CONFIG_QSPI_BOOT) || defined(CONFIG_SD_BOOT)
++#if defined(CONFIG_QSPI_BOOT)
++#if defined(CONFIG_RAMBOOT_PBL) || defined(CONFIG_RAMBOOT_PBL_BIN)
++#define CONFIG_SYS_FSL_PBL_PBI	board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
++#define CONFIG_SYS_FSL_PBL_RCW	board/tqc/tqmls102xa/ls102xa_rcw_qspi.cfg
++#endif
++#elif defined(CONFIG_SD_BOOT)
++#define CONFIG_SYS_FSL_PBL_PBI	board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
++#define CONFIG_SYS_FSL_PBL_RCW	board/tqc/tqmls102xa/ls102xa_rcw_sd.cfg
++#endif
+ 
+ #define CONFIG_FSL_QSPI
+ #define QSPI0_AMBA_BASE			0x40000000
+@@ -231,8 +233,6 @@
+ 
+ #define CONFIG_CMD_TIME
+ 
+-#endif /* QSPI */
+-
+ /*
+  * Video -> TODO
+  */

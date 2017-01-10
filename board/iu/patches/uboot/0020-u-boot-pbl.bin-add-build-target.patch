@@ -1,0 +1,190 @@
+From 347ccc143fde763ddf16491c1b9bfe90f2484fdb Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Fri, 19 Aug 2016 16:51:11 +0200
+Subject: [PATCH] u-boot-pbl.bin: add build target
+
+Also add mkimage type pblbinary.
+The target file is rcw/pbi at the beginning and
+u-boot binary image at configurable offset.
+
+Booting from NOR flash we don't need SPL and
+we don't need to load the whole u-boot binary
+via PBI. Moreover we need to assign SCRATCHRW1
+to known boot location for u-boot binary via PBI,
+so this must be a location independent of PBL length.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ Makefile          | 13 +++++++++++++
+ README            |  5 +++++
+ common/image.c    |  1 +
+ include/image.h   |  3 ++-
+ tools/imagetool.h |  1 +
+ tools/mkimage.c   |  3 +++
+ tools/pblimage.c  | 40 +++++++++++++++++++++++++++++++++++++++-
+ 7 files changed, 64 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 954a865..450cf82 100644
+--- a/Makefile
++++ b/Makefile
+@@ -739,6 +739,7 @@ ifneq ($(CONFIG_SECURE_BOOT), y)
+ # For Secure Boot The Image needs to be signed and Header must also
+ # be included. So The image has to be built explicitly
+ ALL-$(CONFIG_RAMBOOT_PBL) += u-boot.pbl
++ALL-$(CONFIG_RAMBOOT_PBL_BIN) += u-boot-pbl.bin
+ endif
+ endif
+ ALL-$(CONFIG_SPL) += spl/u-boot-spl.bin
+@@ -1138,6 +1139,13 @@ MKIMAGEFLAGS_u-boot-spl.pbl = -n $(srctree)/$(CONFIG_SYS_FSL_PBL_RCW:"%"=%) \
+ spl/u-boot-spl.pbl: spl/u-boot-spl.bin FORCE
+ 	$(call if_changed,mkimage)
+ 
++MKIMAGEFLAGS_pbl.bin = -n $(srctree)/$(CONFIG_SYS_FSL_PBL_RCW:"%"=%) \
++		-R $(srctree)/$(CONFIG_SYS_FSL_PBL_PBI:"%"=%) -T pblbinary \
++		-A $(ARCH)
++
++pbl.bin: tools prepare FORCE
++	$(call if_changed,mkimage)
++
+ ifeq ($(ARCH),arm)
+ UBOOT_BINLOAD := u-boot.img
+ else
+@@ -1150,6 +1158,11 @@ OBJCOPYFLAGS_u-boot-with-spl-pbl.bin = -I binary -O binary --pad-to=$(CONFIG_SPL
+ u-boot-with-spl-pbl.bin: spl/u-boot-spl.pbl $(UBOOT_BINLOAD) FORCE
+ 	$(call if_changed,pad_cat)
+ 
++OBJCOPYFLAGS_u-boot-pbl.bin = $(OBJCOPYFLAGS_u-boot-with-spl-pbl.bin)
++
++u-boot-pbl.bin: pbl.bin u-boot.bin FORCE
++	$(call if_changed,pad_cat)
++
+ # PPC4xx needs the SPL at the end of the image, since the reset vector
+ # is located at 0xfffffffc. So we can't use the "u-boot-img.bin" target
+ # and need to introduce a new build target with the full blown U-Boot
+diff --git a/README b/README
+index 88ff837..ec44bb6 100644
+--- a/README
++++ b/README
+@@ -546,6 +546,11 @@ The following options need to be configured:
+ 		It adds a target to create boot binary having SPL binary in PBI format
+ 		concatenated with u-boot binary.
+ 
++		CONFIG_RAMBOOT_PBL_BINARY
++		The default PBL image concatenates U-Boot to PBI and splits it to
++		64 byte chunks to load via pre-boot instruction. This option builds the
++		u-boot image with PBI at offset 0 and u-boot.bin at offset CONFIG_SPL_PAD_TO.
++
+ 		CONFIG_SYS_FSL_DDR_BE
+ 		Defines the DDR controller register space as Big Endian
+ 
+diff --git a/common/image.c b/common/image.c
+index 26d6c9a..bff466d 100644
+--- a/common/image.c
++++ b/common/image.c
+@@ -159,6 +159,7 @@ static const table_entry_t uimage_type[] = {
+ 	{	IH_TYPE_RKSD,       "rksd",       "Rockchip SD Boot Image" },
+ 	{	IH_TYPE_RKSPI,      "rkspi",      "Rockchip SPI Boot Image" },
+ 	{	IH_TYPE_ZYNQIMAGE,  "zynqimage",  "Xilinx Zynq Boot Image" },
++	{	IH_TYPE_PBLBINARY,  "pblbinary",  "Freescale binary PBL Image",},
+ 	{	-1,		    "",		  "",			},
+ };
+ 
+diff --git a/include/image.h b/include/image.h
+index f9ee564..b400f48 100644
+--- a/include/image.h
++++ b/include/image.h
+@@ -246,8 +246,9 @@ struct lmb;
+ #define IH_TYPE_RKSD		24	/* Rockchip SD card		*/
+ #define IH_TYPE_RKSPI		25	/* Rockchip SPI image		*/
+ #define IH_TYPE_ZYNQIMAGE	26	/* Xilinx Zynq Boot Image */
++#define IH_TYPE_PBLBINARY	27	/* Freescale binary PBL instructions */
+ 
+-#define IH_TYPE_COUNT		27	/* Number of image types */
++#define IH_TYPE_COUNT		28	/* Number of image types */
+ 
+ /*
+  * Compression Types
+diff --git a/tools/imagetool.h b/tools/imagetool.h
+index 24f8f4b..64bc4d4 100644
+--- a/tools/imagetool.h
++++ b/tools/imagetool.h
+@@ -211,6 +211,7 @@ int imagetool_get_filesize(struct image_tool_params *params, const char *fname);
+ 
+ 
+ void pbl_load_uboot(int fd, struct image_tool_params *mparams);
++void pbl_binary(int fd, struct image_tool_params *mparams);
+ 
+ #define ___cat(a, b) a ## b
+ #define __cat(a, b) ___cat(a, b)
+diff --git a/tools/mkimage.c b/tools/mkimage.c
+index 93d1c16..638e32b 100644
+--- a/tools/mkimage.c
++++ b/tools/mkimage.c
+@@ -478,6 +478,9 @@ int main(int argc, char **argv)
+ 		} else if (params.type == IH_TYPE_PBLIMAGE) {
+ 			/* PBL has special Image format, implements its' own */
+ 			pbl_load_uboot(ifd, &params);
++		} else if (params.type == IH_TYPE_PBLBINARY) {
++			/* convert pbl instructions to binary format */
++			pbl_binary(ifd, &params);
+ 		} else {
+ 			copy_file(ifd, params.datafile, pad_len);
+ 		}
+diff --git a/tools/pblimage.c b/tools/pblimage.c
+index d74fde9..f9914b0 100644
+--- a/tools/pblimage.c
++++ b/tools/pblimage.c
+@@ -215,9 +215,32 @@ void pbl_load_uboot(int ifd, struct image_tool_params *params)
+ 	}
+ }
+ 
++/* This converts PBL RCW/PBI+CRC to binary format. */
++void pbl_binary(int ifd, struct image_tool_params *params)
++{
++	int size;
++
++	/* parse the rcw.cfg file. */
++	pbl_parser(params->imagename);
++
++	/* parse the pbi.cfg file. */
++	pbl_parser(params->imagename2);
++
++	add_end_cmd();
++
++	lseek(ifd, 0, SEEK_SET);
++
++	size = pbl_size;
++	if (write(ifd, (const void *)&mem_buf, size) != size) {
++		fprintf(stderr, "Write error on %s: %s\n",
++			params->imagefile, strerror(errno));
++		exit(EXIT_FAILURE);
++	}
++}
++
+ static int pblimage_check_image_types(uint8_t type)
+ {
+-	if (type == IH_TYPE_PBLIMAGE)
++	if ((type == IH_TYPE_PBLIMAGE) || (type == IH_TYPE_PBLBINARY))
+ 		return EXIT_SUCCESS;
+ 	else
+ 		return EXIT_FAILURE;
+@@ -322,3 +345,18 @@ U_BOOT_IMAGE_TYPE(
+ 	NULL,
+ 	NULL
+ );
++
++U_BOOT_IMAGE_TYPE(
++	pblbinary,
++	"Freescale PBL binary instructions",
++	sizeof(struct pbl_header),
++	(void *)&pblimage_header,
++	pblimage_check_params,
++	pblimage_verify_header,
++	pblimage_print_header,
++	pblimage_set_header,
++	NULL,
++	pblimage_check_image_types,
++	NULL,
++	NULL
++);

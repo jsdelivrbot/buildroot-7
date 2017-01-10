@@ -1,0 +1,23 @@
+From a7fa7a03474e5ba56fb7b1db0059432d4c76d4a7 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Wed, 21 Sep 2016 15:09:48 +0200
+Subject: [PATCH] Makefile: release TQMLS102xA-BSP-0102
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 450cf82..3a39623 100644
+--- a/Makefile
++++ b/Makefile
+@@ -5,7 +5,7 @@
+ VERSION = 2016
+ PATCHLEVEL = 05
+ SUBLEVEL =
+-EXTRAVERSION =
++EXTRAVERSION = -TQMLS102xA-BSP-0102
+ NAME =
+ 
+ # *DOCUMENTATION*

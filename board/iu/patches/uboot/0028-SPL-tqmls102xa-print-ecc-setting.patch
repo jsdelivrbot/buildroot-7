@@ -1,0 +1,23 @@
+From 29abc07a8dde1b865799c763a50c34fac1f2d4b5 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Tue, 13 Sep 2016 17:50:53 +0200
+Subject: [PATCH] SPL: tqmls102xa: print ecc setting
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ board/tqc/tqmls102xa/tqmls102xa.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/board/tqc/tqmls102xa/tqmls102xa.c b/board/tqc/tqmls102xa/tqmls102xa.c
+index 6f8eae6..74595af 100644
+--- a/board/tqc/tqmls102xa/tqmls102xa.c
++++ b/board/tqc/tqmls102xa/tqmls102xa.c
+@@ -43,6 +43,8 @@ void ddrmc_init(void)
+ 	struct ccsr_ddr *ddr = (struct ccsr_ddr *)CONFIG_SYS_FSL_DDR_ADDR;
+ 	u32 temp_sdram_cfg;
+ 
++	printf("DDR ECC: %s - ", (DDR_SDRAM_CFG & (1 << 29)) ? "ON" : "OFF");
++
+ 	out_be32(&ddr->sdram_cfg, DDR_SDRAM_CFG);
+ 
+ 	out_be32(&ddr->cs0_bnds, DDR_CS0_BNDS);

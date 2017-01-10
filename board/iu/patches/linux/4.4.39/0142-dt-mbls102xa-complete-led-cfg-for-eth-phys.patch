@@ -1,0 +1,39 @@
+From 00f0c57fe3ddae27ab3f89cde8216a3389eb3e0a Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 8 Sep 2016 20:45:23 +0200
+Subject: [PATCH] dt: mbls102xa: complete led cfg for eth phys
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index d4e1089..116d9475 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -260,6 +260,7 @@
+ 		ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
+ 		ti,led-cfg1 = <0x6b90>;
+ 		ti,led-cfg2 = <0x0000>;
++		ti,led-cfg3 = <0x0001>;
+ 		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+ 	};
+ 	sgmii_phy03: ethernet-phy@03 {
+@@ -268,6 +269,8 @@
+ 		reg = <0x03>;
+ 		ti,led-cfg1 = <0x6b90>;
+ 		ti,led-cfg2 = <0x0000>;
++		ti,led-cfg3 = <0x0001>;
++		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+ 	};
+ 	rgmii_phy04: ethernet-phy@04 {
+ 		compatible = "ethernet-phy-id2000.a230",
+@@ -277,6 +280,7 @@
+ 		ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
+ 		ti,led-cfg1 = <0x6b90>;
+ 		ti,led-cfg2 = <0x0000>;
++		ti,led-cfg3 = <0x0001>;
+ 		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+ 	};
+ };

@@ -1,0 +1,31 @@
+From 4ad05f3597af922ad6ed8b88c3b52a1c0c3a848c Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Fri, 17 Jun 2016 13:58:10 +0200
+Subject: [PATCH] dt: mbls102xa: add new gpio expander
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+index 1db373c..d4e1089 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls102x.dts
+@@ -153,6 +153,16 @@
+ 		status = "okay";
+ 	};
+ 
++	pca9554_2: pca9554@22 {
++		compatible = "nxp,pca9554";
++		reg = <0x22>;
++
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		status = "okay";
++	};
++
+ 	sii9022a: hdmi@3b {
+ 		compatible = "sil,sii9022a";
+ 		reg = <0x3b>;

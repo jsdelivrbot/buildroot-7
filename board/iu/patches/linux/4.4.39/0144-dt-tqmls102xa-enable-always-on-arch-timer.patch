@@ -1,0 +1,25 @@
+From cd6fb933f485cd7a73c175fb6180f3298a02e91c Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 13 Oct 2016 09:49:48 +0200
+Subject: [PATCH] dt: tqmls102xa: enable always-on arch-timer
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+index fb4f3a7..6148a2a 100644
+--- a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+@@ -34,6 +34,10 @@
+ 			regulator-always-on;
+ 		};
+ 	};
++
++	timer {
++		always-on;
++	};
+ };
+ 
+ &esdhc {

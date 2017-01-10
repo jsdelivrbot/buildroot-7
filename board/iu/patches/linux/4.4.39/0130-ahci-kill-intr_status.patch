@@ -1,0 +1,26 @@
+From 2d61c86bd68e38499249a6cc886a0d371ca53b39 Mon Sep 17 00:00:00 2001
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Tue, 24 May 2016 08:54:50 +0200
+Subject: [PATCH] ahci: kill 'intr_status'
+
+This field in achi_port_priv was only used to support threaded
+interrupts.  Now that we are hardirq only it can be deleted.
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ drivers/ata/ahci.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/ata/ahci.h b/drivers/ata/ahci.h
+index 9e60c50..878470f 100644
+--- a/drivers/ata/ahci.h
++++ b/drivers/ata/ahci.h
+@@ -309,7 +309,6 @@ struct ahci_port_priv {
+ 	unsigned int		ncq_saw_d2h:1;
+ 	unsigned int		ncq_saw_dmas:1;
+ 	unsigned int		ncq_saw_sdb:1;
+-	atomic_t		intr_status;	/* interrupts to handle */
+ 	spinlock_t		lock;		/* protects parent ata_port */
+ 	u32 			intr_mask;	/* interrupts to enable */
+ 	bool			fbs_supported;	/* set iff FBS is supported */
