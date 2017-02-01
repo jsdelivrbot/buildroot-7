@@ -198,10 +198,10 @@ define $(2)_CONFIGURE_CMDS
 		--disable-docs \
 		--disable-documentation \
 		--disable-manpages \
+		--disable-tests \
 		--with-xmlto=no \
 		--with-fop=no \
-		--disable-tests \
-		--disable-dependency-tracking \
+		$$(if $$($$(PKG)_OVERRIDE_SRCDIR),,--disable-dependency-tracking) \
 		--enable-ipv6 \
 		$$(DISABLE_NLS) \
 		$$(SHARED_STATIC_LIBS_OPTS) \
@@ -234,7 +234,7 @@ define $(2)_CONFIGURE_CMDS
 		--disable-debug \
 		--with-xmlto=no \
 		--with-fop=no \
-		--disable-dependency-tracking \
+		$$(if $$($$(PKG)_OVERRIDE_SRCDIR),,--disable-dependency-tracking) \
 		$$(QUIET) $$($$(PKG)_CONF_OPTS) \
 	)
 endef
