@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-COLLECTD_VERSION = 5.7.0
+COLLECTD_VERSION = 5.7.1
 COLLECTD_SITE = http://collectd.org/files
 COLLECTD_SOURCE = collectd-$(COLLECTD_VERSION).tar.bz2
 COLLECTD_CONF_ENV = ac_cv_lib_yajl_yajl_alloc=yes
@@ -175,8 +175,7 @@ endif
 # network can use libgcrypt
 ifeq ($(BR2_PACKAGE_LIBGCRYPT),y)
 COLLECTD_DEPENDENCIES += libgcrypt
-COLLECTD_CONF_OPTS += --with-libgcrypt=$(STAGING_DIR)/usr
-COLLECTD_CONF_ENV += LIBGCRYPT_CONFIG=$(STAGING_DIR)/usr/bin/libgcrypt-config
+COLLECTD_CONF_OPTS += --with-libgcrypt=$(STAGING_DIR)/usr/bin/libgcrypt-config
 else
 COLLECTD_CONF_OPTS += --with-libgcrypt=no
 endif
