@@ -46,7 +46,6 @@ SYSTEMD_CONF_OPTS += \
 	--with-sysvinit-path="" \
 	--with-sysvrcnd-path="" \
 	--disable-manpages \
-	--disable-pam \
 	--disable-ima \
 	--disable-libcryptsetup \
 	--disable-efi \
@@ -122,6 +121,13 @@ SYSTEMD_DEPENDENCIES += lz4
 SYSTEMD_CONF_OPTS += --enable-lz4
 else
 SYSTEMD_CONF_OPTS += --disable-lz4
+endif
+
+ifeq ($(BR2_PACKAGE_LINUX_PAM),y)
+SYSTEMD_DEPENDENCIES += linux-pam
+SYSTEMD_CONF_OPTS += --enable-pam
+else
+SYSTEMD_CONF_OPTS += --disable-pam
 endif
 
 ifeq ($(BR2_PACKAGE_XZ),y)
