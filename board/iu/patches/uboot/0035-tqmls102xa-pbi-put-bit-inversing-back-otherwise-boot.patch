@@ -1,0 +1,62 @@
+From d97ed2bc6100203574d5e706d1c136eaab821615 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Tue, 24 Jan 2017 13:40:01 +0100
+Subject: [PATCH] tqmls102xa: pbi: put bit inversing back otherwise boot from
+ spi hangs
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg | 8 ++++----
+ board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg   | 8 ++++----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg b/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
+index 9df52d9..fef4973 100644
+--- a/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
++++ b/board/tqc/tqmls102xa/ls102xa_pbi_qspi.cfg
+@@ -1,9 +1,5 @@
+ #PBI commands
+ 
+-# apply bit reversing to all register
+-# must be written before writen to any other SCFG reg
+-09570200 ffffffff
+-
+ # configure QSPI clock (from rcw repo)
+ 0957015c 00000803
+ 
+@@ -11,6 +7,10 @@
+ #set boot location pointer -> QSPI0@64K
+ 09ee0200 40010000
+ 
++# apply bit reversing to all register
++# must be written before writen to any other SCFG reg
++09570200 ffffffff
++
+ # Increase IO drive strength to avoid FCS error on RGMII ports
+ 09570d00 b7fb4000
+ 
+diff --git a/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg b/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
+index 4f9b93d..e8b45b4 100644
+--- a/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
++++ b/board/tqc/tqmls102xa/ls102xa_pbi_sd.cfg
+@@ -1,9 +1,5 @@
+ #PBI commands
+ 
+-# apply bit reversing to all register
+-# must be written before writen to any other SCFG reg
+-09570200 ffffffff
+-
+ # configure QSPI clock (from rcw repo)
+ 0957015c 00000803
+ 
+@@ -11,6 +7,10 @@
+ #set boot location pointer -> OCRAM 1
+ 09ee0200 10000000
+ 
++# apply bit reversing to all register
++# must be written before writen to any other SCFG reg
++09570200 ffffffff
++
+ # Increase IO drive strength to avoid FCS error on RGMII ports
+ 09570d00 b7fb4000
+ 

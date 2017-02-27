@@ -32,3 +32,4 @@
 0032-pcie-layerscape-do-not-modify-link_cap.patch
 0033-mbls102xa-add-cpld_mux-command-and-use-in-config-hea.patch
 0034-mbls102xa-display-cpld-muxing-on-boot-and-on-LEDs.patch
+0035-tqmls102xa-pbi-put-bit-inversing-back-otherwise-boot.patch
