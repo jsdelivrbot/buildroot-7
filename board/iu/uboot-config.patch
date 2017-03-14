@@ -1,6 +1,5 @@
-diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
---- a/include/configs/tqmls102xa.h	2016-09-15 12:48:43.825273049 +0200
-+++ b/include/configs/tqmls102xa.h	2016-09-23 10:32:07.787312024 +0200
+--- a/include/configs/tqmls102xa.h	2017-03-13 12:37:51.066020614 +0100
++++ b/include/configs/tqmls102xa.h	2017-03-14 09:35:15.942062154 +0100
 @@ -52,7 +52,6 @@
  #endif
  
@@ -9,7 +8,7 @@ diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
  
  #ifdef CONFIG_HAS_FSL_XHCI_USB
  #define CONFIG_USB_XHCI_FSL
-@@ -291,7 +290,6 @@
+@@ -295,7 +294,6 @@
  #endif /* eTSEC */
  
  /* PCIe */
@@ -17,7 +16,7 @@ diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
  #define CONFIG_PCIE1		/* PCIE controler 1 */
  #define CONFIG_PCIE2		/* PCIE controler 2 */
  #define CONFIG_PCIE_LAYERSCAPE	/* Use common FSL Layerscape PCIe code */
-@@ -343,7 +341,7 @@
+@@ -361,7 +359,7 @@
  #define CONFIG_HWCONFIG
  #define HWCONFIG_BUFFER_SIZE		128
  
@@ -26,7 +25,7 @@ diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
  
  #ifdef CONFIG_LPUART
  #define TQMLS201X_CONSOLE_DEV		"ttyLP0"
-@@ -366,7 +364,6 @@
+@@ -384,7 +382,6 @@
  
  #define CONFIG_CMD_GREPENV
  #define CONFIG_CMD_MEMINFO
@@ -34,7 +33,7 @@ diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
  #define CONFIG_SYS_MEMTEST_START	0x80000000
  #define CONFIG_SYS_MEMTEST_END		0x9fffffff
  
-@@ -448,128 +445,20 @@
+@@ -478,122 +475,21 @@
  	"kernel_start="__stringify(TQMLS102X_KERNEL_SECTOR_START)"\0"          \
  	"kernel_size="__stringify(TQMLS102X_KERNEL_SECTOR_COUNT)"\0"           \
  	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0"                       \
@@ -76,13 +75,14 @@ diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
 -			"fi; "                                                 \
 -		"fi; fi; "                                                     \
 -		"setenv filesize; setenv blkc \0"                              \
--
+ 	BASEBOARD_EXTRA_ENV_SETTINGS                                           \
  
  #define CONFIG_BOOTCOMMAND \
 -	"run mmcboot; run netboot; run panicboot"
 +	"run defaultboot"
  
  #define CONFIG_EXTRA_ENV_SETTINGS                                              \
+-	"addmisc=setenv bootargs ${bootargs} hdmi\0"                           \
  	"board=tqmls102x\0"                                                    \
 -	"uimage=uImage\0"                                                      \
 -	"zimage=zImage\0"                                                      \
@@ -90,16 +90,17 @@ diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
 -	"kernel_name=if test \"${boot_type}\" != bootz; then "                 \
 -		"setenv kernel ${uimage}; "                                    \
 -		"else setenv kernel ${zimage}; fi\0"                           \
--	"uboot=u-boot-with-spl-pbl-mmcsd-2016.05-rc1.bin\0"                    \
+-	"uboot=" CONFIG_UBOOT_MMCSD_IMAGE_FILE "\0"                            \
  	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0"                               \
  	"fdt_addr="__stringify(TQMLS102X_FDT_ADDRESS)"\0"                      \
  	"console=" TQMLS201X_CONSOLE_DEV "\0"                                  \
  	"fdt_high=0xffffffff\0"                                                \
  	"initrd_high=0xffffffff\0"                                             \
--	"addtty=setenv bootargs ${bootargs} console=${console},${baudrate}\0"  \
+-	"addtty=setenv bootargs ${bootargs} console=tty0 "                     \
+-		"console=${console},${baudrate}\0"                             \
 -	"mmcpart=2\0"                                                          \
 -	"mmcblkdev=0\0"                                                        \
--	"mmcargs=run addmmc addtty\0"                                          \
+-	"mmcargs=run addmmc addtty addmisc addplatform\0"                      \
 -	"addmmc=setenv bootargs ${bootargs} "                                  \
 -		"root=/dev/mmcblk${mmcblkdev}p${mmcpart} rw rootwait\0"        \
 -	"mmcboot=echo Booting from mmc ...; "                                  \
@@ -116,7 +117,7 @@ diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
 -	"netdev=eth0\0"                                                        \
 -	"rootpath=/srv/nfs/tqmls1021a\0"                                       \
 -	"ipmode=static\0"                                                      \
--	"netargs=run addnfs addip addtty addfb\0"                              \
+-	"netargs=run addnfs addip addtty addmisc\0"                            \
 -	"addnfs=setenv bootargs ${bootargs} "                                  \
 -		"root=/dev/nfs rw "                                            \
 -		"nfsroot=${serverip}:${rootpath},v3,tcp;\0"                    \
@@ -141,27 +142,19 @@ diff -ruN a/include/configs/tqmls102xa.h b/include/configs/tqmls102xa.h
 -		"fi; "                                                         \
 -		"echo ... failed\0"                                            \
 -	"panicboot=echo No boot device !!! reset\0"                            \
--	"uboot-qspi=u-boot.bin-u-boot-qspi\0"                                  \
+-	"uboot-qspi=" CONFIG_UBOOT_QSPI_IMAGE_FILE "\0"                        \
 -	"update_uboot-qspi=if tftp ${uboot-qspi}; then "                       \
 -		"if itest ${filesize} > 0; then "                              \
--			"setexpr erasesz ${filesize} / 0x10000; "              \
--			"setexpr erasesz ${erasesz} + 1; "                     \
--			"setexpr erasesz ${erasesz} * 0x10000; "               \
--			"sf probe; sf erase "__stringify(TQMLS102X_UBOOT_SPI_OFFSET)" ${erasesz}; " \
--			"sf write ${loadaddr} "__stringify(TQMLS102X_UBOOT_SPI_OFFSET)" ${filesize}; " \
+-			"sf probe; sf update ${loadaddr} "__stringify(TQMLS102X_UBOOT_SPI_OFFSET)" ${filesize}; " \
 -		"fi; fi; "                                                     \
--		"setenv filesize; setenv erasesz\0"                            \
+-		"setenv filesize;\0"                                           \
 -	"rcw-qspi=ls102xa-rcw-tqmls-qspi-0100.bin.bswap\0"                     \
 -	"update_rcw=if tftp ${rcw-qspi}; then "                                \
 -		"if itest ${filesize} > 0; then "                              \
--			"setexpr erasesz ${filesize} / 0x10000; "              \
--			"setexpr erasesz ${erasesz} + 1; "                     \
--			"setexpr erasesz ${erasesz} * 0x10000; "               \
--			"sf probe; sf erase 0 ${erasesz}; "                    \
--			"sf write ${loadaddr} 0 ${filesize}; "                 \
+-			"sf probe; sf update ${loadaddr} 0 ${filesize}; "      \
 -		"fi; fi; "                                                     \
--		"setenv filesize; setenv erasesz\0"                            \
-+	"ethact=eTSEC2\0"                                                  \
+-		"setenv filesize;\0"                                           \
++	"ethact=eTSEC2\0"                                                      \
 +	"defaultboot=sf probe; sf read 0x82000000 0x150000 0x500000; sf read 0x88000000 0x140000 0x10000; setenv bootargs console=ttyS0,115200 rootfstype=squashfs root=/dev/mtdblock5 quiet systemd.show_status=auto libata.force=disable; bootz 0x82000000 - 0x88000000\0" \
  	TQMLS102X_EXTRA_BOOTDEV_ENV_SETTINGS                                   \
  
