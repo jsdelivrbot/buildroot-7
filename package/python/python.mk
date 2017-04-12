@@ -8,7 +8,7 @@ PYTHON_VERSION_MAJOR = 2.7
 PYTHON_VERSION = $(PYTHON_VERSION_MAJOR).13
 PYTHON_SOURCE = Python-$(PYTHON_VERSION).tar.xz
 PYTHON_SITE = http://python.org/ftp/python/$(PYTHON_VERSION)
-PYTHON_LICENSE = Python software foundation license v2, others
+PYTHON_LICENSE = Python-2.0, others
 PYTHON_LICENSE_FILES = LICENSE
 PYTHON_LIBTOOL_PATCH = NO
 
@@ -17,9 +17,9 @@ PYTHON_LIBTOOL_PATCH = NO
 # also installed in $(HOST_DIR), as it is needed when cross-compiling
 # third-party Python modules.
 
-HOST_PYTHON_CONF_OPTS += 	\
+HOST_PYTHON_CONF_OPTS +=	\
 	--enable-static		\
-	--without-cxx-main 	\
+	--without-cxx-main	\
 	--disable-sqlite3	\
 	--disable-tk		\
 	--with-expat=system	\
@@ -59,6 +59,10 @@ PYTHON_DEPENDENCIES = host-python libffi
 HOST_PYTHON_DEPENDENCIES = host-expat host-zlib
 
 PYTHON_INSTALL_STAGING = YES
+
+ifeq ($(BR2_PACKAGE_GETTEXT),y)
+PYTHON_DEPENDENCIES += gettext
+endif
 
 ifeq ($(BR2_PACKAGE_PYTHON_READLINE),y)
 PYTHON_DEPENDENCIES += readline
@@ -155,7 +159,7 @@ PYTHON_CONF_ENV += ac_cv_big_endian_double=yes
 endif
 
 PYTHON_CONF_OPTS += \
-	--without-cxx-main 	\
+	--without-cxx-main	\
 	--without-doc-strings	\
 	--with-system-ffi	\
 	--disable-pydoc		\
@@ -240,11 +244,20 @@ PYTHON_PATH = $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/sysconfigdata/
 $(eval $(autotools-package))
 $(eval $(host-autotools-package))
 
+ifeq ($(BR2_REPRODUCIBLE),y)
+define PYTHON_FIX_TIME
+	find $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR) -name '*.py' -print0 | \
+		xargs -0 --no-run-if-empty touch -d @$(SOURCE_DATE_EPOCH)
+endef
+endif
+
 define PYTHON_CREATE_PYC_FILES
+	$(PYTHON_FIX_TIME)
 	PYTHONPATH="$(PYTHON_PATH)" \
-	$(HOST_DIR)/usr/bin/python$(PYTHON_VERSION_MAJOR) \
-		support/scripts/pycompile.py \
-		$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)
+	cd $(TARGET_DIR) && $(HOST_DIR)/usr/bin/python$(PYTHON_VERSION_MAJOR) \
+		$(TOPDIR)/support/scripts/pycompile.py \
+		$(if $(BR2_REPRODUCIBLE),--force) \
+		usr/lib/python$(PYTHON_VERSION_MAJOR)
 endef
 
 ifeq ($(BR2_PACKAGE_PYTHON_PYC_ONLY)$(BR2_PACKAGE_PYTHON_PY_PYC),y)

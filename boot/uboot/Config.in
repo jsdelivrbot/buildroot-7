@@ -38,7 +38,7 @@ choice
 	  Select the specific U-Boot version you want to use
 
 config BR2_TARGET_UBOOT_LATEST_VERSION
-	bool "2017.01"
+	bool "2017.03"
 
 config BR2_TARGET_UBOOT_CUSTOM_VERSION
 	bool "Custom version"
@@ -86,7 +86,7 @@ endif
 
 config BR2_TARGET_UBOOT_VERSION
 	string
-	default "2017.01"	if BR2_TARGET_UBOOT_LATEST_VERSION
+	default "2017.03"	if BR2_TARGET_UBOOT_LATEST_VERSION
 	default BR2_TARGET_UBOOT_CUSTOM_VERSION_VALUE \
 		if BR2_TARGET_UBOOT_CUSTOM_VERSION
 	default "custom"	if BR2_TARGET_UBOOT_CUSTOM_TARBALL
@@ -327,8 +327,8 @@ config BR2_TARGET_UBOOT_SPL_NAME
 	depends on BR2_TARGET_UBOOT_SPL
 	help
 	  A space-separated list of SPL binaries, generated during
-	  u-boot build. For most platform it is spl/u-boot-spl.bin
-	  but not always. It is MLO on OMAP for example.
+	  u-boot build. For most platform it is spl/u-boot-spl.bin but
+	  not always. It is MLO on OMAP and SPL on i.MX6 for example.
 
 config BR2_TARGET_UBOOT_ZYNQ_IMAGE
 	bool "Generate image for Xilinx Zynq"
@@ -406,5 +406,19 @@ config BR2_TARGET_UBOOT_ENVIMAGE_REDUNDANT
 	  mechanism of U-Boot.
 
 endif # BR2_TARGET_UBOOT_ENVIMAGE
+
+if BR2_TARGET_UBOOT_BUILD_SYSTEM_KCONFIG
+
+config BR2_TARGET_UBOOT_CUSTOM_DTS_PATH
+	string "Device Tree Source file paths"
+	help
+	  Space-separated list of paths to device tree source files
+	  that will be copied to arch/ARCH/dts/ before starting the
+	  build.
+
+	  To use this device tree source file, the U-Boot configuration
+	  file must refer to it.
+
+endif
 
 endif # BR2_TARGET_UBOOT

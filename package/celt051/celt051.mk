@@ -9,7 +9,7 @@
 CELT051_VERSION = 0.5.1.3
 CELT051_SOURCE = celt-$(CELT051_VERSION).tar.gz
 CELT051_SITE = http://downloads.xiph.org/releases/celt
-CELT051_LICENSE = BSD-2c
+CELT051_LICENSE = BSD-2-Clause
 CELT051_LICENSE_FILES = COPYING
 CELT051_INSTALL_STAGING = YES
 CELT051_DEPENDENCIES = libogg
@@ -25,6 +25,6 @@ CELT051_CONF_OPTS =                       \
 	--disable-static-modes            \
 	--disable-assertions              \
 	--disable-oggtest                 \
-	--with-ogg=$(STAGING_DIR)/usr     \
+	--with-ogg=$(STAGING_DIR)/usr
 
 $(eval $(autotools-package))
