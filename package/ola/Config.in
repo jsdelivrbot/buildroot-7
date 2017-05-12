@@ -1,6 +1,8 @@
-comment "ola needs a toolchain w/ C++, threads, dynamic library"
+comment "ola needs a toolchain w/ C++, threads, dynamic library, host and target gcc >= 4.5"
 	depends on !BR2_INSTALL_LIBSTDCPP || !BR2_TOOLCHAIN_HAS_THREADS \
-		|| BR2_STATIC_LIBS
+		|| BR2_STATIC_LIBS || !BR2_HOST_GCC_AT_LEAST_4_5 \
+		|| !BR2_TOOLCHAIN_GCC_AT_LEAST_4_5
+	depends on BROKEN
 	depends on BR2_PACKAGE_PROTOBUF_ARCH_SUPPORTS
 
 menuconfig BR2_PACKAGE_OLA
@@ -8,10 +10,15 @@ menuconfig BR2_PACKAGE_OLA
 	select BR2_PACKAGE_PROTOBUF
 	select BR2_PACKAGE_UTIL_LINUX_LIBUUID
 	select BR2_PACKAGE_UTIL_LINUX
+	# Build fails with current protobuf
+	# https://github.com/OpenLightingProject/ola/issues/1192
+	depends on BROKEN
 	depends on BR2_INSTALL_LIBSTDCPP # protobuf
 	depends on !BR2_STATIC_LIBS # protobuf
 	depends on BR2_TOOLCHAIN_HAS_THREADS
 	depends on BR2_PACKAGE_PROTOBUF_ARCH_SUPPORTS
+	depends on BR2_HOST_GCC_AT_LEAST_4_5 # protobuf
+	depends on BR2_TOOLCHAIN_GCC_AT_LEAST_4_5 # protobuf
 	help
 	  Open Lighting Architecture provides applications
 	  with a mechanism to send and receive DMX512 & RDM

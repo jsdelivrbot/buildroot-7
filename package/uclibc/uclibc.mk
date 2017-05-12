@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-UCLIBC_VERSION = 1.0.23
+UCLIBC_VERSION = 1.0.24
 UCLIBC_SOURCE = uClibc-ng-$(UCLIBC_VERSION).tar.xz
 UCLIBC_SITE = http://downloads.uclibc-ng.org/releases/$(UCLIBC_VERSION)
 UCLIBC_LICENSE = LGPL-2.1+
@@ -100,6 +100,12 @@ define UCLIBC_ARC_PAGE_SIZE_CONFIG
 	$(SED) '/CONFIG_ARC_PAGE_SIZE_*/d' $(@D)/.config
 	$(call KCONFIG_ENABLE_OPT,$(UCLIBC_ARC_PAGE_SIZE),$(@D)/.config)
 endef
+
+ifeq ($(BR2_ARC_ATOMIC_EXT),)
+define UCLIBC_ARC_ATOMICS_CONFIG
+	$(call KCONFIG_DISABLE_OPT,CONFIG_ARC_HAS_ATOMICS,$(@D)/.config)
+endef
+endif
 
 endif # arc
 
@@ -395,6 +401,7 @@ define UCLIBC_KCONFIG_FIXUP_CMDS
 	$(UCLIBC_BINFMT_CONFIG)
 	$(UCLIBC_ARC_TYPE_CONFIG)
 	$(UCLIBC_ARC_PAGE_SIZE_CONFIG)
+	$(UCLIBC_ARC_ATOMICS_CONFIG)
 	$(UCLIBC_ARM_ABI_CONFIG)
 	$(UCLIBC_ARM_BINFMT_FLAT)
 	$(UCLIBC_ARM_NO_CONTEXT_FUNCS)

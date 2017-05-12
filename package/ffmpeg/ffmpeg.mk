@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-FFMPEG_VERSION = 3.2.4
+FFMPEG_VERSION = 3.3
 FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.xz
 FFMPEG_SITE = http://ffmpeg.org/releases
 FFMPEG_INSTALL_STAGING = YES
@@ -26,7 +26,6 @@ FFMPEG_CONF_OPTS = \
 	--enable-avdevice \
 	--enable-avcodec \
 	--enable-avformat \
-	--disable-x11grab \
 	--enable-network \
 	--disable-gray \
 	--enable-swscale-alpha \
@@ -39,7 +38,6 @@ FFMPEG_CONF_OPTS = \
 	--disable-dxva2 \
 	--enable-runtime-cpudetect \
 	--disable-hardcoded-tables \
-	--disable-memalign-hack \
 	--disable-mipsdsp \
 	--disable-mipsdspr2 \
 	--disable-msa \
@@ -434,6 +432,8 @@ FFMPEG_CONF_OPTS += --disable-vfp
 endif
 ifeq ($(BR2_ARM_CPU_HAS_NEON),y)
 FFMPEG_CONF_OPTS += --enable-neon
+else ifeq ($(BR2_aarch64),y)
+FFMPEG_CONF_OPTS += --enable-neon
 else
 FFMPEG_CONF_OPTS += --disable-neon
 endif
@@ -450,6 +450,11 @@ ifeq ($(BR2_POWERPC_CPU_HAS_ALTIVEC),y)
 FFMPEG_CONF_OPTS += --enable-altivec
 else
 FFMPEG_CONF_OPTS += --disable-altivec
+endif
+
+# Uses __atomic_fetch_add_4
+ifeq ($(BR2_TOOLCHAIN_HAS_LIBATOMIC),y)
+FFMPEG_CONF_OPTS += --extra-libs=-latomic
 endif
 
 ifeq ($(BR2_STATIC_LIBS),)

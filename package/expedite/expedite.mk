@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-EXPEDITE_VERSION = ffa005ea3de26b4219f32c285cb1665bb1366163
+EXPEDITE_VERSION = e7b11dd328d9db82b49cde795944a721beaf0112
 EXPEDITE_SITE = http://git.enlightenment.org/tools/expedite.git
 EXPEDITE_SITE_METHOD = git
 EXPEDITE_LICENSE = BSD-2-Clause
