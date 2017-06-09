@@ -1,3 +1,62 @@
+2017.05, Released May 31st, 2017
+
+	Minor fixes.
+
+	External toolchain: musl dynamic linker symlink for mips-sf
+	corrected.
+
+	Updated/fixed packages: agentpp, bash, exim, hans, madplay,
+	qpid-proton, rtl8188eu, snmppp, stm32flash, strongswan, sudo,
+	xen
+
+	Issues resolved (http://bugs.buildroot.org):
+
+	#9906: genimage: Disk full
+
+2017.05-rc3, Released May 30th, 2017
+
+	Fixes all over the tree.
+
+	ARC toolchain bumped to 2017.03
+
+	Runtime testing improvements and cleanups.
+
+	Updated/fixed packages: acpica, armadillo, audiofile, c-icap,
+	cppcms, dhcp, docker-engine, dropbear, elfutils, erlang,
+	fbgrab, ffmpeg, flashrom, ftop, gnutls, google-breakpad,
+	keepalived, kodi, libcdio, libepoxy, libev, libminiupnpc,
+	libqmi, libtasn1, libv4l, mariadb, mono, mosh, mosquitto,
+	mxml, ntp, opencv, openpowerlink, oracle-mysql, popt,
+	pulseview, python-enum34, rabbitmq-c, redis, samba4, stella,
+	xen
+
+	Removed packages: firejail, ola
+
+	Issues resolved (http://bugs.buildroot.org):
+
+	#9871: fbgrab 1.3 won't build with BR2_REPRODUCIBLE set
+	#9876: aarch64 support with gcc 4.8 toolchain
+	#9896: host-gcc-initial error downloading because incorrect URL
+
+2017.05-rc2, Released May 17th, 2017
+
+	Fixes all over the tree.
+
+	ARC toolchain bumped to 2017.03-rc2
+
+	Updated/fixed packages: bluez_utils, boost, clamav, daemon,
+	efibootmgr, efl, espeak, expedite, faketime, ffmpeg, fxload,
+	git, gpsd, kvm-unit-tests, libcdio, libv4l, lua, mke2img,
+	mpir, mpv, odroid-scripts, openblas, opencv3, openvpn, php,
+	postgresql, protobuf, qt5declarative, qwt, radvd, rpcbind,
+	rtmpdump, strongswan, sudo, ltp-testsuite, uclibc-ng-test,
+	vlc, x11vnc, xfsprogs
+
+	Issues resolved (http://bugs.buildroot.org):
+
+	#9796: source-check broken for Git downloads
+	#9866: BASE_DIR usage
+
 2017.05-rc1, Released May 8th, 2017
 
 	Fixes all over the tree and new features.
@@ -144,6 +203,30 @@
 	#9836: triggerhappy: systemd unit broken
 	#9846: musl libc not installed correctly in target folder
 	#9856: build libubox failed on ubuntu 17.04 64bit
+
+2017.02.3, Released June 2nd, 2017
+
+	Important / security related fixes.
+
+	Download: <pkg>-source-check fixed for packages from git.
+
+	External toolchain: musl dynamic linker symlink for mips-sf
+	corrected.
+
+	Updated/fixed packages: armadillo, audiofile, bash,
+	bluez_utils, cppcms, dbus, dhcp, dropbear, efibootmgr, efl,
+	elfutils, faketime, fbgrab, flashrom, ftop, gdb, git,
+	google-breakpad, gpsd, hans, kvm-unit-tests, kyua, libev,
+	libmicrohttpd, libminiupnpc, libtasn1, libubox, ltp-testsuite,
+	lua, madplay, mariadb, mono, mosquitto, mxml, ntp,
+	nvidia-driver, openblas, openvpn, oracle-mysql, picocom, popt,
+	postgresql, pulseview, qt5base, qwt, rabbitmq-c, redis,
+	rpcbind, rtmpdump, samba4, strongswan, sudo, vlc
+
+	Issues resolved (http://bugs.buildroot.org):
+
+	#9796: source-check broken for Git downloads
+	#9871: fbgrab 1.3 won't build with BR2_REPRODUCIBLE set
 
 2017.02.2, Released May 1st, 2017
 

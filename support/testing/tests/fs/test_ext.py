@@ -21,10 +21,10 @@ def dumpe2fs_run(builddir, image):
     return ret.strip().splitlines()
 
 def dumpe2fs_getprop(out, prop):
-    for lines in out:
-        lines = lines.split(": ")
-        if lines[0] == prop:
-            return lines[1].strip()
+    for line in out:
+        fields = line.split(": ")
+        if fields[0] == prop:
+            return fields[1].strip()
 
 def boot_img_and_check_fs_type(emulator, builddir, fs_type):
     img = os.path.join(builddir, "images", "rootfs.{}".format(fs_type))
@@ -86,6 +86,7 @@ BR2_TARGET_ROOTFS_EXT2_3=y
         out = dumpe2fs_run(self.builddir, "rootfs.ext3")
         self.assertEqual(dumpe2fs_getprop(out, REVISION_PROP), "1 (dynamic)")
         self.assertIn("has_journal", dumpe2fs_getprop(out, FEATURES_PROP))
+        self.assertNotIn("extent", dumpe2fs_getprop(out, FEATURES_PROP))
 
         exit_code = boot_img_and_check_fs_type(self.emulator,
                                                self.builddir, "ext3")

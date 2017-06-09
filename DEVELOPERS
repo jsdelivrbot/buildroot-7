@@ -30,9 +30,18 @@ N:	Abhilash Tuse <abhilash.tuse@imgtec.com>
 F:	package/gstreamer1/gst1-rtsp-server/
 
 N:	Adam Duskett <aduskett@gmail.com>
+F:	package/audit/
+F:	package/checkpolicy/
 F:	package/gstreamer1/gst1-vaapi/
+F:	package/libselinux/
+F:	package/libsemanage/
+F:	package/libsepol/
 F:	package/nginx-naxsi/
+F:	package/policycoreutils/
 F:	package/python-mutagen/
+F:	package/refpolicy/
+F:	package/sepolgen/
+F:	package/setools/
 F:	package/sngrep/
 
 N:	Alex Suykov <alex.suykov@gmail.com>
@@ -74,9 +83,6 @@ F:	package/wine/
 N:	Andrey Smirnov <andrew.smirnov@gmail.com
 F:	package/python-decorator/
 F:	package/python-simplegeneric/
-
-N:	Andrew Ruder <andrew.ruder@elecsyscorp.com>
-F:	package/expect/
 
 N:	Andy Kennedy <andy.kennedy@adtran.com>
 F:	package/libunwind/
@@ -160,6 +166,8 @@ F:	boot/syslinux/
 F:	package/dc3dd/
 
 N:	Bernd Kuhls <bernd.kuhls@t-online.de>
+F:	package/alsa-lib/
+F:	package/alsa-utils/
 F:	package/apache/
 F:	package/apr/
 F:	package/apr-util/
@@ -176,6 +184,7 @@ F:	package/ffmpeg/
 F:	package/ghostscript/
 F:	package/giflib/
 F:	package/glmark2/
+F:	package/hdparm/
 F:	package/jsoncpp/
 F:	package/kodi*
 F:	package/lame/
@@ -315,9 +324,6 @@ F:	package/libdvbsi/
 F:	package/libsvg/
 F:	package/libsvg-cairo/
 
-N:	Chris Frederick <chrisf@cdf123.net>
-F:	package/firejail/
-
 N:	Chris Packham <judge.packham@gmail.com>
 F:	package/eventlog/
 F:	package/micropython/
@@ -361,6 +367,9 @@ F:	package/policycoreutils/
 F:	package/sepolgen/
 F:	package/ustr/
 
+N:	Corentin Guillevic <corentin.guillevic@smile.fr>
+F:	package/libloki/
+
 N:	Cédric Chépied <cedric.chepied@gmail.com>
 F:	package/znc/
 
@@ -396,9 +405,6 @@ F:	package/ljsyscall/
 F:	package/lua-cjson/
 F:	package/luaexpat/
 F:	package/xinetd/
-
-N:	Dave Skok <blanco.ether@gmail.com>
-F:	package/ola/
 
 N:	David Bachelart <david.bachelart@bbright.com>
 F:	package/ccrypt/
@@ -573,11 +579,14 @@ F:	package/perl*
 F:	package/pkg-perl.mk
 F:	package/pkg-luarocks.mk
 F:	package/qemu/
+F:	package/sdl2_mixer/
+F:	package/sdl2_net/
 F:	package/tekui/
 F:	support/scripts/scancpan
 
 N:	Frank Hunleth <fhunleth@troodon-software.com>
 F:	package/am335x-pru-package/
+F:	package/libconfuse/
 F:	package/libdmtx/
 F:	package/libsodium/
 F:	package/php-amqp/
@@ -857,15 +866,18 @@ F:	package/python-libconfig/
 N:	Johan Oudinet <johan.oudinet@gmail.com>
 F:	package/ejabberd/
 F:	package/erlang-goldrush/
+F:	package/erlang-jiffy/
 F:	package/erlang-lager/
 F:	package/erlang-p1-cache-tab/
 F:	package/erlang-p1-iconv/
+F:	package/erlang-p1-oauth2/
 F:	package/erlang-p1-sip/
 F:	package/erlang-p1-stringprep/
 F:	package/erlang-p1-stun/
 F:	package/erlang-p1-tls/
 F:	package/erlang-p1-utils/
 F:	package/erlang-p1-xml/
+F:	package/erlang-p1-xmpp/
 F:	package/erlang-p1-yaml/
 F:	package/erlang-p1-zlib/
 F:	package/nginx-dav-ext/
@@ -1033,6 +1045,7 @@ F:	board/grinn/
 F:	configs/grinn_*
 F:	package/argparse/
 F:	package/easydbus/
+F:	package/luaossl/
 F:	package/rs485conf/
 F:	package/turbolua/
 
@@ -1045,12 +1058,16 @@ F:	package/polkit/
 F:	package/sg3_utils/
 F:	package/udisks/
 
+N:	Mario Rugiero <mrugiero@gmail.com>
+F:	package/ratpoison/
+
 N:	Markos Chandras <markos.chandras@imgtec.com>
 F:	package/harfbuzz/
 F:	package/libsecret/
 
 N:	Martin Bark <martin@barkynet.com>
 F:	package/ca-certificates/
+F:	package/connman/
 F:	package/nodejs/
 F:	package/tzdata/
 F:	package/zic/
@@ -1192,9 +1209,6 @@ F:	package/nvidia-tegra23/nvidia-tegra23-codecs/
 
 N:	Nimai Mahajan <nimaim@gmail.com>
 F:	package/libucl/
-
-N:	Niranjan Reddy <niranjan.reddy@rockwellcollins.com>
-F:	package/cgroupfs-mount/
 
 N:	Noé Rubinstein <noe.rubinstein@gmail.com>
 F:	package/tpm-tools/
@@ -1505,6 +1519,8 @@ F:	package/proxychains-ng/
 F:	package/yasm/
 
 N:	Stefan Sørensen <stefan.sorensen@spectralink.com>
+F:	package/cracklib/
+F:	package/libpwquality/
 F:	package/libscrypt/
 
 N:	Stephan Hoffmann <sho@relinux.de>
