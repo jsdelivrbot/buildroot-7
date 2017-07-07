@@ -27,7 +27,12 @@ UTIL_LINUX_CONF_OPTS += \
 	--disable-makeinstall-chown
 UTIL_LINUX_LIBS = $(TARGET_NLS_LIBS)
 
-# We don't want the host-busybox dependency to be added automatically
+# system depends on util-linux so we enable systemd support
+# (which needs systemd to be installed)
+UTIL_LINUX_CONF_OPTS += \
+	--without-systemd \
+	--with-systemdsystemunitdir=no
+
 HOST_UTIL_LINUX_DEPENDENCIES = host-pkgconf
 
 # We also don't want the host-python dependency
