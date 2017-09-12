@@ -60,6 +60,6 @@ index 7efa0c1..e564cfb 100644
 +	phy_write(phydev, DP83867_LEDCR1, dp83867->led_cfg1);
 +	phy_write(phydev, DP83867_LEDCR2, dp83867->led_cfg2);
 +
- 	return 0;
- }
- 
+ 	/* Enable Interrupt output INT_OE in CFG3 register */
+ 	if (phy_interrupt_is_valid(phydev)) {
+ 		val = phy_read(phydev, DP83867_CFG3);
