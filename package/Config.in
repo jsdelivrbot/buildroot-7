@@ -1967,4 +1967,8 @@ menu "Text editors and viewers"
 	source "package/vim/Config.in"
 endmenu
 
+menu "AGCO packages"
+	source "package/agco/Config.in"
+endmenu
+
 endmenu

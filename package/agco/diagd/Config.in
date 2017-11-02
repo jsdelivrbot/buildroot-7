@@ -1,0 +1,57 @@
+config BR2_PACKAGE_DIAGD
+	bool "diagd"
+	depends on !BR2_STATIC_LIBS
+	depends on BR2_USE_MMU
+	help
+	  The Diagnostic Daemon provides an extensible node
+	  implementation of UDS services according to ISO14229
+          over DoIP (ISO13400) and DoCAN (ISO15765) network layers
+          for Linux ECUs.
+
+	  https://git.mod.agcocorp.com/git/Diagnostics/diagd
+
+if BR2_PACKAGE_DIAGD
+
+config BR2_PACKAGE_DIAGD_DEVELMODE
+	bool "Development mode"
+	help
+	  - Seed 0x12121212 / key 0x02020202 unlock any security level
+	  - Never delay security access requests
+
+choice
+	bool "Target platform"
+	default BR2_PACKAGE_DIAGD_TARGET_IU
+	help
+	  Choose the target platform for to support.
+
+config BR2_PACKAGE_DIAGD_TARGET_DASH
+	bool "Dashboard"
+	help
+	  Dashboard for 2019 new electronic architecture.
+
+config BR2_PACKAGE_DIAGD_TARGET_DCU
+	bool "Display Control Unit"
+	help
+	  DCU / Terminal.
+
+config BR2_PACKAGE_DIAGD_TARGET_IU
+	bool "Infotainment Unit"
+	help
+	  Infotainment Unit.
+
+endchoice # Target platform
+
+config BR2_PACKAGE_DIAGD_DEM
+	bool "Diagnostic events"
+	default y
+	help
+	  Enable support for Diagnostic Trouble Codes (DTC)
+	  in diagd by including the Diagnostic Event Manager.
+
+config BR2_PACKAGE_DIAGD_DIAGBUS
+	bool "Diagnostic bus"
+	help
+	  IPC mechanism for delegating diagnostic requests
+	  to other programs.
+
+endif
