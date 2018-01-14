@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LINUX_FIRMWARE_VERSION = 17e6288135d4500f9fe60224dce2b46d850c346b
+LINUX_FIRMWARE_VERSION = 65b1c68c63f974d72610db38dfae49861117cae2
 LINUX_FIRMWARE_SITE = http://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
 LINUX_FIRMWARE_SITE_METHOD = git
 
@@ -123,6 +123,14 @@ endif
 # ar9271
 ifeq ($(BR2_PACKAGE_LINUX_FIRMWARE_ATHEROS_9271),y)
 LINUX_FIRMWARE_FILES += ar9271.fw htc_9271.fw ath9k_htc/htc_9271-1.4.0.fw
+LINUX_FIRMWARE_ALL_LICENSE_FILES += LICENCE.atheros_firmware
+endif
+
+# ath10k
+ifeq ($(BR2_PACKAGE_LINUX_FIRMWARE_ATHEROS_10K_QCA998X),y)
+LINUX_FIRMWARE_FILES += ath10k/QCA988X/hw2.0/board.bin \
+			ath10k/QCA988X/hw2.0/firmware-4.bin \
+			ath10k/QCA988X/hw2.0/firmware-5.bin
 LINUX_FIRMWARE_ALL_LICENSE_FILES += LICENCE.atheros_firmware
 endif
 
@@ -317,6 +325,11 @@ LINUX_FIRMWARE_FILES += iwlwifi-8265-*.ucode
 LINUX_FIRMWARE_ALL_LICENSE_FILES += LICENCE.iwlwifi_firmware
 endif
 
+ifeq ($(BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_9XXX),y)
+LINUX_FIRMWARE_FILES += iwlwifi-9???-*.ucode
+LINUX_FIRMWARE_ALL_LICENSE_FILES += LICENCE.iwlwifi_firmware
+endif
+
 ifeq ($(BR2_PACKAGE_LINUX_FIRMWARE_BNX2X),y)
 LINUX_FIRMWARE_FILES += bnx2x/*
 # No license file; the license is in the file WHENCE
@@ -407,10 +420,10 @@ LINUX_FIRMWARE_FILES += \
 	brcm/brcmfmac43236b.bin brcm/brcmfmac43241b0-sdio.bin \
 	brcm/brcmfmac43241b4-sdio.bin brcm/brcmfmac43241b5-sdio.bin \
 	brcm/brcmfmac43242a.bin brcm/brcmfmac43340-sdio.bin \
-	brcm/brcmfmac43362-sdio.bin brcm/brcmfmac43455-sdio.bin \
+	brcm/brcmfmac43362-sdio.bin brcm/brcmfmac43430-sdio.bin \
+	brcm/brcmfmac43430a0-sdio.bin brcm/brcmfmac43455-sdio.bin \
 	brcm/brcmfmac43569.bin brcm/brcmfmac43570-pcie.bin \
-	brcm/brcmfmac43602-pcie.ap.bin brcm/brcmfmac43602-pcie.bin \
-	brcm/brcmfmac43430-sdio.bin
+	brcm/brcmfmac43602-pcie.ap.bin brcm/brcmfmac43602-pcie.bin
 LINUX_FIRMWARE_ALL_LICENSE_FILES += LICENCE.broadcom_bcm43xx
 endif
 
@@ -420,6 +433,12 @@ LINUX_FIRMWARE_FILES += \
 	ql2100_fw.bin ql2200_fw.bin ql2300_fw.bin ql2322_fw.bin \
 	ql2400_fw.bin ql2500_fw.bin
 LINUX_FIRMWARE_ALL_LICENSE_FILES += LICENCE.qla2xxx
+endif
+
+ifeq ($(BR2_PACKAGE_LINUX_FIRMWARE_REDPINE_RS9113),y)
+LINUX_FIRMWARE_FILES += rsi/rs9113_wlan_qspi.rps
+# No license file; the license is in the file WHENCE
+# which is installed unconditionally
 endif
 
 ifneq ($(LINUX_FIRMWARE_FILES),)
