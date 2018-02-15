@@ -13,7 +13,7 @@ UTIL_LINUX_SITE = $(BR2_KERNEL_MIRROR)/linux/utils/util-linux/v$(UTIL_LINUX_VERS
 # README.licensing claims that some files are GPL-2.0 only, but this is not true.
 # Some files are GPL-3.0+ but only in tests. rfkill uses an ISC-style license.
 UTIL_LINUX_LICENSE = GPL-2.0+, BSD-4-Clause, LGPL-2.1+ (libblkid, libfdisk, libmount), BSD-3-Clause (libuuid) ISC (rfkill)
-UTIL_LINUX_LICENSE_FILES = README.licensing Documentation/licenses/COPYING.GPLv2 Documentation/licenses/COPYING.UCB Documentation/licenses/COPYING.LGPLv2.1 Documentation/licenses/COPYING.BSD-3 sys-utils/rfkill.c
+UTIL_LINUX_LICENSE_FILES = README.licensing Documentation/licenses/COPYING.GPLv2 Documentation/licenses/COPYING.UCB Documentation/licenses/COPYING.LGPLv2.1 Documentation/licenses/COPYING.BSD-3 Documentation/licenses/COPYING.ISC
 UTIL_LINUX_INSTALL_STAGING = YES
 UTIL_LINUX_DEPENDENCIES = host-pkgconf $(TARGET_NLS_DEPENDENCIES)
 # uClibc needs NTP_LEGACY for sys/timex.h -> ntp_gettime() support
@@ -172,8 +172,37 @@ HOST_UTIL_LINUX_CONF_OPTS += \
 
 ifeq ($(BR2_PACKAGE_HOST_UTIL_LINUX),y)
 HOST_UTIL_LINUX_CONF_OPTS += --disable-makeinstall-chown
-# disable more command because of ncurses dependency
-HOST_UTIL_LINUX_CONF_OPTS += --disable-more
+# disable commands that have ncurses dependency, as well as
+# other ones that are useless on the host
+HOST_UTIL_LINUX_CONF_OPTS += \
+	--disable-agetty \
+	--disable-chfn-chsh \
+	--disable-chmem \
+	--disable-login \
+	--disable-lslogins \
+	--disable-mesg \
+	--disable-more \
+	--disable-newgrp \
+	--disable-nologin \
+	--disable-nsenter \
+	--disable-pg \
+	--disable-rfkill \
+	--disable-schedutils \
+	--disable-setpriv \
+	--disable-setterm \
+	--disable-su \
+	--disable-sulogin \
+	--disable-tunelp \
+	--disable-ul \
+	--disable-unshare \
+	--disable-uuidd \
+	--disable-vipw \
+	--disable-wall \
+	--disable-wdctl \
+	--disable-write \
+	--disable-zramctl
+# Used by cramfs utils
+HOST_UTIL_LINUX_DEPENDENCIES += host-zlib
 else
 HOST_UTIL_LINUX_CONF_OPTS += --disable-all-programs
 endif
