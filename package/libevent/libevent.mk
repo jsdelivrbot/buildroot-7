@@ -4,14 +4,13 @@
 #
 ################################################################################
 
-LIBEVENT_VERSION = master
-LIBEVENT_SITE = https://github.com/libevent/libevent.git
-LIBEVENT_SITE_METHOD = git
+LIBEVENT_VERSION = 2.1.8-stable
+LIBEVENT_SITE = https://github.com/libevent/libevent/releases/download/release-$(LIBEVENT_VERSION)
 LIBEVENT_INSTALL_STAGING = YES
 LIBEVENT_LICENSE = BSD-3-Clause, OpenBSD
 LIBEVENT_LICENSE_FILES = LICENSE
 LIBEVENT_AUTORECONF = YES
-LIBEVENT_CONF_OPTS = --disable-samples
+LIBEVENT_CONF_OPTS = --disable-samples --disable-malloc-replacement --disable-libevent-regress
 HOST_LIBEVENT_CONF_OPTS = --disable-samples --disable-openssl
 
 define LIBEVENT_REMOVE_PYSCRIPT
@@ -30,8 +29,6 @@ LIBEVENT_CONF_OPTS += --enable-openssl
 else
 LIBEVENT_CONF_OPTS += --disable-openssl
 endif
-
-LIBEVENT_CONF_OPTS += --disable-malloc-replacement --disable-libevent-regress --disable-samples
 
 $(eval $(autotools-package))
 $(eval $(host-autotools-package))
