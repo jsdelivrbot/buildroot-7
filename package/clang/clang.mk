@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-CLANG_VERSION = 5.0.1
+CLANG_VERSION = 6.0.0
 CLANG_SITE = http://llvm.org/releases/$(CLANG_VERSION)
 CLANG_SOURCE = cfe-$(CLANG_VERSION).src.tar.xz
 CLANG_LICENSE = NCSA
@@ -84,6 +84,14 @@ define HOST_CLANG_INSTALL_CLANG_TBLGEN
 		$(HOST_DIR)/usr/bin/clang-tblgen
 endef
 HOST_CLANG_POST_INSTALL_HOOKS = HOST_CLANG_INSTALL_CLANG_TBLGEN
+
+# This option must be enabled to link libclang dynamically against libLLVM.so
+HOST_CLANG_CONF_OPTS += -DLLVM_LINK_LLVM_DYLIB=ON
+CLANG_CONF_OPTS += -DLLVM_LINK_LLVM_DYLIB=ON
+
+# Prevent clang binaries from linking against LLVM static libs
+HOST_CLANG_CONF_OPTS += -DLLVM_DYLIB_COMPONENTS=all
+CLANG_CONF_OPTS += -DLLVM_DYLIB_COMPONENTS=all
 
 $(eval $(cmake-package))
 $(eval $(host-cmake-package))
