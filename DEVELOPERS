@@ -756,6 +756,7 @@ F:	package/alljoyn-tcl-base/
 F:	package/boinc/
 F:	package/cairo/
 F:	package/duktape/
+F:	package/expat/
 F:	package/flatbuffers/
 F:	package/gtksourceview/
 F:	package/gssdp/
